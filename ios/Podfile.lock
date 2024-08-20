@@ -852,6 +852,8 @@ PODS:
   - React-Mapbuffer (0.73.9):
     - glog
     - React-debug
+  - react-native-babylon (1.8.6):
+    - React
   - React-nativeconfig (0.73.9)
   - React-NativeModulesApple (0.73.9):
     - glog
@@ -1025,6 +1027,8 @@ PODS:
     - React-Core
     - React-jsi
   - ReactTestApp-Resources (1.0.0-dev)
+  - RNPermissions (3.10.1):
+    - React-Core
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
 
@@ -1057,6 +1061,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - "react-native-babylon (from `../node_modules/@babylonjs/react-native-iosandroid-0-71`)"
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1080,6 +1085,7 @@ DEPENDENCIES:
   - "ReactNativeHost (from `../node_modules/@rnx-kit/react-native-host`)"
   - ReactTestApp-DevSupport (from `../node_modules/react-native-test-app`)
   - ReactTestApp-Resources (from `..`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1140,6 +1146,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-babylon:
+    :path: "../node_modules/@babylonjs/react-native-iosandroid-0-71"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1186,6 +1194,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-test-app"
   ReactTestApp-Resources:
     :path: ".."
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1217,6 +1227,7 @@ SPEC CHECKSUMS:
   React-jsinspector: aee04d04ef553d5e30e52a4de2af958cb060069f
   React-logger: 87a4232dd55485435edfa6803ff0de0b5c9eea1a
   React-Mapbuffer: 6c229dc8f1640457d1f665f0b7d79ab8f604dc8b
+  react-native-babylon: 1d7959ccc1a277d9f9b4e07a4d718c1ee0715619
   React-nativeconfig: c1729ab95240ec80d47a2bb8354d8f31138e35a7
   React-NativeModulesApple: 8e0470cad2e6d4ae42f9ef7ad03a7a2dd1ce04d6
   React-perflogger: c93b6a895eca3f9196656bb20ce0e15ad597a4e9
@@ -1240,9 +1251,10 @@ SPEC CHECKSUMS:
   ReactNativeHost: 02d9df701ce3f7b6560f95315df4bab38b660f58
   ReactTestApp-DevSupport: cbe23c1d1999516afa35e9758ef400b6bd3f7046
   ReactTestApp-Resources: 857244f3a23f2b3157b364fa06cf3e8866deff9c
+  RNPermissions: a446c2ce1f3bf54383c283798307cca5f50d70e4
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 57d2ffe418d024d56f8b0047f335c677e4c4d9ac
 
-PODFILE CHECKSUM: 28223ff67bbdb3512723c563ac9f823ebce0fdef
+PODFILE CHECKSUM: be5550c4ae298a0334ffb250ede19d2663c65ecd
 
 COCOAPODS: 1.15.2

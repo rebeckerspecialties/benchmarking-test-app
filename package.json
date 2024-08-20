@@ -17,10 +17,15 @@
     "visionos": "react-native run-visionos"
   },
   "dependencies": {
+    "@babylonjs/react-native": "^1.8.6",
+    "@babylonjs/react-native-iosandroid-0-71": "^1.8.6",
+    "@babylonjs/loaders": "7.21.4",
+    "@babylonjs/core": "7.21.4",
     "@callstack/react-native-visionos": "^0.73.0",
     "react": "18.2.0",
     "react-native": "0.73.9",
-    "react-native-macos": "^0.73.0"
+    "react-native-macos": "^0.73.0",
+    "react-native-permissions": "^3.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
