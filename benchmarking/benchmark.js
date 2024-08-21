@@ -14,6 +14,9 @@ const wdOpts = {
   capabilities,
 };
 
+const perfTraceDir = process.env.DEVICEFARM_LOG_DIR ?? ".";
+const perfTracePath = perfTraceDir + "/perfTrace.zip";
+
 async function runTest() {
   const driver = await remote(wdOpts);
   try {
@@ -30,9 +33,9 @@ async function runTest() {
     });
 
     let buff = await Buffer.from(output, "base64");
-    await writeFile("./perfTrace.zip", buff, (err) => {
+    await writeFile(perfTracePath, buff, (err) => {
       if (err) throw err;
-      console.log("File Written");
+      console.log("Performance profile written to", perfTracePath);
     });
 
     await driver.deleteSession();
