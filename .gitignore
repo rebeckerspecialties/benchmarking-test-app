@@ -2,6 +2,7 @@
 *.hprof
 *.xcworkspace/
 *.zip
+*.tgz
 .DS_Store
 .gradle/
 .idea/
