@@ -45,8 +45,7 @@
     "prettier": "2.8.8",
     "react-native-test-app": "^3.9.2",
     "react-test-renderer": "18.2.0",
-    "typescript": "5.0.4",
-    "webdriverio": "^9.0.6"
+    "typescript": "5.0.4"
   },
   "engines": {
     "node": ">=18"
