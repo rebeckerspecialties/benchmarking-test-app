@@ -4,8 +4,6 @@ const { writeFile } = require("fs");
 const capabilities = {
   platformName: "iOS",
   "appium:automationName": "XCUITest",
-  "appium:deviceName": "iPhone 15",
-  "appium:app": "com.apple.Preferences",
 };
 
 const wdOpts = {

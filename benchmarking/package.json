@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "benchmark": "node benchmark.js",
-    "bundle": "npm-bundle"
+    "test": "node benchmark.js",
+    "bundle": "npm-bundle && zip -r MyTests.zip *.tgz"
   },
   "dependencies": {
     "webdriverio": "^9.0.6"
