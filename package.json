@@ -18,10 +18,10 @@
     "visionos": "react-native run-visionos"
   },
   "dependencies": {
+    "@babylonjs/core": "7.21.4",
+    "@babylonjs/loaders": "7.21.4",
     "@babylonjs/react-native": "^1.8.6",
     "@babylonjs/react-native-iosandroid-0-71": "^1.8.6",
-    "@babylonjs/loaders": "7.21.4",
-    "@babylonjs/core": "7.21.4",
     "@callstack/react-native-visionos": "^0.73.0",
     "react": "18.2.0",
     "react-native": "0.73.9",
@@ -45,7 +45,8 @@
     "prettier": "2.8.8",
     "react-native-test-app": "^3.9.2",
     "react-test-renderer": "18.2.0",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "webdriverio": "^9.0.6"
   },
   "engines": {
     "node": ">=18"
