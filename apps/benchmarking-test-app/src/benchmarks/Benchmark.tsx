@@ -9,19 +9,19 @@ export interface BenchmarkProps {
 export const Benchmark: React.FC<BenchmarkProps> = ({ name, run }) => {
   const [isBenchmarkCompleted, setBenchmarkCompleted] = useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [running, setRunning] = useState(false);
 
   const onBeginBenchmark = useCallback(async () => {
-    setLoading(true);
+    setRunning(true);
     await run();
-    setLoading(false);
+    setRunning(false);
     setBenchmarkCompleted(true);
   }, [run]);
 
   const completedLabel = `${name}Completed`;
 
-  if (loading) {
-    return <Text>Loading</Text>;
+  if (running) {
+    return <Text>Running benchmark, please wait</Text>;
   }
 
   if (isBenchmarkCompleted) {
