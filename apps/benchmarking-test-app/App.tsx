@@ -10,14 +10,17 @@
 
 import React from "react";
 
-import { SafeAreaView, Button, StatusBar } from "react-native";
+import { SafeAreaView, StatusBar } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 
 const App = () => {
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "white" }}
+        accessibilityLabel="benchmarkSafeArea"
+      >
         <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
       </SafeAreaView>
     </>

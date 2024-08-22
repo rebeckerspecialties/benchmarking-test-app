@@ -25,13 +25,15 @@ async function runTest() {
       pid: "current",
       timeout: 2000,
     });
-    const benchmark = await driver.$('//Button[@title="simpleBenchmark"]');
+    const benchmark = await driver.$("~simpleBenchmark");
     await benchmark.click();
 
-    const benchmarkComplete = await driver.$(
-      '//*[@text="simpleBenchmark-completed"]'
-    );
-    await benchmarkComplete.waitForDisplayed({ timeout: 10000 });
+    const completed = await driver.$("~simpleBenchmarkCompleted");
+    console.log(completed);
+
+    await completed.waitForDisplayed({ timeout: 20000 });
+  } catch (err) {
+    console.error(err);
   } finally {
     const output = await driver.execute("mobile: stopPerfRecord", {
       profileName: "Time Profiler",

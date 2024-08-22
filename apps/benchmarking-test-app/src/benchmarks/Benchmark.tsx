@@ -9,14 +9,26 @@ export interface BenchmarkProps {
 export const Benchmark: React.FC<BenchmarkProps> = ({ name, run }) => {
   const [isBenchmarkCompleted, setBenchmarkCompleted] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const onBeginBenchmark = useCallback(async () => {
+    setLoading(true);
     await run();
+    setLoading(false);
     setBenchmarkCompleted(true);
   }, [run]);
 
-  if (isBenchmarkCompleted) {
-    return <Text>{`${name}-completed`}</Text>;
+  const completedLabel = `${name}Completed`;
+
+  if (loading) {
+    return <Text>Loading</Text>;
   }
 
-  return <Button title={name} onPress={onBeginBenchmark} />;
+  if (isBenchmarkCompleted) {
+    return <Text accessibilityLabel={completedLabel}>{completedLabel}</Text>;
+  }
+
+  return (
+    <Button title={name} accessibilityLabel={name} onPress={onBeginBenchmark} />
+  );
 };
