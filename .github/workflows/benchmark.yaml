@@ -27,7 +27,7 @@ jobs:
           run-settings-json: |
             {
               "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
-              "projectArn": "Test",
+              "projectArn": "TestApp",
               "appArn": "benchmarkingTestApp.ipa",
               "devicePoolArn": "TestDevices",
               "test": {
