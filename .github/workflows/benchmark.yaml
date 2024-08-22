@@ -1,0 +1,45 @@
+name: Run Benchmarks
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::283190974427:role/DeviceFarmOIDC
+          aws-region: us-west-2
+
+      - name: Schedule Device Farm Automated Test
+        id: run-test
+        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.0
+        with:
+          run-settings-json: |
+            {
+              "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
+              "projectArn": "Test",
+              "appArn": "benchmarkingTestApp.ipa",
+              "devicePoolArn": "TestDevices",
+              "test": {
+                "type": "APPIUM_NODE",
+                "testPackageArn": "MyTests.zip",
+                "testSpecArn": "testSpec.yml"
+              }
+            }
+          artifact-types: ALL
+
+      - uses: actions/upload-artifact@v3
+        if: always() # This ensures the artifacts are uploaded even if the Test Run Fails
+        with:
+          name: AutomatedTestOutputFiles
+          path: ${{ steps.run-test.outputs.artifact-folder }}
