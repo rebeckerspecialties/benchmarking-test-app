@@ -25,9 +25,11 @@ async function runTest() {
       pid: "current",
       timeout: 2000,
     });
-    await driver.execute("mobile: scroll", { direction: "down" });
+    const benchmark = await driver.$('//Button[@title="simpleBenchmark"]');
+    await benchmark.click();
+
+    await driver.$('//*[@text="simpleBenchmark-completed"]');
   } finally {
-    await driver.pause(1000);
     const output = await driver.execute("mobile: stopPerfRecord", {
       profileName: "Time Profiler",
     });
