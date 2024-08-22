@@ -28,7 +28,10 @@ async function runTest() {
     const benchmark = await driver.$('//Button[@title="simpleBenchmark"]');
     await benchmark.click();
 
-    await driver.$('//*[@text="simpleBenchmark-completed"]');
+    const benchmarkComplete = await driver.$(
+      '//*[@text="simpleBenchmark-completed"]'
+    );
+    await benchmarkComplete.waitForDisplayed({ timeout: 10000 });
   } finally {
     const output = await driver.execute("mobile: stopPerfRecord", {
       profileName: "Time Profiler",
