@@ -13,6 +13,7 @@ import React from "react";
 import { SafeAreaView, StatusBar } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
+import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
       >
         <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
         <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
+        <Benchmark name="threeJsBenchmark" run={threeJsBenchmark} />
       </SafeAreaView>
     </>
   );
