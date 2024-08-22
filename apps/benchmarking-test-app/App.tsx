@@ -12,6 +12,7 @@ import React from "react";
 
 import { SafeAreaView, StatusBar } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
+import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         accessibilityLabel="benchmarkSafeArea"
       >
         <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
+        <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
       </SafeAreaView>
     </>
   );
