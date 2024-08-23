@@ -26,10 +26,8 @@ export const Benchmark: React.FC<BenchmarkProps> = ({ name, run }) => {
 
   if (benchmarkRunTime) {
     const completedLabel = `${name}Completed`;
-    return <Text accessibilityLabel={completedLabel}>{benchmarkRunTime}</Text>;
+    return <Text testID={completedLabel}>{benchmarkRunTime}</Text>;
   }
 
-  return (
-    <Button title={name} accessibilityLabel={name} onPress={onBeginBenchmark} />
-  );
+  return <Button title={name} testID={name} onPress={onBeginBenchmark} />;
 };
