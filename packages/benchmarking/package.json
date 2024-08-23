@@ -12,7 +12,10 @@
   "engines": {
     "node": ">=18"
   },
-  "bundledDependencies": [
+  "devDependencies": {
+    "typescript": "^5.0.4"
+  },
+  "bundleDependencies": [
     "webdriverio"
   ]
 }

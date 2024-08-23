@@ -1,5 +1,5 @@
-const { remote } = require("webdriverio");
-const { writeFile } = require("fs");
+import { Browser, remote } from "webdriverio";
+import { writeFile } from "fs/promises";
 
 const capabilities = {
   platformName: "iOS",
@@ -8,15 +8,16 @@ const capabilities = {
 
 const wdOpts = {
   hostname: process.env.APPIUM_HOST || "0.0.0.0",
-  port: parseInt(process.env.APPIUM_PORT, 10) || 4723,
+  port: process.env.APPIUM_PORT ? parseInt(process.env.APPIUM_PORT, 10) : 4723,
   path: "/wd/hub",
-  logLevel: "info",
   capabilities,
 };
 
 const perfTraceDir = process.env.DEVICEFARM_LOG_DIR ?? ".";
 
-async function runBenchmark(testId, driver) {
+type benchmarkAsync = (testId: string, driver: Browser) => Promise<void>;
+
+async function runBenchmark(testId: string, driver: Browser) {
   const benchmark = await driver.$(`~${testId}`);
   await benchmark.click();
 
@@ -27,7 +28,7 @@ async function runBenchmark(testId, driver) {
   return result;
 }
 
-async function runBenchmarkWithProfiler(testId, driver) {
+async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   const perfTracePath = `${perfTraceDir}/${testId}-trace.zip`;
   await driver.execute("mobile: startPerfRecord", {
     profileName: "Time Profiler",
@@ -37,30 +38,26 @@ async function runBenchmarkWithProfiler(testId, driver) {
 
   await runBenchmark(testId, driver);
 
-  const output = await driver.execute("mobile: stopPerfRecord", {
+  const output = (await driver.execute("mobile: stopPerfRecord", {
     profileName: "Time Profiler",
-  });
+  })) as string;
 
-  let buff = await Buffer.from(output, "base64");
-  await writeFile(perfTracePath, buff, (err) => {
-    if (err) throw err;
-    console.log("Performance profile written to", perfTracePath);
-  });
+  let buff = Buffer.from(output, "base64");
+  await writeFile(perfTracePath, buff);
+  console.log("Performance profile written to", perfTracePath);
 }
 
-async function runBenchmarkWithWallClockTime(testId, driver) {
+async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
   const outputPath = `${perfTraceDir}/${testId}-clock.txt`;
 
   const text = await runBenchmark(testId, driver);
 
-  await writeFile(outputPath, text, (err) => {
-    if (err) throw err;
-    console.log("Performance profile written to", outputPath);
-  });
+  await writeFile(outputPath, text);
+  console.log("Benchmark time written to:", outputPath);
 }
 
-function withDriver(benchmarkAsync) {
-  return async (testId) => {
+function withDriver(benchmarkAsync: benchmarkAsync) {
+  return async (testId: string) => {
     const driver = await remote(wdOpts);
     try {
       await benchmarkAsync(testId, driver);
