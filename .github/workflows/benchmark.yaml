@@ -40,7 +40,7 @@ jobs:
               "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
               "projectArn": "TestApp",
               "appArn": "benchmarkingTestApp.ipa",
-              "devicePoolArn": "TestDevices",
+              "devicePoolArn": "SmallDevicePool",
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
