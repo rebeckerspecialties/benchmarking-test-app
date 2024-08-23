@@ -22,7 +22,7 @@ jobs:
 
       - name: Schedule Device Farm Automated Test
         id: run-test
-        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.0
+        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
         with:
           run-settings-json: |
             {
@@ -35,7 +35,6 @@ jobs:
                 "testPackageArn": "MyTests.zip",
                 "testSpecArn": "testSpec.yml"
               },
-              "configuration": {}
             }
           artifact-types: ALL
 
