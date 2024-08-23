@@ -53,7 +53,7 @@ async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
   const text = await runBenchmark(testId, driver);
 
   await writeFile(outputPath, text);
-  console.log("Benchmark time written to:", outputPath);
+  console.log("Benchmark time written to", outputPath);
 }
 
 function withDriver(benchmarkAsync: benchmarkAsync) {
