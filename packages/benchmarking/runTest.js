@@ -28,12 +28,10 @@ async function runTest(testId) {
     const benchmark = await driver.$(`~${testId}`);
     await benchmark.click();
 
-    const completed = await driver.$(`~${testIdCompleted}`);
+    const completed = await driver.$(`~${testId}Completed`);
 
     await completed.waitForDisplayed({ timeout: 20000 });
-  } catch (err) {
-    console.error(err);
-  } finally {
+
     const output = await driver.execute("mobile: stopPerfRecord", {
       profileName: "Time Profiler",
     });
@@ -43,7 +41,9 @@ async function runTest(testId) {
       if (err) throw err;
       console.log("Performance profile written to", perfTracePath);
     });
-
+  } catch (err) {
+    console.error(err);
+  } finally {
     await driver.deleteSession();
   }
 }

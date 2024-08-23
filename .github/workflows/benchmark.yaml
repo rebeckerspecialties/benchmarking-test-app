@@ -14,6 +14,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Appium Test Zip
+        run: npm run bundle -w benchmarking-scripts
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -22,20 +33,19 @@ jobs:
 
       - name: Schedule Device Farm Automated Test
         id: run-test
-        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.0
+        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
         with:
           run-settings-json: |
             {
               "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
               "projectArn": "TestApp",
               "appArn": "benchmarkingTestApp.ipa",
-              "devicePoolArn": "TestDevices",
+              "devicePoolArn": "SmallDevicePool",
               "test": {
                 "type": "APPIUM_NODE",
-                "testPackageArn": "MyTests.zip",
-                "testSpecArn": "testSpec.yml"
-              },
-              "configuration": {}
+                "testPackageArn": "packages/benchmarking/MyTests.zip",
+                "testSpecArn": "packages/benchmarking/testSpec.yaml"
+              }
             }
           artifact-types: ALL
 
