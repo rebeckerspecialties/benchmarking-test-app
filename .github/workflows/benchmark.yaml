@@ -44,7 +44,7 @@ jobs:
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
-                "testSpecArn": "packages/benchmarking/testSpec.yml"
+                "testSpecArn": "packages/benchmarking/testSpec.yaml"
               }
             }
           artifact-types: ALL
