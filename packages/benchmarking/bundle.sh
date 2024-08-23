@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ## Bundles benchmark.js to a tarball with it's own dependencies
-mkdir dist
-cp * dist/
+npx tsc
+cp package.json dist/
 cd dist
 npm install
 npx npm-bundle

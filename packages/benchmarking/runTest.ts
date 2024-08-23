@@ -18,10 +18,10 @@ const perfTraceDir = process.env.DEVICEFARM_LOG_DIR ?? ".";
 type benchmarkAsync = (testId: string, driver: Browser) => Promise<void>;
 
 async function runBenchmark(testId: string, driver: Browser) {
-  const benchmark = await driver.$(`~${testId}`);
+  const benchmark = driver.$(`~${testId}`);
   await benchmark.click();
 
-  const completed = await driver.$(`~${testId}Completed`);
+  const completed = driver.$(`~${testId}Completed`);
 
   await completed.waitForDisplayed({ timeout: 20000 });
   const result = await completed.getText();
