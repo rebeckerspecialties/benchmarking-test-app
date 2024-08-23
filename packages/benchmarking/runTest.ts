@@ -69,7 +69,7 @@ function withDriver(benchmarkAsync: benchmarkAsync) {
   };
 }
 
-module.exports = {
-  runBenchmarkWithWallClockTime: withDriver(runBenchmarkWithWallClockTime),
-  runBenchmarkWithProfiler: withDriver(runBenchmarkWithProfiler),
-};
+export const benchmarkWithWallClockTime = withDriver(
+  runBenchmarkWithWallClockTime
+);
+export const benchmarkWithProfiler = withDriver(runBenchmarkWithProfiler);

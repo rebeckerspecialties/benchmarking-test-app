@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ## Bundles benchmark.js to a tarball with it's own dependencies
+rm -f MyTests.zip
+rm -rf dist/
 npx tsc
 cp package.json dist/
 cd dist
@@ -10,5 +12,3 @@ npx npm-bundle
 ## Extracts the npm bundle to a zip and cleans up the intermediate files
 zip -r MyTests.zip *.tgz
 mv MyTests.zip ..
-cd ..
-rm -rf dist

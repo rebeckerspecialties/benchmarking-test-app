@@ -1,18 +1,15 @@
-const {
-  runBenchmarkWithProfiler,
-  runBenchmarkWithWallClockTime,
-} = require("./runTest");
+import { benchmarkWithProfiler, benchmarkWithWallClockTime } from "./runTest";
 
 const runBenchmarkSuite = async () => {
   console.log("Running benchmarks with profiler");
-  await runBenchmarkWithProfiler("simpleBenchmark");
-  await runBenchmarkWithProfiler("bitEcsBenchmark");
-  await runBenchmarkWithProfiler("threeJsBenchmark");
+  await benchmarkWithProfiler("simpleBenchmark");
+  await benchmarkWithProfiler("bitEcsBenchmark");
+  await benchmarkWithProfiler("threeJsBenchmark");
 
   console.log("Running benchmarks with wall clock time");
-  await runBenchmarkWithWallClockTime("simpleBenchmark");
-  await runBenchmarkWithWallClockTime("bitEcsBenchmark");
-  await runBenchmarkWithWallClockTime("threeJsBenchmark");
+  await benchmarkWithWallClockTime("simpleBenchmark");
+  await benchmarkWithWallClockTime("bitEcsBenchmark");
+  await benchmarkWithWallClockTime("threeJsBenchmark");
 };
 
 runBenchmarkSuite();

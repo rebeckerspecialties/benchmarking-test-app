@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node benchmark.js",
-    "bundle": "rm -f *.{tgz,zip} && ./bundle.sh"
+    "bundle": "./bundle.sh"
   },
   "dependencies": {
     "webdriverio": "^9.0.6"
