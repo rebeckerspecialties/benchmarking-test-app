@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Bundles benchmark.js to a tarball with it's own dependencies
+## Bundles benchmark.js to a tarball with its own dependencies
 rm -f MyTests.zip
 rm -rf dist/
 npx tsc
