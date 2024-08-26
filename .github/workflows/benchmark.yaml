@@ -76,5 +76,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: JSCOutputFiles
+          name: HermesOutputFiles
           path: ${{ steps.run-hermes-benchmark.outputs.artifact-folder }}
