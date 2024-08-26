@@ -6,7 +6,9 @@ require "#{ws_dir}/node_modules/react-native-test-app/test_app.rb"
 
 workspace 'benchmarking-test-app.xcworkspace'
 
-use_test_app!
+use_test_app!(
+  use_hermes: false
+)
 
 
 require "#{ws_dir}/node_modules/react-native-permissions/scripts/setup.rb"
