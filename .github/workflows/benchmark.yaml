@@ -31,15 +31,15 @@ jobs:
           role-to-assume: arn:aws:iam::283190974427:role/DeviceFarmOIDC
           aws-region: us-west-2
 
-      - name: Schedule Device Farm Automated Test
-        id: run-test
+      - name: Run Benchmark with JavaScriptCore Engine
+        id: run-jsc-benchmark
         uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
         with:
           run-settings-json: |
             {
               "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
               "projectArn": "TestApp",
-              "appArn": "benchmarkingTestApp.ipa",
+              "appArn": "jscBenchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
               "test": {
                 "type": "APPIUM_NODE",
@@ -50,7 +50,31 @@ jobs:
           artifact-types: ALL
 
       - uses: actions/upload-artifact@v3
-        if: always() # This ensures the artifacts are uploaded even if the Test Run Fails
+        if: always()
         with:
-          name: AutomatedTestOutputFiles
-          path: ${{ steps.run-test.outputs.artifact-folder }}
+          name: JSCOutputFiles
+          path: ${{ steps.run-jsc-benchmark.outputs.artifact-folder }}
+
+      - name: Run Benchmark with Hermes Engine
+        id: run-hermes-benchmark
+        uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
+        with:
+          run-settings-json: |
+            {
+              "name": "GitHubAction-${{ github.workflow }}_${{ github.run_id }}_${{ github.run_attempt }}",
+              "projectArn": "TestApp",
+              "appArn": "hermesBenchmarking.ipa",
+              "devicePoolArn": "SmallDevicePool",
+              "test": {
+                "type": "APPIUM_NODE",
+                "testPackageArn": "packages/benchmarking/MyTests.zip",
+                "testSpecArn": "packages/benchmarking/testSpec.yaml"
+              }
+            }
+          artifact-types: ALL
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: JSCOutputFiles
+          path: ${{ steps.run-hermes-benchmark.outputs.artifact-folder }}
