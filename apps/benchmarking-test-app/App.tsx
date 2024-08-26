@@ -10,10 +10,11 @@
 
 import React from "react";
 
-import { SafeAreaView, StatusBar } from "react-native";
+import { SafeAreaView, StatusBar, Text } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
+import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         style={{ flex: 1, backgroundColor: "white" }}
         accessibilityLabel="benchmarkSafeArea"
       >
+        <JavaScriptEngineVersion />
         <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
         <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
         <Benchmark name="threeJsBenchmark" run={threeJsBenchmark} />
