@@ -55,6 +55,10 @@ jobs:
           name: JSCOutputFiles
           path: ${{ steps.run-jsc-benchmark.outputs.artifact-folder }}
 
+      - name: Extract JSC Artifacts
+        run: |
+          ./unzipArchive.sh jsc
+
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
         uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
