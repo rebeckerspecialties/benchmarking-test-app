@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "mkdist": "node -e \"require('node:fs').mkdirSync('dist', { recursive: true, mode: 0o755 })\"",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "install:ios:hermes": "(export USE_HERMES=1; pod install --project-directory=ios)",
+    "install:ios:jsc": "(export USE_HERMES=0; pod install --project-directory=ios)"
   },
   "dependencies": {
     "@babylonjs/core": "7.21.4",
