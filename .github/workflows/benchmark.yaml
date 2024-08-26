@@ -57,7 +57,7 @@ jobs:
 
       - name: Extract JSC Artifacts
         run: |
-          ./unzipArchive.sh jsc
+          ./unzipArchive.sh ${{ steps.run-jsc-benchmark.outputs.artifact-folder }} jsc
 
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
@@ -82,3 +82,7 @@ jobs:
         with:
           name: HermesOutputFiles
           path: ${{ steps.run-hermes-benchmark.outputs.artifact-folder }}
+
+      - name: Extract Hermes Artifacts
+        run: |
+          ./unzipArchive.sh ${{ steps.run-hermes-benchmark.outputs.artifact-folder }} hermes
