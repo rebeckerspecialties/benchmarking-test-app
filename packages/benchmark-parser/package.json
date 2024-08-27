@@ -6,9 +6,6 @@
     "build": "tsc -p tsconfig.build.json --outDir dist",
     "test": "jest"
   },
-  "dependencies": {
-    "webdriverio": "^9.0.6"
-  },
   "engines": {
     "node": ">=18"
   },
@@ -19,8 +16,5 @@
     "mock-fs": "^5.2.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.0.4"
-  },
-  "bundleDependencies": [
-    "webdriverio"
-  ]
+  }
 }
