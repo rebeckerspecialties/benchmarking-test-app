@@ -1,3 +1,3 @@
 import { parseBenchmarks } from "./parseBenchmarks";
 
-parseBenchmarks();
+parseBenchmarks("benchmarks", "benchmark.json");

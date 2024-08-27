@@ -8,33 +8,37 @@ interface BenchmarkEntry {
   extra?: string;
 }
 
-export async function parseBenchmarks() {
-  try {
-    const benchmarkEntries: BenchmarkEntry[] = [];
+export async function parseBenchmarks(
+  pathToBenchmarks: string,
+  outputPath: string
+) {
+  const files = await readdir(pathToBenchmarks, {
+    recursive: true,
+  });
 
-    const files = await readdir("benchmarks", {
-      recursive: true,
-    });
+  const benchmarkEntries = await processBenchmarkFiles(pathToBenchmarks, files);
 
-    for (const file of files) {
-      const benchmarkType = parseBenchmarkType(file);
-
-      if (!benchmarkType) {
-        continue;
-      }
-
-      const result = await readFile(file, "utf-8");
-      benchmarkEntries.push(createBenchmarkEntry(file, result, benchmarkType));
-    }
-
-    await writeFile("benchmark.json", JSON.stringify(benchmarkEntries));
-    console.log("Successfully wrote results to benchmark.json");
-  } catch (err) {
-    console.error(err);
-  }
+  await writeFile(outputPath, JSON.stringify(benchmarkEntries));
 }
 
-export function createBenchmarkEntry(
+async function processBenchmarkFiles(parentPath: string, files: string[]) {
+  const benchmarkEntries: BenchmarkEntry[] = [];
+  for (const file of files) {
+    const benchmarkType = parseBenchmarkType(file);
+
+    if (!benchmarkType) {
+      continue;
+    }
+
+    const benchmarkPath = `${parentPath}/${file}`;
+    const result = await readFile(benchmarkPath, "utf-8");
+    benchmarkEntries.push(createBenchmarkEntry(file, result, benchmarkType));
+  }
+
+  return benchmarkEntries;
+}
+
+function createBenchmarkEntry(
   file: string,
   result: string,
   unit: string
