@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
-import { withFlamegraph } from "./withFlamegraph";
+import { startProfiling, stopProfiling } from "react-native-release-profiler";
 
 export interface BenchmarkProps {
   name: string;
@@ -15,16 +15,22 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
 }) => {
   const [benchmarkRunTime, setBenchmarkRunTime] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
-  const runBenchmark = flamegraphEnabled ? withFlamegraph(run) : run;
+  const [profileLocation, setProfileLocation] = useState("");
 
   const onBeginBenchmark = useCallback(async () => {
     setRunning(true);
+    if (flamegraphEnabled) startProfiling();
     const startTime = Date.now();
-    await runBenchmark();
+    await run();
     const timeDelta = Date.now() - startTime;
+
+    if (flamegraphEnabled) {
+      const profileLocation = await stopProfiling();
+      setProfileLocation(profileLocation);
+    }
     setRunning(false);
     setBenchmarkRunTime(timeDelta);
-  }, [runBenchmark]);
+  }, [run]);
 
   if (running) {
     return <Text>Running benchmark, please wait</Text>;
@@ -32,7 +38,12 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
 
   if (benchmarkRunTime) {
     const completedLabel = `${name}Completed`;
-    return <Text testID={completedLabel}>{benchmarkRunTime}</Text>;
+    return (
+      <>
+        <Text testID={completedLabel}>{benchmarkRunTime}</Text>
+        <Text>{profileLocation}</Text>
+      </>
+    );
   }
 
   return <Button title={name} testID={name} onPress={onBeginBenchmark} />;

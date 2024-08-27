@@ -20,7 +20,7 @@ const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
 
   const toggleFlamegraph = useCallback(() => {
-    setFlamegraphEnabled((enabled) => !!enabled);
+    setFlamegraphEnabled((enabled) => !enabled);
   }, []);
 
   const toggleFlamegraphTitle = flamegraphEnabled
