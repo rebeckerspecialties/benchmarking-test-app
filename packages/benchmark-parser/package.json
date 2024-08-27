@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.build.json --outDir dist",
-    "parse-benchmarks": "node dist/index.js",
+    "parse-benchmarks": "node dist/src/index.js",
     "test": "jest"
   },
   "dependencies": {
