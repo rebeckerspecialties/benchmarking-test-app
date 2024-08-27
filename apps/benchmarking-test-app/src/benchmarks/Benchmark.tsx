@@ -25,7 +25,7 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     const timeDelta = Date.now() - startTime;
 
     if (flamegraphEnabled) {
-      const profileLocation = await stopProfiling();
+      const profileLocation = await stopProfiling(true);
       setProfileLocation(profileLocation);
     }
     setRunning(false);
