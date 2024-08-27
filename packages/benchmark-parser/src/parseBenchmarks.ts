@@ -20,7 +20,7 @@ function createBenchmarkEntry(
   };
 }
 
-async function parseBenchmarks() {
+export async function parseBenchmarks() {
   try {
     const benchmarkEntries: BenchmarkEntry[] = [];
 
@@ -39,5 +39,3 @@ async function parseBenchmarks() {
     console.error(err);
   }
 }
-
-parseBenchmarks();

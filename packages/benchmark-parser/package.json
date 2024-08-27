@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "parse-benchmarks": "node parse-benchmarks.js"
+    "parse-benchmarks": "node parse-benchmarks.js",
+    "test": "jest"
   },
   "dependencies": {
     "webdriverio": "^9.0.6"
@@ -12,6 +13,9 @@
     "node": ">=18"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.0.4"
   },
   "bundleDependencies": [
