@@ -1,3 +1,7 @@
 import { parseBenchmarks } from "./parseBenchmarks";
+import path from "path";
 
-parseBenchmarks("benchmarks", "benchmark.json");
+const benchmarkPath = path.resolve(process.cwd(), "benchmarks");
+const outputPath = path.resolve(process.cwd(), "benchmark.json");
+
+parseBenchmarks(benchmarkPath, outputPath);

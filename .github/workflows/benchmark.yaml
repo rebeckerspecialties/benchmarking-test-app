@@ -91,4 +91,4 @@ jobs:
           ./scripts/unzipArchive.sh ${{ steps.run-hermes-benchmark.outputs.artifact-folder }} benchmarks/hermes
 
       - name: Parse Benchmarks
-        run: npm run parse-benchmarks -w benchmark-parser
+        run: npm run parse-benchmarks

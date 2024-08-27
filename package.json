@@ -1,6 +1,8 @@
 {
   "name": "benchmarking-test-app-monorepo",
-  "scripts": {},
+  "scripts": {
+    "parse-benchmarks": "node packages/benchmark-parser/dist/src/index.js"
+  },
   "dependencies": {
     "@callstack/react-native-visionos": "^0.75.0",
     "bitecs": "^0.3.40",
