@@ -28,6 +28,7 @@ describe("parseBenchmark", () => {
       benchmarks: {
         "benchmark-ms.txt": "1234567",
         "benchmark2-ms.txt": "2345678",
+        "bad-benchmark.md": "2345678",
       },
     });
 
