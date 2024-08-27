@@ -23,6 +23,10 @@ const App = () => {
     setFlamegraphEnabled((enabled) => !!enabled);
   }, []);
 
+  const toggleFlamegraphTitle = flamegraphEnabled
+    ? "Disable Flamegraph"
+    : "Enable Flamegraph";
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -31,7 +35,7 @@ const App = () => {
         accessibilityLabel="benchmarkSafeArea"
       >
         <JavaScriptEngineVersion />
-        <Button title="Enable Flamegraph" onPress={toggleFlamegraph} />
+        <Button title={toggleFlamegraphTitle} onPress={toggleFlamegraph} />
         <Benchmark
           name="simpleBenchmark"
           run={simpleBenchmark}
