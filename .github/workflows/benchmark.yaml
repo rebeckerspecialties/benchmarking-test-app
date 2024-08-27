@@ -99,7 +99,7 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          tool: "benchmarkjs"
+          tool: "customSmallerIsBetter"
           output-file-path: benchmark.json
           external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true
