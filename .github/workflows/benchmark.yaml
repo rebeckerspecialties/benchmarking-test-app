@@ -45,6 +45,9 @@ jobs:
               "projectArn": "TestApp",
               "appArn": "jscBenchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
+              "executionConfiguration": {
+                "jobTimeoutMinutes": 20
+              },
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
@@ -73,6 +76,9 @@ jobs:
               "projectArn": "TestApp",
               "appArn": "hermesBenchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
+              "executionConfiguration": {
+                "jobTimeoutMinutes": 20
+              },
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
@@ -100,12 +106,8 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
+          name: "React Native Benchmarks"
           tool: "customSmallerIsBetter"
           output-file-path: benchmark.json
-          external-data-json-path: ./cache/benchmark-data.json
-          fail-on-alert: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          comment-on-alert: true
-          summary-always: true
-          alert-comment-cc-users: "@hmallen99"
           auto-push: true
