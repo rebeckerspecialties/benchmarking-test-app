@@ -1,14 +1,18 @@
 #!/bin/bash
 
-artifactPath=$(find "./$1" -name "*Customer Artifacts.zip" | head -n 1)
-echo $artifactPath
+for dir in $1/*
+do
+  artifactPath=$(find "$dir" -name "*Customer Artifacts.zip" | head -n 1)
+  deviceType=${dir##*/}
+  echo $deviceType
 
-mkdir "$2"
-unzip "$artifactPath" -d "$2/output" -x *.zip
+  mkdir -p "$2/$deviceType"
+  unzip "$artifactPath" -d "$2/$deviceType/output" -x *.zip
 
-find "$2/output" -name '*-clock.txt' | while read clockFile; do
-  echo "$clockFile"
-  mv "$clockFile" "$2"
-done
+  find "$2/$deviceType/output" -name '*-*.txt' | while read benchmarkFile; do
+    echo "$benchmarkFile"
+    mv "$benchmarkFile" "$2/$deviceType"
+  done
 
-rm -rf "$2/output"
+  rm -rf "$2/$deviceType/output"
+done;
