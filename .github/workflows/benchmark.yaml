@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build benchmark parser
+        run: npm run build -w benchmark-parser
+
       - name: Create Appium Test Zip
         run: npm run bundle -w benchmarking-scripts
 
@@ -57,7 +60,7 @@ jobs:
 
       - name: Extract JSC Artifacts
         run: |
-          ./unzipArchive.sh ${{ steps.run-jsc-benchmark.outputs.artifact-folder }} jsc
+          ./scripts/unzipArchive.sh ${{ steps.run-jsc-benchmark.outputs.artifact-folder }} benchmarks/jsc
 
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
@@ -85,4 +88,7 @@ jobs:
 
       - name: Extract Hermes Artifacts
         run: |
-          ./unzipArchive.sh ${{ steps.run-hermes-benchmark.outputs.artifact-folder }} hermes
+          ./scripts/unzipArchive.sh ${{ steps.run-hermes-benchmark.outputs.artifact-folder }} benchmarks/hermes
+
+      - name: Parse Benchmarks
+        run: npm run parse-benchmarks -w benchmark-parser
