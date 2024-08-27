@@ -8,15 +8,21 @@
  * @format
  */
 
-import React from "react";
+import React, { useCallback, useState } from "react";
 
-import { SafeAreaView, StatusBar, Text } from "react-native";
+import { Button, SafeAreaView, StatusBar, Text } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 
 const App = () => {
+  const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
+
+  const toggleFlamegraph = useCallback(() => {
+    setFlamegraphEnabled((enabled) => !!enabled);
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -25,9 +31,22 @@ const App = () => {
         accessibilityLabel="benchmarkSafeArea"
       >
         <JavaScriptEngineVersion />
-        <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
-        <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
-        <Benchmark name="threeJsBenchmark" run={threeJsBenchmark} />
+        <Button title="Enable Flamegraph" onPress={toggleFlamegraph} />
+        <Benchmark
+          name="simpleBenchmark"
+          run={simpleBenchmark}
+          flamegraphEnabled={flamegraphEnabled}
+        />
+        <Benchmark
+          name="bitEcsBenchmark"
+          run={bitEcsBenchmark}
+          flamegraphEnabled={flamegraphEnabled}
+        />
+        <Benchmark
+          name="threeJsBenchmark"
+          run={threeJsBenchmark}
+          flamegraphEnabled={flamegraphEnabled}
+        />
       </SafeAreaView>
     </>
   );
