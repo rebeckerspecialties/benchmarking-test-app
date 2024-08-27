@@ -2,7 +2,8 @@ name: Run Benchmarks
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  deployments: write
 
 on:
   workflow_dispatch:
@@ -12,15 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build benchmark parser
+        run: npm run build -w benchmark-parser
 
       - name: Create Appium Test Zip
         run: npm run bundle -w benchmarking-scripts
@@ -41,6 +45,9 @@ jobs:
               "projectArn": "TestApp",
               "appArn": "jscBenchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
+              "executionConfiguration": {
+                "jobTimeoutMinutes": 20
+              },
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
@@ -49,11 +56,15 @@ jobs:
             }
           artifact-types: ALL
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: JSCOutputFiles
           path: ${{ steps.run-jsc-benchmark.outputs.artifact-folder }}
+
+      - name: Extract JSC Artifacts
+        run: |
+          ./scripts/unzipArchive.sh ${{ steps.run-jsc-benchmark.outputs.artifact-folder }} benchmarks/jsc
 
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
@@ -65,6 +76,9 @@ jobs:
               "projectArn": "TestApp",
               "appArn": "hermesBenchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
+              "executionConfiguration": {
+                "jobTimeoutMinutes": 20
+              },
               "test": {
                 "type": "APPIUM_NODE",
                 "testPackageArn": "packages/benchmarking/MyTests.zip",
@@ -73,8 +87,27 @@ jobs:
             }
           artifact-types: ALL
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: HermesOutputFiles
           path: ${{ steps.run-hermes-benchmark.outputs.artifact-folder }}
+
+      - name: Extract Hermes Artifacts
+        run: |
+          ./scripts/unzipArchive.sh ${{ steps.run-hermes-benchmark.outputs.artifact-folder }} benchmarks/hermes
+
+      - name: Parse Benchmarks
+        run: npm run parse-benchmarks
+
+      - name: Report Benchmarks
+        run: cat benchmark.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: "React Native Benchmarks"
+          tool: "customSmallerIsBetter"
+          output-file-path: benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
