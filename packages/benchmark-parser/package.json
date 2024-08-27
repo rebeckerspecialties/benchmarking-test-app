@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "parse-benchmarks": "node parse-benchmarks.js",
+    "build": "tsc -p tsconfig.build.json --outDir dist",
+    "parse-benchmarks": "node dist/index.js",
     "test": "jest"
   },
   "dependencies": {
