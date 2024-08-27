@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Iterates over all AWS Device Farm artifacts, unzips benchmark results, 
+# and exports results to a target directory
+
+#### Arguments
+## $1: path to archive containing AWS device farm results
+## $2: output directory for unzipped result files
+####
+
 for dir in $1/*
 do
   artifactPath=$(find "$dir" -name "*Customer Artifacts.zip" | head -n 1)
