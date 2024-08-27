@@ -92,3 +92,18 @@ jobs:
 
       - name: Parse Benchmarks
         run: npm run parse-benchmarks
+
+      - name: Report Benchmarks
+        run: cat benchmark.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: "benchmarkjs"
+          output-file-path: benchmark.json
+          external-data-json-path: ./cache/benchmark-data.json
+          fail-on-alert: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: true
+          summary-always: true
+          alert-comment-cc-users: "@hmallen99"
