@@ -7,6 +7,7 @@
     "react": "18.2.0",
     "react-native": "^0.75.0",
     "react-native-permissions": "^3.10.1",
+    "react-native-release-profiler": "^0.2.1",
     "three": "^0.167.1"
   },
   "devDependencies": {
