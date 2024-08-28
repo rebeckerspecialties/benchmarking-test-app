@@ -26,13 +26,10 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     const timeDelta = Date.now() - startTime;
 
     if (flamegraphEnabled) {
-      const profileLocation = await stopProfiling(true).catch((err) => {
+      const profileLocation = await stopProfiling().catch((err) => {
         return `${err}`;
       });
       setProfileLocation(profileLocation);
-      await Share.open({
-        url: `file://${profileLocation}`,
-      });
       console.log(profileLocation);
     }
     setRunning(false);
