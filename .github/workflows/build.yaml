@@ -55,6 +55,7 @@ jobs:
         run: |
           cd apps/benchmarking-test-app
           ls
+          npm install
           npm run install:ios:${{ inputs.engine }}
           npm run build:ios:release
 
