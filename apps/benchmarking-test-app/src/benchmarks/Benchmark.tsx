@@ -25,12 +25,15 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     const timeDelta = Date.now() - startTime;
 
     if (flamegraphEnabled) {
-      const profileLocation = await stopProfiling(true);
+      const profileLocation = await stopProfiling(true).catch((err) => {
+        return `${err}`;
+      });
       setProfileLocation(profileLocation);
+      console.log(profileLocation);
     }
     setRunning(false);
     setBenchmarkRunTime(timeDelta);
-  }, [run]);
+  }, [run, flamegraphEnabled]);
 
   if (running) {
     return <Text>Running benchmark, please wait</Text>;
@@ -41,7 +44,7 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     return (
       <>
         <Text testID={completedLabel}>{benchmarkRunTime}</Text>
-        <Text>{profileLocation}</Text>
+        <Text testID="profileLocation">{profileLocation}</Text>
       </>
     );
   }
