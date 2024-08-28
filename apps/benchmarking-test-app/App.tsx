@@ -16,7 +16,7 @@ import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
-// import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
+import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 
 const App = () => {
   return (
@@ -31,7 +31,7 @@ const App = () => {
         <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
         <Benchmark name="threeJsBenchmark" run={threeJsBenchmark} />
         <Benchmark name="hyperfluxBenchmark" run={hyperfluxBenchmark} />
-        {/* <Benchmark name="irEcsBenchmark" run={irEcsBenchmark} /> */}
+        <Benchmark name="irEcsBenchmark" run={irEcsBenchmark} />
       </SafeAreaView>
     </>
   );
