@@ -1546,6 +1546,8 @@ PODS:
   - ReactTestApp-Resources (1.0.0-dev)
   - RNPermissions (3.10.1):
     - React-Core
+  - RNShare (10.2.1):
+    - React-Core
   - SocketRocket (0.7.0)
   - Yoga (0.0.0)
 
@@ -1618,6 +1620,7 @@ DEPENDENCIES:
   - ReactTestApp-DevSupport (from `../../../node_modules/react-native-test-app`)
   - ReactTestApp-Resources (from `..`)
   - RNPermissions (from `../../../node_modules/react-native-permissions`)
+  - RNShare (from `../../../node_modules/react-native-share`)
   - Yoga (from `../../../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1758,6 +1761,8 @@ EXTERNAL SOURCES:
     :path: ".."
   RNPermissions:
     :path: "../../../node_modules/react-native-permissions"
+  RNShare:
+    :path: "../../../node_modules/react-native-share"
   Yoga:
     :path: "../../../node_modules/react-native/ReactCommon/yoga"
 
@@ -1828,6 +1833,7 @@ SPEC CHECKSUMS:
   ReactTestApp-DevSupport: cbe23c1d1999516afa35e9758ef400b6bd3f7046
   ReactTestApp-Resources: 857244f3a23f2b3157b364fa06cf3e8866deff9c
   RNPermissions: a446c2ce1f3bf54383c283798307cca5f50d70e4
+  RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: dabc40a9b466f4ba2191985c93fc506a3e13e807
 
