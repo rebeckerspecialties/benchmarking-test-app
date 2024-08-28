@@ -8,9 +8,12 @@ import {
   destroyEngine,
   Entity,
   executeSystems,
+  getComponent,
   hasComponent,
   removeComponent,
   setComponent,
+  Component,
+  getOptionalComponent,
 } from "@ir-engine/ecs";
 
 const ITERATIONS = 50000;
@@ -29,10 +32,12 @@ export const irEcsBenchmark = async () => {
   for (let i = 0; i < ITERATIONS; i++) {
     setComponent(entity, MockComponent, { mockValue: i });
     hasComponent(entity, MockComponent);
+    getComponent(entity, MockComponent);
     executeSystems(mockDeltaMillis);
 
     removeComponent(entity, MockComponent);
     hasComponent(entity, MockComponent);
+    getOptionalComponent(entity, MockComponent);
     executeSystems(mockDeltaMillis);
   }
 
@@ -79,5 +84,5 @@ const setup = () => {
     execute,
   });
 
-  return MockComponent;
+  return MockComponent as Component;
 };
