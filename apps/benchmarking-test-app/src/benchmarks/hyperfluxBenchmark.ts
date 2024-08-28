@@ -3,7 +3,9 @@ import {
   createHyperStore,
   defineAction,
   defineActionQueue,
+  defineState,
   dispatchAction,
+  getMutableState,
   matches,
   matchesWithDefault,
 } from "@ir-engine/hyperflux";
@@ -21,14 +23,38 @@ export const hyperfluxBenchmark = async () => {
       type: "TEST_GOODBYE",
       greeting: matchesWithDefault(matches.string, () => "bye"),
     });
+    const HospitalityState = defineState({
+      name: "test.hospitality",
+
+      initial: () => ({
+        greetingCount: 0,
+        firstGreeting: null as string | null,
+      }),
+
+      receptors: {
+        onGreet: greet.receive((action) => {
+          const state = getMutableState(HospitalityState);
+          state.greetingCount.set((v) => v + 1);
+          if (!state.firstGreeting.value)
+            state.firstGreeting.set(action.greeting);
+        }),
+        onGoodbye: goodbye.receive((action) => {
+          const state = getMutableState(HospitalityState);
+          state.greetingCount.set((v) => v - 1);
+          if (!state.firstGreeting.value)
+            state.firstGreeting.set(action.greeting);
+        }),
+      },
+    });
+
     createHyperStore({
       getDispatchTime: () => Date.now(),
     });
 
     const queue = defineActionQueue([greet.matches, goodbye.matches]);
     for (let j = 0; j < ACTION_COUNT; j++) {
-      dispatchAction(goodbye({}));
       dispatchAction(greet({}));
+      dispatchAction(goodbye({}));
     }
 
     applyIncomingActions();
