@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
-import { isClient } from "@ir-engine/common/src/utils/getEnvironment";
 
 export interface BenchmarkProps {
   name: string;
@@ -14,7 +13,6 @@ export const Benchmark: React.FC<BenchmarkProps> = ({ name, run }) => {
 
   const onBeginBenchmark = useCallback(async () => {
     setRunning(true);
-    console.log(isClient);
     const startTime = Date.now();
     await run().catch((err) => {
       setError(err);
