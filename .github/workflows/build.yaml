@@ -51,17 +51,13 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: Use Benchmarking Test App directory
-        run: cd apps/benchmarking-test-app
-
-      - name: install pods
-        run: npm run install:ios:${{ inputs.engine }}
-
-      - name: bundle JavaScript for release
-        run: npm run build:ios:release
-
       - name: build archive
         run: |
+          cd apps/benchmarking-test-app
+          ls
+          npm run install:ios:${{ inputs.engine }}
+          npm run build:ios:release
+
           xcodebuild -scheme "benchmarking-test-app" \
           -archivePath "BenchmarkingTestApp.xcarchive" \
           -workspace ios/benchmarking-test-app.xcworkspace \
@@ -72,6 +68,8 @@ jobs:
 
       - name: export ipa
         run: |
+          cd apps/benchmarking-test-app
+          ls
           xcodebuild -exportArchive -archivePath BenchmarkingTestApp.xcarchive -exportOptionsPlist BenchmarkingTestApp.xcarchive/Info.plist -exportPath ${{ runner.temp }}/build
           mv ${{ runner.temp }}/build/ReactTestApp.ipa ${{ runner.temp }}/build/${{inputs.engine}}Benchmarking.ipa
 
