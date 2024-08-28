@@ -57,6 +57,9 @@ jobs:
       - name: install pods
         run: npm run install:ios:${{ inputs.engine }}
 
+      - name: bundle JavaScript for release
+        run: npm run build:ios:release
+
       - name: build archive
         run: |
           xcodebuild -scheme "benchmarking-test-app" \
