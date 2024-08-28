@@ -48,7 +48,7 @@ async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
 }
 
 async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
-  const outputPath = `${perfTraceDir}/${testId}-clock.txt`;
+  const outputPath = `${perfTraceDir}/${testId}WallClock-ms.txt`;
 
   const text = await runBenchmark(testId, driver);
 
