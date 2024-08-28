@@ -13,7 +13,7 @@ import {
   setComponent,
 } from "@ir-engine/ecs";
 
-const ITERATIONS = 5000;
+const ITERATIONS = 50000;
 
 const mockDeltaMillis = 1000 / 60;
 
