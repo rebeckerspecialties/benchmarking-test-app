@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
 import { startProfiling, stopProfiling } from "react-native-release-profiler";
-import Share from "react-native-share";
 
 export interface BenchmarkProps {
   name: string;
