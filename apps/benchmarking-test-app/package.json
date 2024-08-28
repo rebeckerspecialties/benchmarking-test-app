@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@callstack/react-native-visionos": "^0.75.0",
+    "@ir-engine/hyperflux": "^1.6.0",
     "bitecs": "^0.3.40",
     "react": "18.2.0",
     "react-native": "^0.75.0",
