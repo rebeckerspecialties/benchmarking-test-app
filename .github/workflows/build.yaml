@@ -63,7 +63,7 @@ jobs:
       - name: build archive
         run: |
           xcodebuild -scheme "benchmarking-test-app" \
-          -archivePath "BenchmarkingTestApp" \
+          -archivePath "BenchmarkingTestApp.xcarchive" \
           -workspace ios/benchmarking-test-app.xcworkspace \
           -configuration Release \
           -sdk iphoneos \
