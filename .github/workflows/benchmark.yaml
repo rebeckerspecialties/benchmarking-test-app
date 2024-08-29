@@ -9,8 +9,88 @@ on:
   workflow_dispatch:
 
 jobs:
+  build_ios_app:
+    # TODO: if: files changed
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        engine: [hermes, jsc]
+    steps:
+      - name: check Xcode version
+        run: /usr/bin/xcodebuild -version
+
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install the Apple certificate and provisioning profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: build archive
+        run: |
+          cd apps/benchmarking-test-app
+          ls
+          npm install
+          npm run install:ios:${{ matrix.engine }}
+          npm run build:ios:release
+
+          xcodebuild -scheme "benchmarking-test-app" \
+          -archivePath "BenchmarkingTestApp.xcarchive" \
+          -workspace ios/benchmarking-test-app.xcworkspace \
+          -configuration Release \
+          -sdk iphoneos \
+          -destination generic/platform=iOS \
+          -allowProvisioningUpdates \
+          DEVELOPMENT_TEAM=${{ secrets.DEVELOPMENT_TEAM_ID }} \
+          clean archive
+
+      - name: export ipa
+        run: |
+          cd apps/benchmarking-test-app
+          ls
+          xcodebuild -exportArchive -archivePath BenchmarkingTestApp.xcarchive -exportOptionsPlist BenchmarkingTestApp.xcarchive/Info.plist -exportPath ${{ runner.temp }}/build
+          mv ${{ runner.temp }}/build/ReactTestApp.ipa ${{ runner.temp }}/build/${{matrix.engine}}Benchmarking.ipa
+
+      - name: Upload application
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.engine}}App
+          path: ${{ runner.temp }}/build/${{matrix.engine}}Benchmarking.ipa
+          retention-days: 3
+
   benchmark:
     runs-on: ubuntu-latest
+    needs: build_ios_app
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -34,6 +114,14 @@ jobs:
         with:
           role-to-assume: ${{ secrets.DEVICE_FARM_IAM_ARN }}
           aws-region: us-west-2
+
+      - name: Download jsc artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jscApp
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: ls
 
       - name: Run Benchmark with JavaScriptCore Engine
         id: run-jsc-benchmark
@@ -65,6 +153,14 @@ jobs:
       - name: Extract JSC Artifacts
         run: |
           ./scripts/unzipArchive.sh ${{ steps.run-jsc-benchmark.outputs.artifact-folder }} benchmarks/jsc
+
+      - name: Download hermes artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hermesApp
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: ls
 
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
