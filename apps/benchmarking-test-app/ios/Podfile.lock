@@ -1237,6 +1237,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-get-random-values (1.11.0):
+    - React-Core
   - React-nativeconfig (0.75.0)
   - React-NativeModulesApple (0.75.0):
     - glog
@@ -1566,6 +1568,7 @@ DEPENDENCIES:
   - React-logger (from `../../../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
   - React-nativeconfig (from `../../../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../../../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1674,6 +1677,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-get-random-values:
+    :path: "../../../node_modules/react-native-get-random-values"
   React-nativeconfig:
     :path: "../../../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1773,6 +1778,7 @@ SPEC CHECKSUMS:
   React-logger: e38ccc25b936f8c6a1ba58c8036f7753862bf2cd
   React-Mapbuffer: 21c3275fd4e447af3993998492ea6dc4e89afdbe
   React-microtasksnativemodule: a6501ae1ad0b09070e3c00f5e8150106c0dcde65
+  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   React-nativeconfig: 271a4a10146950e1ff9825e7f0f84898502a7d84
   React-NativeModulesApple: 445c2907955516f0e9abb4b6ce6b7db5531e42ea
   React-perflogger: 9c9a8c6b3a0c8956d4201772759a1285450ae301
