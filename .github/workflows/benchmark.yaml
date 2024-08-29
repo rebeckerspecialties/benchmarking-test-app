@@ -140,8 +140,6 @@ jobs:
           name: jscApp
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: ls
-
       - name: Run Benchmark with JavaScriptCore Engine
         id: run-jsc-benchmark
         uses: aws-actions/aws-devicefarm-mobile-device-testing@v2.3
@@ -178,8 +176,6 @@ jobs:
         with:
           name: hermesApp
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - run: ls
 
       - name: Run Benchmark with Hermes Engine
         id: run-hermes-benchmark
