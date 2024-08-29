@@ -64,7 +64,8 @@ jobs:
           -workspace ios/benchmarking-test-app.xcworkspace \
           -configuration Release \
           -sdk iphoneos \
-          -destination generic/platform=iOS 
+          -destination generic/platform=iOS \
+          -allowProvisioningUpdates
           clean archive
 
       - name: export ipa
