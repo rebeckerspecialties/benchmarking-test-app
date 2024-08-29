@@ -7,6 +7,7 @@ permissions:
 
 on:
   workflow_dispatch:
+  # TODO: on push to main
 
 jobs:
   build_ios_app:
@@ -73,6 +74,8 @@ jobs:
           -allowProvisioningUpdates \
           DEVELOPMENT_TEAM=${{ secrets.DEVELOPMENT_TEAM_ID }} \
           clean archive
+
+          cp dist/main.ios.jsbundle BenchmarkingTestApp.xcarchive/Products/Applications/ReactTestApp.app
 
       - name: export ipa
         run: |
