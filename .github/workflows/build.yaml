@@ -80,5 +80,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: app
-          path: ${{ runner.temp }}/build/ReactTestApp.ipa
+          path: ${{ runner.temp }}/build/${{inputs.engine}}Benchmarking.ipa
           retention-days: 3
