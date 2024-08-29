@@ -26,11 +26,53 @@ In order to build and run the benchmarks on a local test device with Appium, the
 
 We recommend installing node with Node Version Manager (nvm): https://github.com/nvm-sh/nvm. This repository supports Node 20+
 
-2. Install dependencies
+2. Install react native app dependencies
 
 ```
 npm install -w benchmarking-test-app
 ```
+
+### iOS Development (Mac Required)
+
+1. Install/update Cocoapods
+
+CocoaPods is installed by default on all Macs, but it may be out of date. Follow the instructions here: https://guides.cocoapods.org/using/getting-started.html to update Cocoapods. Cocoapods is used to manage native libraries for Xcode builds.
+
+2. Install/update Xcode
+
+Xcode is required for building iOS apps from native code. Download Xcode and Xcode command line tools from https://developer.apple.com/xcode/resources/
+
+3. Install React Native pods for Hermes
+
+```
+cd apps/benchmarking-test-app
+npm run install:ios:hermes
+```
+
+4. Connect an iOS device (or use an Xcode simulator)
+
+5. Launch the benchmarking test app on the device
+
+```
+cd apps/benchmarking-test-app
+npm run ios
+```
+
+6. (Optional) Build the app for release
+
+Debug builds of the app may contain additional code that can affect performance. When collecting data, bundles should be generated for release.
+
+```
+cd apps/benchmarking-test-app
+npm run build:ios:release
+npm run ios -- --mode=Release
+```
+
+If you run into issues with "no development team provided", open the generated xcworkspace, click on ReactTestApp -> Signing, and add your development team.
+
+### Android Development
+
+**_ UNDER CONSTRUCTION _**
 
 ### Appium setup
 
@@ -76,35 +118,25 @@ appium --relaxed-security --default-capabilities \
   \"appium:automationName\": \"XCUITest\"}"
 ```
 
-### iOS Development (Mac Required)
+### Running automated benchmarks
 
-1. Install/update Cocoapods
-
-CocoaPods is installed by default on all Macs, but it may be out of date. Follow the instructions here: https://guides.cocoapods.org/using/getting-started.html to update Cocoapods. Cocoapods is used to manage native libraries for Xcode builds.
-
-2. Install/update Xcode
-
-Xcode is required for building iOS apps from native code. Download Xcode and Xcode command line tools from https://developer.apple.com/xcode/resources/
-
-3. Install React Native pods for Hermes
+1. Install scripted benchmark dependencies
 
 ```
-cd apps/benchmarking-test-app
-npm run install:ios:hermes
+npm install -w benchmarking-scripts
 ```
 
-4. Connect an iOS device (or use an Xcode simulator)
-
-5. Launch the benchmarking test app on the device
+2. Bundle the benchmark scripts
 
 ```
-cd apps/benchmarking-test-app
-npm run ios
+npm run bundle -w benchmarking-scripts
 ```
 
-### Android Development
+3. Run the benchmarks
 
-**_ UNDER CONSTRUCTION _**
+```
+node packages/benchmarking/dist/benchmark.js
+```
 
 ## AWS Device Farm setup
 
