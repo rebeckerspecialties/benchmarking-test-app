@@ -33,7 +33,7 @@ async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   await driver.execute("mobile: startPerfRecord", {
     profileName: "CPU Profiler",
     pid: "current",
-    timeout: 30000,
+    timeout: 1000,
   });
 
   await runBenchmark(testId, driver);
