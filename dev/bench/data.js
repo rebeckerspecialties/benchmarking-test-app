@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1724950567933,
+  "lastUpdate": 1724952983399,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -1163,6 +1163,58 @@ window.BENCHMARK_DATA = {
           {
             "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
             "value": 1167,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Henry Allen",
+            "username": "hmallen99",
+            "email": "hmallen99@gmail.com"
+          },
+          "committer": {
+            "name": "Henry Allen",
+            "username": "hmallen99",
+            "email": "hmallen99@gmail.com"
+          },
+          "id": "38e5786f4ae5c7023b0a7882cb551d941839861a",
+          "message": "Install cocoapods",
+          "timestamp": "2024-08-29T16:56:40Z",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/38e5786f4ae5c7023b0a7882cb551d941839861a"
+        },
+        "date": 1724952983115,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4713,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5729,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 689,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4485,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5765,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1200,
             "unit": "ms"
           }
         ]
