@@ -57,12 +57,22 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: build archive
+      - name: build javascript bundle
         run: |
           cd apps/benchmarking-test-app
-          ls
           npm install
-          npm run install:ios:${{ matrix.engine }}
+          npm run build:ios:release
+
+      - uses: actions/cache/restore@v4
+        id: cache-xcarchive
+        with:
+          path: ./apps/benchmarking-test-app/BenchmarkingTestApp.xcarchive
+          key: ${{ runner.os }}-${{ matrix.engine }}-${{ hashFiles('**/Podfile.lock') }}
+
+      - name: build archive
+        if: steps.cache-xcarchive.outputs.cache-hit != 'true'
+        run: |
+          cd apps/benchmarking-test-app
           npm run build:ios:release
 
           xcodebuild -scheme "benchmarking-test-app" \
@@ -76,6 +86,11 @@ jobs:
           clean archive
 
           cp dist/main.ios.jsbundle BenchmarkingTestApp.xcarchive/Products/Applications/ReactTestApp.app
+
+      - uses: actions/cache/save@v4
+        with:
+          path: ./apps/benchmarking-test-app/BenchmarkingTestApp.xcarchive
+          key: ${{ steps.cache-xcarchive.outputs.cache-primary-key }}
 
       - name: export ipa
         run: |
