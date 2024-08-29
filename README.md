@@ -138,8 +138,28 @@ npm run bundle -w benchmarking-scripts
 node packages/benchmarking/dist/benchmark.js
 ```
 
-## AWS Device Farm setup
+## Automated benchmarks in AWS Device Farm
 
-### Creating a Device Farm project
+### Creating an AWS Device Farm project
+
+1. Navigate to https://us-west-2.console.aws.amazon.com/devicefarm
+2. Click `Create mobile project` and follow instructions
+3. Once the project is created, navigate to the `Project settings` tab and click `Create device pool` to select the devices you want your benchmarks to run on
+
+### Updating the GitHub Actions workflow
+
+1. Update the `devicePoolArn` to match the device pool you created in the previous step. This will be configured via an environment variable in the future.
+2. Add secrets for iOS provisioning. Follow the guide here for more information: https://www.andrewhoog.com/post/how-to-build-an-ios-app-with-github-actions-2023/
+3. If you do not have a paid iOS developer account, you can find your DEVELOPMENT_TEAM by inspecting the Info.plist of any xcarchive you've generated. The ID will be a 10 digit alphanumeric value.
+4. If you do have a paid iOS developer account, the development team ID can be found in the Mac Apple Developer application. You should also be able to remove the `allowProvisioningUpdates` option from the `xcodebuild` command in `benchmark.yaml`
+
+### Generating an IAM role for the DEVICE_FARM_IAM_ARN secret
+
+1. Navigate to https://console.aws.amazon.com/iam
+2. Click `Roles` in the side bar
+3. Create a new role by clicking `Create Role`
+4. Select `Web Identity`
+5. Choose `tokens.actions.githubusercontent.com` as the Identity provider and fill in all of the fields below. You may need to create a new OpenID Connect Identity provider with this URL if it does not exist yet.
+6. Once the role is created, paste it into the `DEVICE_FARM_IAM_ARN` secret in GitHub.
 
 ## Adding a benchmark
