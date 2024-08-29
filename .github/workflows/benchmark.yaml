@@ -7,11 +7,12 @@ permissions:
 
 on:
   workflow_dispatch:
-  # TODO: on push to main
+  push:
+    branches:
+      - main
 
 jobs:
   build_ios_app:
-    # TODO: if: files changed
     runs-on: macos-latest
     strategy:
       matrix:
