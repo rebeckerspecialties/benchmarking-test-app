@@ -26,7 +26,8 @@
     "react-native": "^0.75.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-permissions": "^3.10.1",
-    "three": "^0.167.1"
+    "three": "^0.167.1",
+    "ts-matches": "^5.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
