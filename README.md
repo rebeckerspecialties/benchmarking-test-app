@@ -224,3 +224,9 @@ const runBenchmarkSuite = async () => {
 ```
 
 4. Follow the directions above to rebuild the app and rebundle the appium benchmark
+
+## Profiling with Xcode Instuments
+
+Currently, the `CPU Profiler` is being used to profile the app with Appium. This can be swapped out for other profilers by chaning out the `profileName` argument in the `startPerfRecord` command in `runBenchmarkWithProfiler`.
+
+A custom template can be used when profiling locally. For instance, if you want to profile CPU cache misses, you could create a `CPU Counter` template in XCode instruments and specify L1 cache misses in Instruments -> File -> Recording Options. For more details, see: https://www.advancedswift.com/counters-in-instruments/.
