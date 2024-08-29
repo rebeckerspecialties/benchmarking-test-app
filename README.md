@@ -110,7 +110,7 @@ appium driver doctor uiautomator2
 Run appium with the desired capabilities. the `udid` option can be omitted if using a simulator.
 
 ```
-appium --relaxed-security --default-capabilities \
+appium --relaxed-security --base-path=/wd/hub --default-capabilities \
   "{\"appium:deviceName\": \"<Your device name here>", \
   \"platformName\": \"iOS", \
   \"appium:app\": \"com.rbckr.TestApp", \
