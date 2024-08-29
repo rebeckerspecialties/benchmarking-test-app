@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1724955689694,
+  "lastUpdate": 1724958490804,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -1262,6 +1262,60 @@ window.BENCHMARK_DATA = {
           {
             "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
             "value": 5763,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1204,
+            "unit": "ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "31718268+hmallen99@users.noreply.github.com",
+            "name": "Henry Allen",
+            "username": "hmallen99"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "693704c10133e73b1c20b5433f4e001615043a59",
+          "message": "Integrate build step into benchmark workflow  (#33)\n\n* Add workflow call to build.yaml\r\n\r\n* Build and run benchmarks in the same workflow\r\n\r\n* Make sure jsbundle gets copied to app\r\n\r\n* Cache xcarchive\r\n\r\n* Add push step\r\n\r\n* Install cocoapods\r\n\r\n* Clean up benchmark file",
+          "timestamp": "2024-08-29T14:28:17-04:00",
+          "tree_id": "753b67337bc9954ced417e7616d15a6685dfaaf3",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/693704c10133e73b1c20b5433f4e001615043a59"
+        },
+        "date": 1724958490522,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4478,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5746,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 684,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4204,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5732,
             "unit": "ms"
           },
           {
