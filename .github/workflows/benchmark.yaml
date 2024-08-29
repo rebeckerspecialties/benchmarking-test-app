@@ -74,7 +74,7 @@ jobs:
         if: steps.cache-xcarchive.outputs.cache-hit != 'true'
         run: |
           cd apps/benchmarking-test-app
-          npm run build:ios:release
+          npm run install:ios:${{ matrix.engine }}
 
           xcodebuild -scheme "benchmarking-test-app" \
           -archivePath "BenchmarkingTestApp.xcarchive" \
