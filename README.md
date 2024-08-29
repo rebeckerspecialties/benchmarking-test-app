@@ -162,4 +162,8 @@ node packages/benchmarking/dist/benchmark.js
 5. Choose `tokens.actions.githubusercontent.com` as the Identity provider and fill in all of the fields below. You may need to create a new OpenID Connect Identity provider with this URL if it does not exist yet.
 6. Once the role is created, paste it into the `DEVICE_FARM_IAM_ARN` secret in GitHub.
 
+### Running the benchmark GitHub action
+
+Benchmarks will automatically run when a commit is pushed to the main branch on GitHub. Benchmarks can also be manually run from a branch by navigating to `Actions` -> `Run Benchmarks` -> `Run Workflow`.
+
 ## Adding a benchmark
