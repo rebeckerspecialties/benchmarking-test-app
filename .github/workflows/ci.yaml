@@ -28,3 +28,9 @@ jobs:
 
       - name: Run benchmark parser tests
         run: npm test -w benchmark-parser
+
+      - name: Validate JavaScript build
+        run: |
+          cd apps/benchmarking-test-app
+          npm install
+          npm run build:ios:release
