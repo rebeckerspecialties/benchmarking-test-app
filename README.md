@@ -138,7 +138,7 @@ npm run bundle -w benchmarking-scripts
 node packages/benchmarking/dist/benchmark.js
 ```
 
-## Automated benchmarks in AWS Device Farm
+## Running automated benchmarks in AWS Device Farm
 
 ### Creating an AWS Device Farm project
 
@@ -167,3 +167,60 @@ node packages/benchmarking/dist/benchmark.js
 Benchmarks will automatically run when a commit is pushed to the main branch on GitHub. Benchmarks can also be manually run from a branch by navigating to `Actions` -> `Run Benchmarks` -> `Run Workflow`.
 
 ## Adding a benchmark
+
+Benchmarks need to be registered in two places: within the React Native app and in the Appium test.
+
+1. Write the JavaScript benchmark
+
+```ts
+// apps/benchmarking-test-app/src/benchmarks/fibonacci.ts
+const ITERATIONS = 10000;
+
+export const fibonacciBenchmark = async () => {
+  let prev = 0,
+    curr = 1,
+    next = -1;
+
+  for (let i = 1; i <= ITERATIONS; i++) {
+    next = prev + curr;
+    prev = curr;
+    curr = next;
+  }
+};
+```
+
+2. Register the benchmark in `App.tsx`
+
+```ts
+// apps/benchmarking-test-app/App.tsx
+import { fibonacciBenchmark } from "./src/benchmarks/fibonacciBenchmark";
+
+const App = () => {
+  return (
+    <>
+      ...
+      <SafeAreaView ...>
+        ...
+        <Benchmark name="fibonnaciBenchmark" run={fibonacciBenchmark} /> // New benchmark
+      </SafeAreaView>
+    </>
+  );
+};
+```
+
+3. Register the benchmark in `benchmark.ts`
+
+```ts
+// packages/benchmarking/benchmark.ts
+const runBenchmarkSuite = async () => {
+  console.log("Running benchmarks with profiler");
+  ...
+  await benchmarkWithProfiler("fibonnaciBenchmark");
+
+  console.log("Running benchmarks with wall clock time");
+  ...
+  await benchmarkWithWallClockTime("fibonnaciBenchmark");
+};
+```
+
+4. Follow the directions above to rebuild the app and rebundle the appium benchmark
