@@ -1,6 +1,23 @@
 name: "Build for iOS"
 
 on:
+  workflow_call:
+    inputs:
+      engine:
+        required: true
+        type: string
+    secrets:
+      DEVELOPMENT_TEAM_ID:
+        description: "10 digit apple development ID"
+        required: true
+      BUILD_CERTIFICATE_BASE64:
+        required: true
+      P12_PASSWORD:
+        required: true
+      BUILD_PROVISION_PROFILE_BASE64:
+        required: true
+      KEYCHAIN_PASSWORD:
+        required: true
   workflow_dispatch:
     inputs:
       engine:
