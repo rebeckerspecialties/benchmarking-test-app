@@ -8,9 +8,9 @@
  * @format
  */
 
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
-import { Button, SafeAreaView, StatusBar, Text } from "react-native";
+import { Button, SafeAreaView, StatusBar } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
