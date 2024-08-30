@@ -1,8 +1,7 @@
 import { Browser, remote } from "webdriverio";
 import { writeFile } from "fs/promises";
 
-// TODO: export android and ios capabilities
-export const capabilities = {
+const capabilities = {
   platformName: "iOS",
   "appium:automationName": "XCUITest",
 };

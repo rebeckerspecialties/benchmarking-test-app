@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "test": "node benchmark.js",
-    "profile": "node profile.js",
     "bundle": "./bundle.sh"
   },
   "dependencies": {
