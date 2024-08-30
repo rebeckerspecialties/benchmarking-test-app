@@ -47,7 +47,7 @@ export const irEcsBenchmark = async () => {
 const setup = () => {
   const MockComponent = defineComponent({
     name: "MockComponent",
-    onInit: (entity) => {
+    onInit: () => {
       return {
         mockValue: 0,
       };

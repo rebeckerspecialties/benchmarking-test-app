@@ -8,4 +8,4 @@ export const JavaScriptEngineVersion: React.FC = () => {
 };
 
 const isHermes = () =>
-  !!(global as unknown as { HermesInternal: null | {} }).HermesInternal;
+  !!(global as unknown as { HermesInternal: null | object }).HermesInternal;

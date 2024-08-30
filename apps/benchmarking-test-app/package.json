@@ -35,6 +35,8 @@
     "@babel/core": "^7.20.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
+    "@eslint/compat": "^1.1.1",
+    "@eslint/js": "^9.9.1",
     "@react-native/babel-preset": "^0.75.0",
     "@react-native/eslint-config": "^0.75.0",
     "@react-native/metro-config": "^0.75.0",
@@ -45,12 +47,16 @@
     "@types/react-test-renderer": "^18.0.0",
     "@types/three": "^0.167.2",
     "babel-jest": "^29.6.3",
-    "eslint": "^8.19.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "globals": "^15.9.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
     "react-native-test-app": "^3.9.2",
     "react-test-renderer": "18.2.0",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "typescript-eslint": "^8.3.0"
   },
   "engines": {
     "node": ">=18"
