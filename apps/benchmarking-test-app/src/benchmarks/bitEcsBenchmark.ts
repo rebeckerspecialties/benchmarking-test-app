@@ -35,7 +35,7 @@ export const bitEcsBenchmark = async () => {
     return world;
   });
 
-  let entities: number[] = [];
+  const entities: number[] = [];
   for (let i = 0; i < ENTITY_COUNT; i++) {
     const id = addEntity(world);
     entities.push(id);

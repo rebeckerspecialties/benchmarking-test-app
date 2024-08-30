@@ -8,9 +8,9 @@
  * @format
  */
 
-import React from "react";
+import { useCallback, useState } from "react";
 
-import { SafeAreaView, StatusBar, Text } from "react-native";
+import { Button, SafeAreaView, StatusBar } from "react-native";
 import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
@@ -19,6 +19,16 @@ import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 
 const App = () => {
+  const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
+
+  const toggleFlamegraph = useCallback(() => {
+    setFlamegraphEnabled((enabled) => !enabled);
+  }, []);
+
+  const toggleFlamegraphTitle = flamegraphEnabled
+    ? "Disable Flamegraph"
+    : "Enable Flamegraph";
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -27,11 +37,32 @@ const App = () => {
         accessibilityLabel="benchmarkSafeArea"
       >
         <JavaScriptEngineVersion />
-        <Benchmark name="simpleBenchmark" run={simpleBenchmark} />
-        <Benchmark name="bitEcsBenchmark" run={bitEcsBenchmark} />
-        <Benchmark name="threeJsBenchmark" run={threeJsBenchmark} />
-        <Benchmark name="hyperfluxBenchmark" run={hyperfluxBenchmark} />
-        <Benchmark name="irEcsBenchmark" run={irEcsBenchmark} />
+        <Button title={toggleFlamegraphTitle} onPress={toggleFlamegraph} />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="simpleBenchmark"
+          run={simpleBenchmark}
+        />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="bitEcsBenchmark"
+          run={bitEcsBenchmark}
+        />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="threeJsBenchmark"
+          run={threeJsBenchmark}
+        />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="hyperfluxBenchmark"
+          run={hyperfluxBenchmark}
+        />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="irEcsBenchmark"
+          run={irEcsBenchmark}
+        />
       </SafeAreaView>
     </>
   );

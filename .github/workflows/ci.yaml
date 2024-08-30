@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: lint
+        run: npm run lint -w benchmarking-test-app
+
       - name: Run benchmark parser tests
         run: npm test -w benchmark-parser
 
