@@ -1237,6 +1237,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-get-random-values (1.11.0):
+    - React-Core
   - react-native-release-profiler (0.2.1):
     - DoubleConversion
     - glog
@@ -1546,8 +1548,6 @@ PODS:
   - ReactTestApp-Resources (1.0.0-dev)
   - RNPermissions (3.10.1):
     - React-Core
-  - RNShare (10.2.1):
-    - React-Core
   - SocketRocket (0.7.0)
   - Yoga (0.0.0)
 
@@ -1589,6 +1589,7 @@ DEPENDENCIES:
   - React-logger (from `../../../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
   - react-native-release-profiler (from `../../../node_modules/react-native-release-profiler`)
   - React-nativeconfig (from `../../../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1620,7 +1621,6 @@ DEPENDENCIES:
   - ReactTestApp-DevSupport (from `../../../node_modules/react-native-test-app`)
   - ReactTestApp-Resources (from `..`)
   - RNPermissions (from `../../../node_modules/react-native-permissions`)
-  - RNShare (from `../../../node_modules/react-native-share`)
   - Yoga (from `../../../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1699,6 +1699,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-get-random-values:
+    :path: "../../../node_modules/react-native-get-random-values"
   react-native-release-profiler:
     :path: "../../../node_modules/react-native-release-profiler"
   React-nativeconfig:
@@ -1761,8 +1763,6 @@ EXTERNAL SOURCES:
     :path: ".."
   RNPermissions:
     :path: "../../../node_modules/react-native-permissions"
-  RNShare:
-    :path: "../../../node_modules/react-native-share"
   Yoga:
     :path: "../../../node_modules/react-native/ReactCommon/yoga"
 
@@ -1802,6 +1802,7 @@ SPEC CHECKSUMS:
   React-logger: e38ccc25b936f8c6a1ba58c8036f7753862bf2cd
   React-Mapbuffer: 21c3275fd4e447af3993998492ea6dc4e89afdbe
   React-microtasksnativemodule: a6501ae1ad0b09070e3c00f5e8150106c0dcde65
+  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-release-profiler: d4395df9845d1a30fc77a9e8bd15f08c09fe47f5
   React-nativeconfig: 271a4a10146950e1ff9825e7f0f84898502a7d84
   React-NativeModulesApple: 445c2907955516f0e9abb4b6ce6b7db5531e42ea
@@ -1833,7 +1834,6 @@ SPEC CHECKSUMS:
   ReactTestApp-DevSupport: cbe23c1d1999516afa35e9758ef400b6bd3f7046
   ReactTestApp-Resources: 857244f3a23f2b3157b364fa06cf3e8866deff9c
   RNPermissions: a446c2ce1f3bf54383c283798307cca5f50d70e4
-  RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: dabc40a9b466f4ba2191985c93fc506a3e13e807
 
