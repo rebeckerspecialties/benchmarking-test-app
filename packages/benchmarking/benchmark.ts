@@ -6,7 +6,11 @@ import {
 
 const runBenchmarkSuite = async () => {
   console.log("Running benchmarks with flamegraph");
+  await benchmarkWithFlamegraph("simpleBenchmark");
   await benchmarkWithFlamegraph("bitEcsBenchmark");
+  await benchmarkWithFlamegraph("threeJsBenchmark");
+  await benchmarkWithFlamegraph("hyperfluxBenchmark");
+  await benchmarkWithFlamegraph("irEcsBenchmark");
 
   console.log("Running benchmarks with profiler");
   await benchmarkWithProfiler("simpleBenchmark");
