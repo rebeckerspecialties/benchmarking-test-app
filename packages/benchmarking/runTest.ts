@@ -57,17 +57,15 @@ async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
   const profileLocationText = driver.$("~profileLocation");
   const path = await profileLocationText.getText();
 
-  console.log(path);
-
   const libraryPath = path.match(/\/Library\/Caches\/.+\.cpuprofile/g)?.at(0);
 
   if (!libraryPath) {
     console.log("Skipped writing flamegraph");
+    return;
   }
 
-  console.log(libraryPath);
   const appPath = `@com.rbckr.TestApp${libraryPath}`;
-  console.log(appPath);
+  console.log("searching for artifact at:", libraryPath);
 
   const traceBase64 = await driver.pullFile(appPath);
   let buff = Buffer.from(traceBase64, "base64");
