@@ -65,9 +65,14 @@ async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
   }
 
   const appPath = `@com.rbckr.TestApp${libraryPath}`;
-  console.log("searching for artifact at:", libraryPath);
+  console.log("Searching for artifact at:", libraryPath);
 
-  const traceBase64 = await driver.pullFile(appPath);
+  const traceBase64 = await driver.pullFile(appPath).catch(() => undefined);
+  if (!traceBase64) {
+    console.log("Failed to find trace at:", libraryPath);
+    return;
+  }
+
   let buff = Buffer.from(traceBase64, "base64");
   await writeFile(perfTracePath, buff);
   console.log("Flamegraph written to", perfTracePath);
