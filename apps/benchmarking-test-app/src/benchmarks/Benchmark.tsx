@@ -14,6 +14,7 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
   flamegraphEnabled,
 }) => {
   const [benchmarkRunTime, setBenchmarkRunTime] = useState<number | null>(null);
+  const [error, setError] = useState<Error>();
   const [running, setRunning] = useState(false);
   const [profileLocation, setProfileLocation] = useState("");
 
@@ -21,7 +22,9 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     setRunning(true);
     if (flamegraphEnabled) startProfiling();
     const startTime = Date.now();
-    await run();
+    await run().catch((err) => {
+      setError(err);
+    });
     const timeDelta = Date.now() - startTime;
 
     if (flamegraphEnabled) {
@@ -34,6 +37,10 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
     setRunning(false);
     setBenchmarkRunTime(timeDelta);
   }, [run, flamegraphEnabled]);
+
+  if (error) {
+    return <Text>{`${error}`}</Text>;
+  }
 
   if (running) {
     return <Text>Running benchmark, please wait</Text>;

@@ -15,6 +15,8 @@ import { Benchmark, simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
+import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
+import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -37,19 +39,29 @@ const App = () => {
         <JavaScriptEngineVersion />
         <Button title={toggleFlamegraphTitle} onPress={toggleFlamegraph} />
         <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
           name="simpleBenchmark"
           run={simpleBenchmark}
-          flamegraphEnabled={flamegraphEnabled}
         />
         <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
           name="bitEcsBenchmark"
           run={bitEcsBenchmark}
-          flamegraphEnabled={flamegraphEnabled}
         />
         <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
           name="threeJsBenchmark"
           run={threeJsBenchmark}
+        />
+        <Benchmark
           flamegraphEnabled={flamegraphEnabled}
+          name="hyperfluxBenchmark"
+          run={hyperfluxBenchmark}
+        />
+        <Benchmark
+          flamegraphEnabled={flamegraphEnabled}
+          name="irEcsBenchmark"
+          run={irEcsBenchmark}
         />
       </SafeAreaView>
     </>
