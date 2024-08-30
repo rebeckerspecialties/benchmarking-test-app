@@ -13,7 +13,7 @@
     "start": "react-native start",
     "test": "jest",
     "install:hermes": "npm install && npm install react-native-release-profiler@^0.2.1",
-    "install:jsc": "npm install && npm install ../../packages/react-native-release-profiler",
+    "install:jsc": "npm install && npm uninstall react-native-release-profiler && npm install ../../packages/react-native-release-profiler",
     "install:ios:hermes": "(export USE_HERMES=1; pod install --project-directory=ios)",
     "install:ios:jsc": "(export USE_HERMES=0; pod install --project-directory=ios)",
     "download-profiles": "ios-deploy --download=/Library/Caches --bundle_id com.rbckr.TestApp -2 ."
