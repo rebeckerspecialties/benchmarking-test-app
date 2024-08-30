@@ -59,8 +59,11 @@ async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
 
   console.log(path);
 
-  const libraryPath =
-    path.match(/\/Library\/Caches\/.+\.cpuprofile/g)?.at(0) ?? "";
+  const libraryPath = path.match(/\/Library\/Caches\/.+\.cpuprofile/g)?.at(0);
+
+  if (!libraryPath) {
+    console.log("Skipped writing flamegraph");
+  }
 
   console.log(libraryPath);
   const appPath = `@com.rbckr.TestApp${libraryPath}`;
