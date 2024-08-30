@@ -1,8 +1,7 @@
 import { Browser, remote } from "webdriverio";
 import { writeFile } from "fs/promises";
 
-// TODO: export android and ios capabilities
-export const capabilities = {
+export const iosCapabilities = {
   platformName: "iOS",
   "appium:automationName": "XCUITest",
 };
@@ -11,7 +10,7 @@ const wdOpts = {
   hostname: process.env.APPIUM_HOST || "0.0.0.0",
   port: process.env.APPIUM_PORT ? parseInt(process.env.APPIUM_PORT, 10) : 4723,
   path: "/wd/hub",
-  capabilities,
+  capabilities: iosCapabilities,
 };
 
 const perfTraceDir = process.env.DEVICEFARM_LOG_DIR ?? ".";
@@ -58,8 +57,13 @@ async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
 }
 
 function withDriver(benchmarkAsync: benchmarkAsync) {
-  return async (testId: string) => {
-    const driver = await remote(wdOpts);
+  return async (
+    testId: string,
+    capabilities?: { platformName: string; ["appium:automationName"]: string }
+  ) => {
+    const options = capabilities ? { ...wdOpts, capabilities } : wdOpts;
+
+    const driver = await remote(options);
     try {
       await benchmarkAsync(testId, driver);
     } catch (err) {
