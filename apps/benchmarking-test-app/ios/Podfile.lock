@@ -1590,7 +1590,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../../../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
-  - react-native-release-profiler (from `../../../node_modules/react-native-release-profiler`)
+  - react-native-release-profiler (from `../node_modules/react-native-release-profiler`)
   - React-nativeconfig (from `../../../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../../../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1702,7 +1702,7 @@ EXTERNAL SOURCES:
   react-native-get-random-values:
     :path: "../../../node_modules/react-native-get-random-values"
   react-native-release-profiler:
-    :path: "../../../node_modules/react-native-release-profiler"
+    :path: "../node_modules/react-native-release-profiler"
   React-nativeconfig:
     :path: "../../../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
