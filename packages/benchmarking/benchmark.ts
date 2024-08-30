@@ -1,6 +1,13 @@
-import { benchmarkWithProfiler, benchmarkWithWallClockTime } from "./runTest";
+import {
+  benchmarkWithFlamegraph,
+  benchmarkWithProfiler,
+  benchmarkWithWallClockTime,
+} from "./runTest";
 
 const runBenchmarkSuite = async () => {
+  console.log("Running benchmarks with flamegraph");
+  await benchmarkWithFlamegraph("bitEcsBenchmark");
+
   console.log("Running benchmarks with profiler");
   await benchmarkWithProfiler("simpleBenchmark");
   await benchmarkWithProfiler("bitEcsBenchmark");

@@ -37,7 +37,11 @@ const App = () => {
         accessibilityLabel="benchmarkSafeArea"
       >
         <JavaScriptEngineVersion />
-        <Button title={toggleFlamegraphTitle} onPress={toggleFlamegraph} />
+        <Button
+          testID="toggleFlamegraph"
+          title={toggleFlamegraphTitle}
+          onPress={toggleFlamegraph}
+        />
         <Benchmark
           flamegraphEnabled={flamegraphEnabled}
           name="simpleBenchmark"

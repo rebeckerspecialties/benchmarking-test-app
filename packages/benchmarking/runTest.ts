@@ -47,6 +47,31 @@ async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   console.log("Performance profile written to", perfTracePath);
 }
 
+async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
+  const perfTracePath = `${perfTraceDir}/${testId}-flamegraph.cpuprofile`;
+  const toggleFlamegraphButton = driver.$("~toggleFlamegraph");
+  await toggleFlamegraphButton.click();
+
+  await runBenchmark(testId, driver);
+
+  const profileLocationText = driver.$("~profileLocation");
+  const path = await profileLocationText.getText();
+
+  console.log(path);
+
+  const libraryPath =
+    path.match(/\/Library\/Caches\/.+\.cpuprofile/g)?.at(0) ?? "";
+
+  console.log(libraryPath);
+  const appPath = `@com.rbckr.TestApp${libraryPath}`;
+  console.log(appPath);
+
+  const traceBase64 = await driver.pullFile(appPath);
+  let buff = Buffer.from(traceBase64, "base64");
+  await writeFile(perfTracePath, buff);
+  console.log("Flamegraph written to", perfTracePath);
+}
+
 async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
   const outputPath = `${perfTraceDir}/${testId}WallClock-ms.txt`;
 
@@ -73,3 +98,4 @@ export const benchmarkWithWallClockTime = withDriver(
   runBenchmarkWithWallClockTime
 );
 export const benchmarkWithProfiler = withDriver(runBenchmarkWithProfiler);
+export const benchmarkWithFlamegraph = withDriver(runBenchmarkWithFlameGraph);
