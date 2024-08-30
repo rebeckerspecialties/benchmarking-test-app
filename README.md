@@ -29,7 +29,7 @@ We recommend installing node with Node Version Manager (nvm): https://github.com
 2. Install react native app dependencies
 
 ```
-npm install -w benchmarking-test-app
+npm run install:hermes -w benchmarking-test-app
 ```
 
 ### iOS Development (Mac Required)

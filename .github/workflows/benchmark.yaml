@@ -61,7 +61,7 @@ jobs:
       - name: build javascript bundle
         run: |
           cd apps/benchmarking-test-app
-          npm install
+          npm run install:${{ matrix.engine }}
           npm run build:ios:release
 
       - uses: actions/cache/restore@v4

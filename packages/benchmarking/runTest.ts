@@ -47,6 +47,37 @@ async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   console.log("Performance profile written to", perfTracePath);
 }
 
+async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
+  const perfTracePath = `${perfTraceDir}/${testId}-flamegraph.cpuprofile`;
+  const toggleFlamegraphButton = driver.$("~toggleFlamegraph");
+  await toggleFlamegraphButton.click();
+
+  await runBenchmark(testId, driver);
+
+  const profileLocationText = driver.$("~profileLocation");
+  const path = await profileLocationText.getText();
+
+  const libraryPath = path.match(/\/Library\/Caches\/.+\.cpuprofile/g)?.at(0);
+
+  if (!libraryPath) {
+    console.log("Skipped writing flamegraph");
+    return;
+  }
+
+  const appPath = `@com.rbckr.TestApp${libraryPath}`;
+  console.log("Searching for artifact at:", libraryPath);
+
+  const traceBase64 = await driver.pullFile(appPath).catch(() => undefined);
+  if (!traceBase64) {
+    console.log("Failed to find trace at:", libraryPath);
+    return;
+  }
+
+  let buff = Buffer.from(traceBase64, "base64");
+  await writeFile(perfTracePath, buff);
+  console.log("Flamegraph written to", perfTracePath);
+}
+
 async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
   const outputPath = `${perfTraceDir}/${testId}WallClock-ms.txt`;
 
@@ -73,3 +104,4 @@ export const benchmarkWithWallClockTime = withDriver(
   runBenchmarkWithWallClockTime
 );
 export const benchmarkWithProfiler = withDriver(runBenchmarkWithProfiler);
+export const benchmarkWithFlamegraph = withDriver(runBenchmarkWithFlameGraph);
