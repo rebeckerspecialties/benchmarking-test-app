@@ -8,7 +8,7 @@
     "build:ios": "npm run mkdist && react-native bundle --entry-file index.js --platform ios --dev true --bundle-output dist/main.ios.jsbundle --assets-dest dist",
     "build:ios:release": "npm run mkdist && react-native bundle --entry-file index.js --platform ios --dev false --bundle-output dist/main.ios.jsbundle --assets-dest dist",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
+    "lint": "eslint src/ App.tsx",
     "mkdist": "node -e \"require('node:fs').mkdirSync('dist', { recursive: true, mode: 0o755 })\"",
     "start": "react-native start",
     "test": "jest",
