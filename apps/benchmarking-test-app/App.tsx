@@ -17,6 +17,7 @@ import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
+import { HelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -67,6 +68,7 @@ const App = () => {
           name="irEcsBenchmark"
           run={irEcsBenchmark}
         />
+        <HelloTriangle />
       </SafeAreaView>
     </>
   );
