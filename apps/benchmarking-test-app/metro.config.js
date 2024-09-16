@@ -1,6 +1,6 @@
 const { makeMetroConfig } = require("@rnx-kit/metro-config");
 const path = require("path");
-const threePackagePath = path.resolve(__dirname, "../../../node_modules/three");
+const threePackagePath = path.resolve(__dirname, "../../node_modules/three");
 
 module.exports = makeMetroConfig({
   transformer: {
