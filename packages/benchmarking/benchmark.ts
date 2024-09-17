@@ -27,7 +27,7 @@ const runBenchmarkSuite = async () => {
   await benchmarkWithWallClockTime("irEcsBenchmark");
 
   console.log("Running graphics benchmarks");
-  await benchmarkWithWallClockTime("triangleWgpuBenchmark");
+  await benchmarkWithWallClockTime("triangleWebGpuBenchmark");
 };
 
 runBenchmarkSuite();

@@ -2,7 +2,7 @@ import { StyleSheet, View, PixelRatio } from "react-native";
 import { Canvas, useCanvasEffect } from "react-native-wgpu";
 import { CanvasContext } from "./types";
 
-export const WgpuBenchmark: React.FC<{
+export const WebGpuBenchmark: React.FC<{
   onComplete: (startTime: number) => void;
   run: (
     context: CanvasContext,

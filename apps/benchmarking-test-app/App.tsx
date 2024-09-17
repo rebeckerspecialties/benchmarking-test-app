@@ -71,7 +71,7 @@ const App = () => {
         />
         <GraphicsBenchmark
           run={runHelloTriangle}
-          name="triangleWgpuBenchmark"
+          name="triangleWebGpuBenchmark"
         />
       </SafeAreaView>
     </>

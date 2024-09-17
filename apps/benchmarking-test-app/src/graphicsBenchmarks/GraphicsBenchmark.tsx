@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
 import { CanvasContext } from "./types";
-import { WgpuBenchmark } from "./WgpuBenchmark";
+import { WebGpuBenchmark } from "./WebGpuBenchmark";
 
 enum BenchmarkState {
   NOT_STARTED,
@@ -47,5 +47,5 @@ export const GraphicsBenchmark: React.FC<{
     );
   }
 
-  return <WgpuBenchmark run={run} onComplete={onComplete} />;
+  return <WebGpuBenchmark run={run} onComplete={onComplete} />;
 };
