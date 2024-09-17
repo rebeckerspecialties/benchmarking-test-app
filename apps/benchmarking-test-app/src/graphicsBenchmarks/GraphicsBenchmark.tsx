@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
+import { CanvasContext } from "./types";
+import { WgpuBenchmark } from "./WgpuBenchmark";
 
 enum BenchmarkState {
   NOT_STARTED,
@@ -7,10 +9,14 @@ enum BenchmarkState {
   COMPLETE,
 }
 
-export const ComponentBenchmark: React.FC<{
-  Component: React.FC<{ onComplete: (startTime: number) => void }>;
+export const GraphicsBenchmark: React.FC<{
   name: string;
-}> = ({ Component, name }) => {
+  run: (
+    context: CanvasContext,
+    device: GPUDevice,
+    requestAnimationFrame: (callback: (time: number) => void) => number
+  ) => Promise<void>;
+}> = ({ run, name }) => {
   const [benchmarkState, setBenchmarkState] = useState(
     BenchmarkState.NOT_STARTED
   );
@@ -41,5 +47,5 @@ export const ComponentBenchmark: React.FC<{
     );
   }
 
-  return <Component onComplete={onComplete} />;
+  return <WgpuBenchmark run={run} onComplete={onComplete} />;
 };

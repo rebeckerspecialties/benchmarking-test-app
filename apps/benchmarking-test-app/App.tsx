@@ -17,8 +17,8 @@ import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
-import { TriangleWGPUBenchmark } from "./src/graphicsBenchmarks/TriangleWGPUBenchmark";
-import { ComponentBenchmark } from "./src/benchmarks/ComponentBenchmark";
+import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
+import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -69,8 +69,8 @@ const App = () => {
           name="irEcsBenchmark"
           run={irEcsBenchmark}
         />
-        <ComponentBenchmark
-          Component={TriangleWGPUBenchmark}
+        <GraphicsBenchmark
+          run={runHelloTriangle}
           name="triangleWgpuBenchmark"
         />
       </SafeAreaView>
