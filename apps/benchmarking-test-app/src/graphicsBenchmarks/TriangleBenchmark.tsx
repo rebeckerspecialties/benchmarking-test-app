@@ -1,11 +1,13 @@
-import * as React from "react";
 import { StyleSheet, View, PixelRatio } from "react-native";
 import { Canvas, useCanvasEffect } from "react-native-wgpu";
 
 import { redFragWGSL, triangleVertWGSL } from "./triangle";
 
-export const HelloTriangle: React.FC = () => {
+export const TriangleBenchmark: React.FC<{
+  onComplete: (startTime: number) => void;
+}> = ({ onComplete }) => {
   const ref = useCanvasEffect(async () => {
+    const startTime = Date.now();
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
       throw new Error("No adapter");
@@ -75,6 +77,7 @@ export const HelloTriangle: React.FC = () => {
     device.queue.submit([commandEncoder.finish()]);
 
     context.present();
+    onComplete(startTime);
   });
 
   return (
