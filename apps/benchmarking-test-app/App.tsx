@@ -18,7 +18,7 @@ import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 import { TriangleBenchmark } from "./src/graphicsBenchmarks/TriangleBenchmark";
-import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
+import { ComponentBenchmark } from "./src/benchmarks/ComponentBenchmark";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -69,7 +69,7 @@ const App = () => {
           name="irEcsBenchmark"
           run={irEcsBenchmark}
         />
-        <GraphicsBenchmark Component={TriangleBenchmark} name="triangle" />
+        <ComponentBenchmark Component={TriangleBenchmark} name="triangle" />
       </SafeAreaView>
     </>
   );

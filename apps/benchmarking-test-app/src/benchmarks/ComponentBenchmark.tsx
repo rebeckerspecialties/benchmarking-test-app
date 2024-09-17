@@ -7,7 +7,7 @@ enum BenchmarkState {
   COMPLETE,
 }
 
-export const GraphicsBenchmark: React.FC<{
+export const ComponentBenchmark: React.FC<{
   Component: React.FC<{ onComplete: (startTime: number) => void }>;
   name: string;
 }> = ({ Component, name }) => {
