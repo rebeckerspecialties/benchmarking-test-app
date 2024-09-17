@@ -54,30 +54,74 @@ export const TriangleBenchmark: React.FC<{
       },
     });
 
-    const commandEncoder = device.createCommandEncoder();
+    const uniformBufferSize = 4;
+    const uniformBuffer = device.createBuffer({
+      size: uniformBufferSize,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
 
-    const textureView = context.getCurrentTexture().createView();
-
-    const renderPassDescriptor: GPURenderPassDescriptor = {
-      colorAttachments: [
+    const uniformBindGroup = device.createBindGroup({
+      layout: pipeline.getBindGroupLayout(0),
+      entries: [
         {
-          view: textureView,
-          clearValue: [0, 0, 0, 1],
-          loadOp: "clear",
-          storeOp: "store",
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer,
+          },
         },
       ],
+    });
+
+    let start: number;
+    const animate = (time: number) => {
+      if (!start) {
+        start = time;
+      }
+
+      const textureView = context.getCurrentTexture().createView();
+
+      const renderPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: textureView,
+            clearValue: [0, 0, 0, 1],
+            loadOp: "clear",
+            storeOp: "store",
+          },
+        ],
+      };
+      const commandEncoder = device.createCommandEncoder();
+
+      const frame = Math.floor((time - start) / 16);
+
+      const floatBuffer = new Float32Array(1);
+      floatBuffer.fill(frame, 0);
+
+      device.queue.writeBuffer(
+        uniformBuffer,
+        0,
+        floatBuffer.buffer,
+        floatBuffer.byteOffset,
+        floatBuffer.byteLength
+      );
+
+      const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+      passEncoder.setPipeline(pipeline);
+      passEncoder.setBindGroup(0, uniformBindGroup);
+      passEncoder.draw(3);
+      passEncoder.end();
+
+      device.queue.submit([commandEncoder.finish()]);
+      context.present();
+
+      if (frame >= 500) {
+        onComplete(startTime);
+      } else {
+        requestAnimationFrame((t) => animate(t));
+      }
     };
 
-    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-    passEncoder.setPipeline(pipeline);
-    passEncoder.draw(3);
-    passEncoder.end();
-
-    device.queue.submit([commandEncoder.finish()]);
-
-    context.present();
-    onComplete(startTime);
+    requestAnimationFrame(animate);
   });
 
   return (

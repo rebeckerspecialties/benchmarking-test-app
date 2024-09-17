@@ -11,7 +11,9 @@ fn main(
   return vec4f(pos[VertexIndex], 0.0, 1.0);
 }`;
 
-export const redFragWGSL = `@fragment
+export const redFragWGSL = `
+@binding(0) @group(0) var<uniform> frame : f32;
+@fragment
 fn main() -> @location(0) vec4f {
-  return vec4(1.0, 0.0, 0.0, 1.0);
+  return vec4(1.0, sin(frame / 128), 0.0, 1.0);
 }`;
