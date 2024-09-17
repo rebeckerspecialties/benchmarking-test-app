@@ -72,12 +72,8 @@ export const TriangleBenchmark: React.FC<{
       ],
     });
 
-    let start: number;
-    const animate = (time: number) => {
-      if (!start) {
-        start = time;
-      }
-
+    let frame = 0;
+    const animate = () => {
       const textureView = context.getCurrentTexture().createView();
 
       const renderPassDescriptor: GPURenderPassDescriptor = {
@@ -92,10 +88,9 @@ export const TriangleBenchmark: React.FC<{
       };
       const commandEncoder = device.createCommandEncoder();
 
-      const frame = Math.floor((time - start) / 16);
-
       const floatBuffer = new Float32Array(1);
       floatBuffer.fill(frame, 0);
+      frame++;
 
       device.queue.writeBuffer(
         uniformBuffer,
@@ -117,7 +112,7 @@ export const TriangleBenchmark: React.FC<{
       if (frame >= 500) {
         onComplete(startTime);
       } else {
-        requestAnimationFrame((t) => animate(t));
+        requestAnimationFrame(() => animate());
       }
     };
 
