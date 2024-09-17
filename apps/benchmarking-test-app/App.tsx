@@ -17,7 +17,7 @@ import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
 import { JavaScriptEngineVersion } from "./src/JavaScriptEngineVersion";
 import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
-import { TriangleBenchmark } from "./src/graphicsBenchmarks/TriangleBenchmark";
+import { TriangleWGPUBenchmark } from "./src/graphicsBenchmarks/TriangleWGPUBenchmark";
 import { ComponentBenchmark } from "./src/benchmarks/ComponentBenchmark";
 
 const App = () => {
@@ -69,7 +69,10 @@ const App = () => {
           name="irEcsBenchmark"
           run={irEcsBenchmark}
         />
-        <ComponentBenchmark Component={TriangleBenchmark} name="triangle" />
+        <ComponentBenchmark
+          Component={TriangleWGPUBenchmark}
+          name="triangleWgpuBenchmark"
+        />
       </SafeAreaView>
     </>
   );

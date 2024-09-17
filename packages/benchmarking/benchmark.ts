@@ -25,6 +25,9 @@ const runBenchmarkSuite = async () => {
   await benchmarkWithWallClockTime("threeJsBenchmark");
   await benchmarkWithWallClockTime("hyperfluxBenchmark");
   await benchmarkWithWallClockTime("irEcsBenchmark");
+
+  console.log("Running graphics benchmarks");
+  await benchmarkWithWallClockTime("triangleWgpuBenchmark");
 };
 
 runBenchmarkSuite();

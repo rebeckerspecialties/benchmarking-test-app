@@ -3,7 +3,7 @@ import { Canvas, useCanvasEffect } from "react-native-wgpu";
 
 import { redFragWGSL, triangleVertWGSL } from "./triangle";
 
-export const TriangleBenchmark: React.FC<{
+export const TriangleWGPUBenchmark: React.FC<{
   onComplete: (startTime: number) => void;
 }> = ({ onComplete }) => {
   const ref = useCanvasEffect(async () => {
