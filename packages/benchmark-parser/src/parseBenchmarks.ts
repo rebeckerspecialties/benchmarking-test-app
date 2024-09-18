@@ -12,6 +12,7 @@ interface BenchmarkEntry {
 export async function parseBenchmarks(
   pathToBenchmarks: string,
   bundlePath: string,
+  executablePath: string,
   outputPath: string
 ) {
   const files = await readdir(pathToBenchmarks, {
@@ -19,12 +20,26 @@ export async function parseBenchmarks(
   });
 
   const benchmarkEntries = await processBenchmarkFiles(pathToBenchmarks, files);
-  const bundleSizeEntry = await processBundleSize(bundlePath).catch((err) => {
+  const bundleSizeEntry = await processBundleSize(
+    bundlePath,
+    "Bundle Size"
+  ).catch((err) => {
     console.error(err);
     return null;
   });
   if (bundleSizeEntry) {
     benchmarkEntries.push(bundleSizeEntry);
+  }
+
+  const executableSizeEntry = await processBundleSize(
+    executablePath,
+    "Executable Size"
+  ).catch((err) => {
+    console.error(err);
+    return null;
+  });
+  if (executableSizeEntry) {
+    benchmarkEntries.push(executableSizeEntry);
   }
 
   await writeFile(outputPath, JSON.stringify(benchmarkEntries));
@@ -47,7 +62,7 @@ async function processBenchmarkFiles(parentPath: string, files: string[]) {
   return benchmarkEntries;
 }
 
-async function processBundleSize(bundlePath: string) {
+async function processBundleSize(bundlePath: string, name: string) {
   const output = await new Promise<string>((resolve, reject) => {
     exec(`du -k ${bundlePath}`, { encoding: "utf8" }, (err, stdout, stderr) => {
       if (stderr.length > 0) {
@@ -66,7 +81,7 @@ async function processBundleSize(bundlePath: string) {
     throw new Error(`Failed to parse file size from du result: ${output}`);
   }
 
-  return createBenchmarkEntry("Bundle Size", bundleSizeKib, "kiB");
+  return createBenchmarkEntry(name, bundleSizeKib, "kiB");
 }
 
 function createBenchmarkEntry(

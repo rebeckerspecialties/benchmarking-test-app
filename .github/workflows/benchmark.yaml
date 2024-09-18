@@ -211,11 +211,17 @@ jobs:
           ./scripts/unzipArchive.sh jscOutput benchmarks/jsc
           ./scripts/unzipArchive.sh hermesOutput benchmarks/hermes
 
-      - name: Download hermes bundle
+      - name: Download javascript bundle
         uses: actions/download-artifact@v4
         with:
-          name: hermesBundle
+          name: jscBundle
           path: bundleDist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download executable artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jscApp
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Parse Benchmarks
