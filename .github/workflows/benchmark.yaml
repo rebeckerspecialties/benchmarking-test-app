@@ -178,6 +178,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: benchmark
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
