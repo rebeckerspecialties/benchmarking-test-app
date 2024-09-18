@@ -35,13 +35,19 @@ describe("parseBenchmark", () => {
         "benchmark-ms.txt": "1234567",
       },
     });
-    await parseBenchmarks("benchmarks", "file.ios.bundle", "benchmark.json");
+    await parseBenchmarks(
+      "benchmarks",
+      "file.ios.bundle",
+      "benchmark.ipa",
+      "benchmark.json"
+    );
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
     expect(JSON.parse(benchmarkResult)).toEqual([
       { name: "benchmark-ms.txt", value: 1234567, unit: "ms" },
       { name: "Bundle Size", value: 10000, unit: "kiB" },
+      { name: "Executable Size", value: 10000, unit: "kiB" },
     ]);
   });
 
@@ -54,7 +60,12 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks("benchmarks", "file.ios.bundle", "benchmark.json");
+    await parseBenchmarks(
+      "benchmarks",
+      "file.ios.bundle",
+      "benchmark.ipa",
+      "benchmark.json"
+    );
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
@@ -62,6 +73,7 @@ describe("parseBenchmark", () => {
       { name: "benchmark-ms.txt", value: 1234567, unit: "ms" },
       { name: "benchmark2-ms.txt", value: 2345678, unit: "ms" },
       { name: "Bundle Size", value: 10000, unit: "kiB" },
+      { name: "Executable Size", value: 10000, unit: "kiB" },
     ]);
   });
 
@@ -79,7 +91,12 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks("benchmarks", "file.ios.bundle", "benchmark.json");
+    await parseBenchmarks(
+      "benchmarks",
+      "file.ios.bundle",
+      "benchmark.ipa",
+      "benchmark.json"
+    );
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
@@ -104,7 +121,12 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks("benchmarks", "file.ios.bundle", "benchmark.json");
+    await parseBenchmarks(
+      "benchmarks",
+      "file.ios.bundle",
+      "benchmark.ipa",
+      "benchmark.json"
+    );
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
