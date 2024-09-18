@@ -105,14 +105,14 @@ jobs:
         with:
           name: ${{matrix.engine}}App
           path: ${{ runner.temp }}/build/${{matrix.engine}}Benchmarking.ipa
-          retention-days: 3
+          retention-days: 1
 
       - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.engine}}Bundle
           path: apps/benchmarking-test-app/dist/main.ios.jsbundle
-          retention-days: 3
+          retention-days: 1
 
   benchmark:
     runs-on: ubuntu-latest
