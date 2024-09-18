@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1726689682376,
+  "lastUpdate": 1726691889531,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -1930,6 +1930,100 @@ window.BENCHMARK_DATA = {
           {
             "name": "hermes/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
             "value": 8435,
+            "unit": "ms"
+          },
+          {
+            "name": "Bundle Size",
+            "value": 2240,
+            "unit": "kiB"
+          },
+          {
+            "name": "Executable Size",
+            "value": 3920,
+            "unit": "kiB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "31718268+hmallen99@users.noreply.github.com",
+            "name": "Henry Allen",
+            "username": "hmallen99"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e8ac21e2cfdc9e67a52e00189a59ccdcf0fa9eb7",
+          "message": "Track bundle size (#48)\n\n* Implement bundle size parser\r\n\r\n* Update CI workflow\r\n\r\n* Shorten retention time\r\n\r\n* Split out parsing step\r\n\r\n* Parallelize benchmarks\r\n\r\n* Check out repo\r\n\r\n* Fix path\r\n\r\n* Process Executable size\r\n\r\n* Update test",
+          "timestamp": "2024-09-18T16:19:28-04:00",
+          "tree_id": "062557ee16d316133ce6779f326a93bb52fef3c7",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/e8ac21e2cfdc9e67a52e00189a59ccdcf0fa9eb7"
+        },
+        "date": 1726691888649,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4951,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 7347,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 11485,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5731,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 740,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8436,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4469,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 11616,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 11015,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5763,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1251,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8418,
             "unit": "ms"
           },
           {
