@@ -1,13 +1,16 @@
-varying vec2 vUv;
-uniform float near;
-uniform float far;
+layout(location = 0) in vec3 position;
+layout(location = 0) out vec2 vUv;
 
 // Log depth
-varying float vFragDepth;
-varying float vIsPerspective;
+layout(location = 1) out float vFragDepth;
+layout(location = 2) out float vIsPerspective;
 
 // Fog
-varying float vFogDepth;
+layout(location = 3) out float vFogDepth;
+
+layout(binding = 0) uniform vec2 uv;
+layout(binding = 1) uniform mat4 projectionMatrix;
+layout(binding = 2) uniform mat4 modelViewMatrix;
 
 bool isPerspectiveMatrix(mat4 m) {
   return m[2][3] == -1.0;
