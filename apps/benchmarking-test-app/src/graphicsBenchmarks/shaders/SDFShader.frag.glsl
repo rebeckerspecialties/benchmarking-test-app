@@ -17,11 +17,11 @@ uniform mat4 sdfMatrix;
 uniform vec3 lightDirection;
 varying vec2 vUv;
 varying float vViewZ;
-#if defined( USE_LOGDEPTHBUF )
+
+// Log depth
 uniform float logDepthBufFC;
 varying float vFragDepth;
 varying float vIsPerspective;
-#endif
 
 #define MAX_STEPS 100
 #define MIN_DIST 0.001
@@ -247,9 +247,8 @@ void main() {
     gl_FragColor = outputColor;
   }
 
-#if defined( USE_LOGDEPTHBUF )
+  // Log depth
 	// Doing a strict comparison with == 1.0 can cause noise artifacts
 	// on some platforms. See issue #17623.
   gl_FragDepth = vIsPerspective == 0.0 ? gl_FragCoord.z : log2(vFragDepth) * logDepthBufFC * 0.5;
-#endif
 }
