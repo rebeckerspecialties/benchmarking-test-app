@@ -397,6 +397,13 @@ export const runSignedDistanceField = async (
     1,
     100.0
   );
+  const cameraPos = vec3.fromValues(0, 0, -2);
+  const cameraMatrix = mat4.identity();
+  const color = vec3.fromValues(0, 0, -2);
+  const scale = vec3.fromValues(0.25, 0.001, 0.25);
+  // const sdfMatrix = mat4.identity();
+  const sdfMatrixInv = mat4.identity();
+  const lightDirection = vec3.fromValues(1.0, 0.5, 1.0);
 
   // Animation loop
 
@@ -440,6 +447,75 @@ export const runSignedDistanceField = async (
         modelViewMatrix.buffer,
         modelViewMatrix.byteOffset,
         modelViewMatrix.byteLength
+      );
+      device.queue.writeBuffer(
+        cameraBuffer,
+        0,
+        cameraPos.buffer,
+        cameraPos.byteOffset,
+        cameraPos.byteLength
+      );
+      device.queue.writeBuffer(
+        cameraMatrixBuffer,
+        0,
+        cameraMatrix.buffer,
+        cameraMatrix.byteOffset,
+        cameraMatrix.byteLength
+      );
+      const timeBuffer = new Float32Array(1);
+      timeBuffer.fill(Date.now(), 0);
+      device.queue.writeBuffer(
+        uTimeBuffer,
+        0,
+        timeBuffer.buffer,
+        timeBuffer.byteOffset,
+        timeBuffer.byteLength
+      );
+      device.queue.writeBuffer(
+        uColorBuffer,
+        0,
+        color.buffer,
+        color.byteOffset,
+        color.byteLength
+      );
+      device.queue.writeBuffer(
+        scaleBuffer,
+        0,
+        scale.buffer,
+        scale.byteOffset,
+        scale.byteLength
+      );
+      const modeArr = new Uint32Array(1);
+      modeArr.fill(0, 0);
+      device.queue.writeBuffer(
+        modeBuffer,
+        0,
+        modeArr.buffer,
+        modeArr.byteOffset,
+        modeArr.byteLength
+      );
+      device.queue.writeBuffer(
+        sfdMatrixInvBuffer,
+        0,
+        sdfMatrixInv.buffer,
+        sdfMatrixInv.byteOffset,
+        sdfMatrixInv.byteLength
+      );
+      device.queue.writeBuffer(
+        lightDirectionBuffer,
+        0,
+        lightDirection.buffer,
+        lightDirection.byteOffset,
+        lightDirection.byteLength
+      );
+      const logDepthBufFC = new Float32Array(1);
+      logDepthBufFC.fill(1, 0);
+      device.queue.writeBuffer(
+        logDepthBufFCBuffer,
+        0,
+        logDepthBufFC.buffer,
+        logDepthBufFC.byteOffset,
+        logDepthBufFC.byteLength
       );
 
       const commandEncoder = device.createCommandEncoder();
