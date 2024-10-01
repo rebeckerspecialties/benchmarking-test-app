@@ -301,15 +301,25 @@ export const runSignedDistanceField = async (
   });
 
   // Bind group 1 (textures and samplers)
-
+  const inputBufferWidth = 512;
   const inputBufferTexture = device.createTexture({
-    size: [512, 512, 1],
+    size: [inputBufferWidth, inputBufferWidth, 1],
     format: "rgba8unorm",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
+  const inputBufferData = generateColorData(inputBufferWidth);
+  device.queue.writeTexture(
+    { texture: inputBufferTexture },
+    inputBufferData,
+    {
+      bytesPerRow: inputBufferWidth * 4,
+      rowsPerImage: inputBufferWidth,
+    },
+    { width: inputBufferWidth, height: inputBufferWidth }
+  );
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
@@ -399,7 +409,7 @@ export const runSignedDistanceField = async (
   );
   const cameraPos = vec3.fromValues(0, 0, -2);
   const cameraMatrix = mat4.identity();
-  const color = vec3.fromValues(0, 0, -2);
+  const color = vec3.fromValues(1, 1, 1);
   const scale = vec3.fromValues(0.25, 0.001, 0.25);
   // const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.identity();
@@ -486,7 +496,7 @@ export const runSignedDistanceField = async (
         scale.byteLength
       );
       const modeArr = new Uint32Array(1);
-      modeArr.fill(0, 0);
+      modeArr.fill(3, 0);
       device.queue.writeBuffer(
         modeBuffer,
         0,
@@ -585,5 +595,22 @@ function generateNoiseData(textureSize: number) {
     }
   }
 
+  return data;
+}
+
+function generateColorData(textureSize: number) {
+  const size = textureSize * textureSize;
+  const data = new Uint8Array(4 * size);
+  // Fill the data array with noise values
+  for (let k = 0; k < textureSize; k++) {
+    for (let j = 0; j < textureSize; j++) {
+      const index = 4 * (j + k * textureSize);
+      data[index] = 127;
+      data[index + 1] = 0;
+      data[index + 2] = 255;
+      data[index + 3] = 255;
+    }
+  }
+  // console.log(data);
   return data;
 }
