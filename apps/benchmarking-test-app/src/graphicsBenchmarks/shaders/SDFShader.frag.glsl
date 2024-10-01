@@ -7,23 +7,23 @@ layout(set = 1, binding = 2) uniform texture2D noiseTexture;
 layout(set = 1, binding = 3) uniform sampler noiseSampler;
 layout(set = 1, binding = 4) uniform texture2D uDepthTexture;
 layout(set = 1, binding = 5) uniform sampler uDepthSampler;
-layout(binding = 5) uniform vec3 cameraPos;
-layout(binding = 6) uniform mat4 cameraMatrix;
-layout(binding = 7) uniform float uTime;
-layout(binding = 8) uniform float fov;
-layout(binding = 10) uniform float aspectRatio;
-layout(binding = 11) uniform float near;
-layout(binding = 12) uniform vec3 uColor;
-layout(binding = 13) uniform vec3 scale;
-layout(binding = 14) uniform int mode;
-layout(binding = 15) uniform mat4 sdfMatrix;
+layout(binding = 2) uniform vec3 cameraPos;
+layout(binding = 3) uniform mat4 cameraMatrix;
+layout(binding = 4) uniform float uTime;
+layout(binding = 5) uniform float fov;
+layout(binding = 6) uniform float aspectRatio;
+layout(binding = 7) uniform float near;
+layout(binding = 8) uniform vec3 uColor;
+layout(binding = 9) uniform vec3 scale;
+layout(binding = 10) uniform int mode;
+layout(binding = 11) uniform mat4 sdfMatrix;
 // Inverse of sdfMatrix
-layout(binding = 16) uniform mat4 sdfMatrixInv;
-layout(binding = 17) uniform vec3 lightDirection;
+layout(binding = 12) uniform mat4 sdfMatrixInv;
+layout(binding = 13) uniform vec3 lightDirection;
 layout(location = 0) in vec2 vUv;
 
 // Log depth
-layout(binding = 18) uniform float logDepthBufFC;
+layout(binding = 14) uniform float logDepthBufFC;
 layout(location = 1) in float vFragDepth;
 layout(location = 2) in float vIsPerspective;
 layout(location = 0) out vec4 FragColor;

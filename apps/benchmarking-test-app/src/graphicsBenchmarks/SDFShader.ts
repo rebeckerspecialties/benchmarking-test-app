@@ -1,46 +1,109 @@
+export const sdfShaderVertWGSL = `
+struct VertexOutput {
+    @location(0) vUv: vec2<f32>,
+    @location(1) vFragDepth: f32,
+    @location(2) vIsPerspective: f32,
+    @location(3) vFogDepth: f32,
+    @builtin(position) gl_Position: vec4<f32>,
+}
+
+var<private> position_1: vec3<f32>;
+var<private> uv_1: vec2<f32>;
+var<private> vUv: vec2<f32>;
+var<private> vFragDepth: f32;
+var<private> vIsPerspective: f32;
+var<private> vFogDepth: f32;
+@group(0) @binding(0)
+var<uniform> projectionMatrix: mat4x4<f32>;
+@group(0) @binding(1)
+var<uniform> modelViewMatrix: mat4x4<f32>;
+var<private> gl_Position: vec4<f32>;
+
+fn isPerspectiveMatrix(m: mat4x4<f32>) -> bool {
+    var m_1: mat4x4<f32>;
+
+    m_1 = m;
+    let _e14 = m_1[2][3];
+    return (_e14 == -1f);
+}
+
+fn main_1() {
+    let _e8 = uv_1;
+    vUv = _e8;
+    let _e10 = projectionMatrix;
+    let _e11 = modelViewMatrix;
+    let _e13 = position_1;
+    gl_Position = ((_e10 * _e11) * vec4<f32>(_e13.x, _e13.y, _e13.z, 1f));
+    let _e21 = gl_Position;
+    vFragDepth = (1f + _e21.w);
+    let _e25 = projectionMatrix;
+    let _e26 = isPerspectiveMatrix(_e25);
+    vIsPerspective = select(0f, 1f, _e26);
+    let _e30 = modelViewMatrix;
+    let _e31 = position_1;
+    vFogDepth = (_e30 * vec4<f32>(_e31.x, _e31.y, _e31.z, 1f)).z;
+    return;
+}
+
+@vertex
+fn main(@location(0) position: vec3<f32>, @location(1) uv: vec2<f32>) -> VertexOutput {
+    position_1 = position;
+    uv_1 = uv;
+    main_1();
+    let _e21 = vUv;
+    let _e23 = vFragDepth;
+    let _e25 = vIsPerspective;
+    let _e27 = vFogDepth;
+    let _e29 = gl_Position;
+    return VertexOutput(_e21, _e23, _e25, _e27, _e29);
+}
+
+`;
+
+export const sdfShaderFragWGSL = `
 struct FragmentOutput {
     @location(0) FragColor: vec4<f32>,
     @builtin(frag_depth) gl_FragDepth: f32,
 }
 
-@group(1) @binding(0) 
+@group(1) @binding(0)
 var inputBufferTexture: texture_2d<f32>;
-@group(1) @binding(1) 
+@group(1) @binding(1)
 var inputBufferSampler: sampler;
-@group(1) @binding(2) 
+@group(1) @binding(2)
 var noiseTexture: texture_2d<f32>;
-@group(1) @binding(3) 
+@group(1) @binding(3)
 var noiseSampler: sampler;
-@group(1) @binding(4) 
+@group(1) @binding(4)
 var uDepthTexture: texture_2d<f32>;
-@group(1) @binding(5) 
+@group(1) @binding(5)
 var uDepthSampler: sampler;
-@group(0) @binding(2) 
+@group(0) @binding(2)
 var<uniform> cameraPos: vec3<f32>;
-@group(0) @binding(3) 
+@group(0) @binding(3)
 var<uniform> cameraMatrix: mat4x4<f32>;
-@group(0) @binding(4) 
+@group(0) @binding(4)
 var<uniform> uTime: f32;
-@group(0) @binding(5) 
+@group(0) @binding(5)
 var<uniform> fov: f32;
-@group(0) @binding(6) 
+@group(0) @binding(6)
 var<uniform> aspectRatio: f32;
-@group(0) @binding(7) 
+@group(0) @binding(7)
 var<uniform> near: f32;
-@group(0) @binding(8) 
+@group(0) @binding(8)
 var<uniform> uColor: vec3<f32>;
-@group(0) @binding(9) 
+@group(0) @binding(9)
 var<uniform> scale: vec3<f32>;
-@group(0) @binding(10) 
+@group(0) @binding(10)
 var<uniform> mode: i32;
-@group(0) @binding(11) 
+@group(0) @binding(11)
 var<uniform> sdfMatrix: mat4x4<f32>;
-@group(0) @binding(12) 
+@group(0) @binding(12)
 var<uniform> sdfMatrixInv: mat4x4<f32>;
-@group(0) @binding(13) 
+@group(0) @binding(13)
 var<uniform> lightDirection: vec3<f32>;
 var<private> vUv_1: vec2<f32>;
-@group(0) @binding(14) 
+@group(0) @binding(14)
 var<uniform> logDepthBufFC: f32;
 var<private> vFragDepth_1: f32;
 var<private> vIsPerspective_1: f32;
@@ -586,7 +649,7 @@ fn main_1() {
     return;
 }
 
-@fragment 
+@fragment
 fn main(@location(0) vUv: vec2<f32>, @location(1) vFragDepth: f32, @location(2) vIsPerspective: f32, @builtin(position) gl_FragCoord: vec4<f32>) -> FragmentOutput {
     vUv_1 = vUv;
     vFragDepth_1 = vFragDepth;
@@ -597,3 +660,5 @@ fn main(@location(0) vUv: vec2<f32>, @location(1) vFragDepth: f32, @location(2) 
     let _e11 = gl_FragDepth;
     return FragmentOutput(_e9, _e11);
 }
+
+`;

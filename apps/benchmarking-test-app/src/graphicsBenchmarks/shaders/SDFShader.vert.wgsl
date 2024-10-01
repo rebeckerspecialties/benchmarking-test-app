@@ -7,36 +7,52 @@ struct VertexOutput {
 }
 
 var<private> position_1: vec3<f32>;
+var<private> uv_1: vec2<f32>;
 var<private> vUv: vec2<f32>;
 var<private> vFragDepth: f32;
 var<private> vIsPerspective: f32;
 var<private> vFogDepth: f32;
 @group(0) @binding(0)
-var<uniform> uv: vec2<f32>;
-@group(0) @binding(1)
 var<uniform> projectionMatrix: mat4x4<f32>;
-@group(0) @binding(2)
+@group(0) @binding(1)
 var<uniform> modelViewMatrix: mat4x4<f32>;
 var<private> gl_Position: vec4<f32>;
 
 fn isPerspectiveMatrix(m: mat4x4<f32>) -> bool {
-    return (m[2][3] == -1f);
+    var m_1: mat4x4<f32>;
+
+    m_1 = m;
+    let _e14 = m_1[2][3];
+    return (_e14 == -1f);
 }
 
 fn main_1() {
-    vUv = uv;
+    let _e8 = uv_1;
+    vUv = _e8;
+    let _e10 = projectionMatrix;
+    let _e11 = modelViewMatrix;
     let _e13 = position_1;
-    gl_Position = ((projectionMatrix * modelViewMatrix) * vec4<f32>(_e13.x, _e13.y, _e13.z, 1f));
-    vFragDepth = (1f + gl_Position.w);
-    vIsPerspective = select(0f, 1f, isPerspectiveMatrix(projectionMatrix));
+    gl_Position = ((_e10 * _e11) * vec4<f32>(_e13.x, _e13.y, _e13.z, 1f));
+    let _e21 = gl_Position;
+    vFragDepth = (1f + _e21.w);
+    let _e25 = projectionMatrix;
+    let _e26 = isPerspectiveMatrix(_e25);
+    vIsPerspective = select(0f, 1f, _e26);
+    let _e30 = modelViewMatrix;
     let _e31 = position_1;
-    vFogDepth = (modelViewMatrix * vec4<f32>(_e31.x, _e31.y, _e31.z, 1f)).z;
+    vFogDepth = (_e30 * vec4<f32>(_e31.x, _e31.y, _e31.z, 1f)).z;
     return;
 }
 
 @vertex
-fn main(@location(0) position: vec3<f32>) -> VertexOutput {
+fn main(@location(0) position: vec3<f32>, @location(1) uv: vec2<f32>) -> VertexOutput {
     position_1 = position;
+    uv_1 = uv;
     main_1();
-    return VertexOutput(vUv, vFragDepth, vIsPerspective, vFogDepth, gl_Position);
+    let _e21 = vUv;
+    let _e23 = vFragDepth;
+    let _e25 = vIsPerspective;
+    let _e27 = vFogDepth;
+    let _e29 = gl_Position;
+    return VertexOutput(_e21, _e23, _e25, _e27, _e29);
 }
