@@ -407,10 +407,10 @@ export const runSignedDistanceField = async (
     1,
     100.0
   );
-  const cameraPos = vec3.fromValues(0, 0, -2);
+  const cameraPos = vec3.fromValues(0, 0, -4);
   const cameraMatrix = mat4.identity();
-  const color = vec3.fromValues(1, 1, 1);
-  const scale = vec3.fromValues(0.25, 0.001, 0.25);
+  const color = vec3.fromValues(1, 0, 0);
+  const scale = vec3.fromValues(0.25, 0.25, 0.25);
   // const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.identity();
   const lightDirection = vec3.fromValues(1.0, 0.5, 1.0);
@@ -519,7 +519,7 @@ export const runSignedDistanceField = async (
         lightDirection.byteLength
       );
       const logDepthBufFC = new Float32Array(1);
-      logDepthBufFC.fill(1, 0);
+      logDepthBufFC.fill(0.01, 0);
       device.queue.writeBuffer(
         logDepthBufFCBuffer,
         0,
@@ -565,6 +565,7 @@ function getViewMatrix() {
   const viewMatrix = mat4.identity();
   mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
   const now = Date.now() / 1000;
+  // const now = 0;
   mat4.rotate(
     viewMatrix,
     vec3.fromValues(Math.sin(now), Math.cos(now), 0),
