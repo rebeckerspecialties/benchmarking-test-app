@@ -142,6 +142,7 @@ fn torus(p: vec3<f32>, t: vec2<f32>) -> vec3<f32> {
     return vec3<f32>((length(_e41) - _e43.y), _e46.y, 0f);
 }
 
+@diagnostic(off,derivative_uniformity)
 fn cloudShape(p_2: vec3<f32>) -> f32 {
     var p_3: vec3<f32>;
     var textureSize: f32 = 128f;
@@ -195,6 +196,7 @@ fn cloudShape(p_2: vec3<f32>) -> f32 {
     return (_e95 * 0.025f);
 }
 
+@diagnostic(off,derivative_uniformity)
 fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
     var ro_1: vec3<f32>;
     var rd_1: vec3<f32>;
@@ -399,6 +401,7 @@ fn linearToScreen(linearRGB: vec3<f32>) -> vec3<f32> {
     return _e8;
 }
 
+@diagnostic(off,derivative_uniformity)
 fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
     var ro_5: vec3<f32>;
     var rd_3: vec3<f32>;
@@ -562,6 +565,7 @@ fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
     return vec3(-1f);
 }
 
+@diagnostic(off,derivative_uniformity)
 fn main_1() {
     var uv: vec2<f32>;
     var tanHalfFov: f32;
@@ -646,6 +650,7 @@ fn main_1() {
 }
 
 @fragment
+@diagnostic(off,derivative_uniformity)
 fn main(@location(0) vUv: vec2<f32>, @location(1) vFragDepth: f32, @location(2) vIsPerspective: f32, @builtin(position) gl_FragCoord: vec4<f32>) -> FragmentOutput {
     vUv_1 = vUv;
     vFragDepth_1 = vFragDepth;

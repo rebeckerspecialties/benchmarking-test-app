@@ -8,7 +8,7 @@ import {
   cubeVertexSize,
 } from "./cube";
 import { mat4, vec3 } from "wgpu-matrix";
-import Noise from "noisejs";
+import Noise from "./perlin";
 
 export const runSignedDistanceField = async (
   context: CanvasContext,
@@ -100,6 +100,74 @@ export const runSignedDistanceField = async (
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
+  const vec3Size = 4 * 3;
+  const cameraBuffer = device.createBuffer({
+    size: vec3Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const cameraMatrixBuffer = device.createBuffer({
+    size: uniformBufferSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const floatSize = 4;
+  const uTimeBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const fovBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const aspectRatioBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  // const nearBuffer = device.createBuffer({
+  //   size: floatSize,
+  //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  // });
+
+  const uColorBuffer = device.createBuffer({
+    size: vec3Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const scaleBuffer = device.createBuffer({
+    size: vec3Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const int16Size = 4;
+  const modeBuffer = device.createBuffer({
+    size: int16Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  // const sfdMatrixBuffer = device.createBuffer({
+  //   size: uniformBufferSize,
+  //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  // });
+
+  const sfdMatrixInvBuffer = device.createBuffer({
+    size: uniformBufferSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const lightDirectionBuffer = device.createBuffer({
+    size: vec3Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const logDepthBufFCBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
   const uniformBindGroup0 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
     entries: [
@@ -119,6 +187,94 @@ export const runSignedDistanceField = async (
           size: uniformBufferSize,
         },
       },
+      {
+        binding: 2,
+        resource: {
+          buffer: cameraBuffer,
+          offset: 0,
+          size: vec3Size,
+        },
+      },
+      {
+        binding: 3,
+        resource: {
+          buffer: cameraMatrixBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+      {
+        binding: 4,
+        resource: {
+          buffer: uTimeBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 5,
+        resource: {
+          buffer: fovBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 6,
+        resource: {
+          buffer: aspectRatioBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 8,
+        resource: {
+          buffer: uColorBuffer,
+          offset: 0,
+          size: vec3Size,
+        },
+      },
+      {
+        binding: 9,
+        resource: {
+          buffer: scaleBuffer,
+          offset: 0,
+          size: vec3Size,
+        },
+      },
+      {
+        binding: 10,
+        resource: {
+          buffer: modeBuffer,
+          offset: 0,
+          size: int16Size,
+        },
+      },
+      {
+        binding: 12,
+        resource: {
+          buffer: sfdMatrixInvBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+      {
+        binding: 13,
+        resource: {
+          buffer: lightDirectionBuffer,
+          offset: 0,
+          size: vec3Size,
+        },
+      },
+      {
+        binding: 14,
+        resource: {
+          buffer: logDepthBufFCBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
     ],
   });
 
@@ -133,8 +289,9 @@ export const runSignedDistanceField = async (
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
+  const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
-    size: [512, 512, 512],
+    size: [noiseTextureWidth, noiseTextureWidth * noiseTextureWidth, 1],
     format: "rgba8unorm",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
@@ -142,13 +299,16 @@ export const runSignedDistanceField = async (
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const perlinNoise = generateNoiseData(512);
-  const perlinSize = 512 * 8;
+  const perlinNoise = generateNoiseData(noiseTextureWidth);
+  const perlinSize = noiseTextureWidth;
   device.queue.writeTexture(
     { texture: noiseTexture },
     perlinNoise,
-    {},
-    { width: perlinSize, height: perlinSize, depthOrArrayLayers: perlinSize }
+    {
+      bytesPerRow: perlinSize * 4,
+      rowsPerImage: perlinSize * perlinSize,
+    },
+    { width: perlinSize, height: perlinSize * perlinSize }
   );
 
   const sampler = device.createSampler({
@@ -258,7 +418,7 @@ function getViewMatrix() {
 }
 
 function generateNoiseData(textureSize: number) {
-  const noise = new Noise(Math.random());
+  const noise = new Noise(7);
 
   // Create a data array to store the noise values
   const size = textureSize * textureSize * textureSize;
