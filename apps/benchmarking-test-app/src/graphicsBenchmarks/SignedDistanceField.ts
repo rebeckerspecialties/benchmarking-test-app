@@ -1,4 +1,8 @@
-import { sdfShaderFragWGSL, sdfShaderVertWGSL } from "./SDFShader";
+import {
+  sdfShaderFragWGSL,
+  sdfShaderVertWGSL,
+  vertexShadowWGSL,
+} from "./SDFShader";
 import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
@@ -9,6 +13,8 @@ import {
 } from "./cube";
 import { mat4, vec3 } from "wgpu-matrix";
 import Noise from "./perlin";
+
+const shadowDepthTextureSize = 1024;
 
 export const runSignedDistanceField = async (
   context: CanvasContext,
@@ -27,6 +33,47 @@ export const runSignedDistanceField = async (
   new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray);
   verticesBuffer.unmap();
 
+  const vertexBuffers: GPUVertexBufferLayout[] = [
+    {
+      arrayStride: cubeVertexSize,
+      attributes: [
+        {
+          // position
+          shaderLocation: 0,
+          offset: cubePositionOffset,
+          format: "float32x4",
+        },
+        {
+          // uv
+          shaderLocation: 1,
+          offset: cubeUVOffset,
+          format: "float32x2",
+        },
+      ],
+    },
+  ];
+
+  const primitive: GPUPrimitiveState = {
+    topology: "triangle-list",
+    cullMode: "back",
+  };
+
+  const shadowPipeline = device.createRenderPipeline({
+    layout: "auto",
+    vertex: {
+      module: device.createShaderModule({
+        code: vertexShadowWGSL,
+      }),
+      buffers: vertexBuffers,
+    },
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth32float",
+    },
+    primitive,
+  });
+
   const pipeline = device.createRenderPipeline({
     layout: "auto",
     vertex: {
@@ -34,25 +81,7 @@ export const runSignedDistanceField = async (
         code: sdfShaderVertWGSL,
       }),
       entryPoint: "main",
-      buffers: [
-        {
-          arrayStride: cubeVertexSize,
-          attributes: [
-            {
-              // position
-              shaderLocation: 0,
-              offset: cubePositionOffset,
-              format: "float32x4",
-            },
-            {
-              // uv
-              shaderLocation: 1,
-              offset: cubeUVOffset,
-              format: "float32x2",
-            },
-          ],
-        },
-      ],
+      buffers: vertexBuffers,
     },
     fragment: {
       module: device.createShaderModule({
@@ -65,14 +94,7 @@ export const runSignedDistanceField = async (
         },
       ],
     },
-    primitive: {
-      topology: "triangle-list",
-
-      // Backface culling since the cube is solid piece of geometry.
-      // Faces pointing away from the camera will be occluded by faces
-      // pointing toward the camera.
-      cullMode: "back",
-    },
+    primitive,
 
     // Enable depth testing so that the fragment closest to the camera
     // is rendered in front.
@@ -316,18 +338,58 @@ export const runSignedDistanceField = async (
     minFilter: "linear",
   });
 
+  // Create the depth texture for rendering/sampling the shadow map.
+  const shadowDepthTexture = device.createTexture({
+    size: [shadowDepthTextureSize, shadowDepthTextureSize, 1],
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+    format: "depth32float",
+  });
+  const shadowDepthTextureView = shadowDepthTexture.createView();
+
   const uniformBindGroup1 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(1),
     entries: [
       { binding: 0, resource: inputBufferTexture.createView() },
       { binding: 1, resource: noiseTexture.createView() },
-      { binding: 2, resource: depthTexture.createView() },
+      { binding: 2, resource: shadowDepthTextureView },
       { binding: 3, resource: sampler },
     ],
   });
 
-  // Animation loop
+  // Shadow bind group
+  const sceneBindGroupForShadow = device.createBindGroup({
+    layout: shadowPipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: projectionMatrixBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: modelViewMatrixBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+    ],
+  });
 
+  const shadowPassDescriptor: GPURenderPassDescriptor = {
+    colorAttachments: [],
+    depthStencilAttachment: {
+      view: shadowDepthTextureView,
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+    },
+  };
+
+  // Calculate constants
   const aspect = canvas.width / canvas.height;
   const projectionMatrix = mat4.perspective(
     (2 * Math.PI) / 5,
@@ -335,6 +397,8 @@ export const runSignedDistanceField = async (
     1,
     100.0
   );
+
+  // Animation loop
 
   return new Promise<void>((resolve) => {
     let frame = 0;
@@ -379,6 +443,14 @@ export const runSignedDistanceField = async (
       );
 
       const commandEncoder = device.createCommandEncoder();
+
+      const shadowPass = commandEncoder.beginRenderPass(shadowPassDescriptor);
+      shadowPass.setPipeline(shadowPipeline);
+      shadowPass.setBindGroup(0, sceneBindGroupForShadow);
+      shadowPass.setVertexBuffer(0, verticesBuffer);
+      shadowPass.draw(cubeVertexCount);
+
+      shadowPass.end();
 
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);

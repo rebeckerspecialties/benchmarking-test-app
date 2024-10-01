@@ -71,7 +71,7 @@ var inputBufferTexture: texture_2d<f32>;
 @group(1) @binding(1)
 var noiseTexture: texture_2d<f32>;
 @group(1) @binding(2)
-var uDepthTexture: texture_2d<f32>;
+var uDepthTexture: texture_depth_2d;
 @group(1) @binding(3)
 var samp: sampler;
 @group(0) @binding(2)
@@ -228,7 +228,7 @@ fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
             depthFromCamera = length((_e32 - _e33));
             let _e37 = vUv_1;
             let _e38 = textureSample(uDepthTexture, samp, _e37);
-            depthFromTexture = (_e38.x * 10f);
+            depthFromTexture = (_e38 * 10f);
             let _e43 = depthFromCamera;
             let _e44 = depthFromTexture;
             if (_e43 > _e44) {
@@ -460,7 +460,7 @@ fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
                 {
                     let _e43 = vUv_1;
                     let _e44 = textureSample(uDepthTexture, samp, _e43);
-                    depth1_ = (_e44.x * 0.5f);
+                    depth1_ = (_e44 * 0.5f);
                     let _e49 = depth1_;
                     linearDepth1_ = (exp2((_e49 * 26.575424f)) - 1f);
                     let _e56 = d_3;
@@ -667,5 +667,19 @@ export const redFragWGSL = `
 @fragment
 fn main() -> @location(0) vec4f {
   return vec4(1.0, 0.0, 0.0, 1.0);
+}
+`;
+
+export const vertexShadowWGSL = `
+@group(0) @binding(0)
+var<uniform> projectionMatrix: mat4x4<f32>;
+@group(0) @binding(1)
+var<uniform> modelViewMatrix: mat4x4<f32>;
+
+@vertex
+fn main(
+  @location(0) position: vec3f
+) -> @builtin(position) vec4f {
+  return projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
