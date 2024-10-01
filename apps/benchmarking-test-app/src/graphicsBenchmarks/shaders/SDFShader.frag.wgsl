@@ -3,44 +3,44 @@ struct FragmentOutput {
     @builtin(frag_depth) gl_FragDepth: f32,
 }
 
-@group(1) @binding(0) 
+@group(1) @binding(0)
 var inputBufferTexture: texture_2d<f32>;
-@group(1) @binding(1) 
+@group(1) @binding(1)
 var inputBufferSampler: sampler;
-@group(1) @binding(2) 
+@group(1) @binding(2)
 var noiseTexture: texture_2d<f32>;
-@group(1) @binding(3) 
+@group(1) @binding(3)
 var noiseSampler: sampler;
-@group(1) @binding(4) 
+@group(1) @binding(4)
 var uDepthTexture: texture_2d<f32>;
-@group(1) @binding(5) 
+@group(1) @binding(5)
 var uDepthSampler: sampler;
-@group(0) @binding(5) 
+@group(0) @binding(5)
 var<uniform> cameraPos: vec3<f32>;
-@group(0) @binding(6) 
+@group(0) @binding(6)
 var<uniform> cameraMatrix: mat4x4<f32>;
-@group(0) @binding(7) 
+@group(0) @binding(7)
 var<uniform> uTime: f32;
-@group(0) @binding(8) 
+@group(0) @binding(8)
 var<uniform> fov: f32;
-@group(0) @binding(10) 
+@group(0) @binding(10)
 var<uniform> aspectRatio: f32;
-@group(0) @binding(11) 
+@group(0) @binding(11)
 var<uniform> near: f32;
-@group(0) @binding(12) 
+@group(0) @binding(12)
 var<uniform> uColor: vec3<f32>;
-@group(0) @binding(13) 
+@group(0) @binding(13)
 var<uniform> scale: vec3<f32>;
-@group(0) @binding(14) 
+@group(0) @binding(14)
 var<uniform> mode: i32;
-@group(0) @binding(15) 
+@group(0) @binding(15)
 var<uniform> sdfMatrix: mat4x4<f32>;
-@group(0) @binding(16) 
+@group(0) @binding(16)
 var<uniform> sdfMatrixInv: mat4x4<f32>;
-@group(0) @binding(17) 
+@group(0) @binding(17)
 var<uniform> lightDirection: vec3<f32>;
 var<private> vUv_1: vec2<f32>;
-@group(0) @binding(18) 
+@group(0) @binding(18)
 var<uniform> logDepthBufFC: f32;
 var<private> vFragDepth_1: f32;
 var<private> vIsPerspective_1: f32;
@@ -59,29 +59,13 @@ fn torus(p: vec3<f32>, t: vec2<f32>) -> vec3<f32> {
 
     p_1 = p;
     t_1 = t;
-    let _e27 = uTime;
-    angle = _e27;
-    let _e30 = angle;
-    c = cos(_e30);
-    let _e34 = angle;
-    s = sin(_e34);
-    let _e41 = c;
-    let _e42 = s;
-    let _e45 = s;
-    let _e46 = c;
-    rotationMatrix = mat3x3<f32>(vec3<f32>(1f, 0f, 0f), vec3<f32>(0f, _e41, -(_e42)), vec3<f32>(0f, _e45, _e46));
-    let _e52 = rotationMatrix;
-    let _e53 = p_1;
-    p_1 = (_e52 * _e53);
-    let _e55 = p_1;
-    let _e57 = p_1;
-    let _e60 = t_1;
-    let _e63 = p_1;
-    q = vec2<f32>((length(_e57.xz) - _e60.x), _e63.y);
-    let _e68 = q;
-    let _e70 = t_1;
-    let _e73 = q;
-    return vec3<f32>((length(_e68) - _e70.y), _e73.y, 0f);
+    angle = uTime;
+    c = cos(angle);
+    s = sin(angle);
+    rotationMatrix = mat3x3<f32>(vec3<f32>(1f, 0f, 0f), vec3<f32>(0f, c, -(s)), vec3<f32>(0f, s, c));
+    p_1 = (rotationMatrix * p_1);
+    q = vec2<f32>((length(p_1.xz) - t_1.x), p_1.y);
+    return vec3<f32>((length(q) - t_1.y), q.y, 0f);
 }
 
 fn cloudShape(p_2: vec3<f32>) -> f32 {
@@ -97,62 +81,44 @@ fn cloudShape(p_2: vec3<f32>) -> f32 {
     var density: f32;
 
     p_3 = p_2;
-    let _e27 = scale;
-    thisScale = _e27;
-    let _e29 = p_3;
-    transformedP = _e29;
-    let _e32 = transformedP;
-    let _e34 = uTime;
-    let _e35 = uTime;
-    let _e38 = uTime;
+    let _e8 = scale;
+    thisScale = _e8;
+    let _e10 = p_3;
+    transformedP = _e10;
+    let _e13 = transformedP;
+    let _e15 = uTime;
+    let _e16 = uTime;
+    transformedP.x = (_e13.x + (sin((_e15 + (sin((_e16 * 0.27f)) * 0.5f))) * 5f));
+    let _e28 = transformedP;
+    let _e30 = uTime;
+    let _e31 = uTime;
+    transformedP.y = (_e28.y + (cos((_e30 + (cos((_e31 * 0.33f)) * 0.3f))) * 5f));
+    let _e43 = transformedP;
     let _e45 = uTime;
     let _e46 = uTime;
-    let _e49 = uTime;
-    transformedP.x = (_e32.x + (sin((_e45 + (sin((_e49 * 0.27f)) * 0.5f))) * 5f));
-    let _e61 = transformedP;
-    let _e63 = uTime;
-    let _e64 = uTime;
-    let _e67 = uTime;
-    let _e74 = uTime;
-    let _e75 = uTime;
-    let _e78 = uTime;
-    transformedP.y = (_e61.y + (cos((_e74 + (cos((_e78 * 0.33f)) * 0.3f))) * 5f));
-    let _e90 = transformedP;
-    let _e92 = uTime;
-    let _e93 = uTime;
-    let _e96 = uTime;
-    let _e103 = uTime;
-    let _e104 = uTime;
-    let _e107 = uTime;
-    transformedP.z = (_e90.z + (sin((_e103 + (sin((_e107 * 0.22f)) * 0.4f))) * 5f));
-    let _e118 = transformedP;
-    let _e119 = thisScale;
-    scaledP = (_e118 * _e119);
-    let _e123 = textureSize;
-    sliceSize = (1f / _e123);
-    let _e126 = scaledP;
-    let _e128 = textureSize;
-    let _e130 = scaledP;
-    let _e132 = textureSize;
-    slice = floor((_e130.z * _e132));
-    let _e136 = scaledP;
-    let _e138 = scaledP;
-    let _e140 = scaledP;
-    x = (_e136.x - floor(_e140.x));
-    let _e145 = scaledP;
-    let _e147 = scaledP;
-    let _e149 = scaledP;
-    let _e153 = slice;
-    let _e154 = sliceSize;
-    y = ((_e145.y - floor(_e149.y)) + (_e153 * _e154));
-    let _e158 = x;
-    let _e159 = y;
-    let _e161 = x;
-    let _e162 = y;
-    let _e164 = textureSample(noiseTexture, noiseSampler, vec2<f32>(_e161, _e162));
-    density = _e164.x;
-    let _e167 = density;
-    return (_e167 * 0.025f);
+    transformedP.z = (_e43.z + (sin((_e45 + (sin((_e46 * 0.22f)) * 0.4f))) * 5f));
+    let _e57 = transformedP;
+    let _e58 = thisScale;
+    scaledP = (_e57 * _e58);
+    let _e62 = textureSize;
+    sliceSize = (1f / _e62);
+    let _e65 = scaledP;
+    let _e67 = textureSize;
+    slice = floor((_e65.z * _e67));
+    let _e71 = scaledP;
+    let _e73 = scaledP;
+    x = (_e71.x - floor(_e73.x));
+    let _e78 = scaledP;
+    let _e80 = scaledP;
+    let _e84 = slice;
+    let _e85 = sliceSize;
+    y = ((_e78.y - floor(_e80.y)) + (_e84 * _e85));
+    let _e89 = x;
+    let _e90 = y;
+    let _e92 = textureSample(noiseTexture, noiseSampler, vec2<f32>(_e89, _e90));
+    density = _e92.x;
+    let _e95 = density;
+    return (_e95 * 0.025f);
 }
 
 fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
@@ -171,59 +137,57 @@ fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
     ro_1 = ro;
     rd_1 = rd;
     loop {
-        let _e34 = i;
-        let _e37 = d;
-        if !(((_e34 < 100i) && (_e37 < 5000f))) {
+        let _e15 = i;
+        let _e18 = d;
+        if !(((_e15 < 100i) && (_e18 < 5000f))) {
             break;
         }
         {
-            let _e45 = ro_1;
-            let _e46 = rd_1;
-            let _e47 = d;
-            p_4 = (_e45 + (_e46 * _e47));
-            let _e51 = p_4;
-            let _e52 = cameraPos;
-            let _e54 = p_4;
-            let _e55 = cameraPos;
-            depthFromCamera = length((_e54 - _e55));
-            let _e60 = vUv_1;
-            let _e61 = textureSample(uDepthTexture, uDepthSampler, _e60);
-            depthFromTexture = (_e61.x * 10f);
-            let _e66 = depthFromCamera;
-            let _e67 = depthFromTexture;
-            if (_e66 > _e67) {
+            let _e26 = ro_1;
+            let _e27 = rd_1;
+            let _e28 = d;
+            p_4 = (_e26 + (_e27 * _e28));
+            let _e32 = p_4;
+            let _e33 = cameraPos;
+            depthFromCamera = length((_e32 - _e33));
+            let _e37 = vUv_1;
+            let _e38 = textureSample(uDepthTexture, uDepthSampler, _e37);
+            depthFromTexture = (_e38.x * 10f);
+            let _e43 = depthFromCamera;
+            let _e44 = depthFromTexture;
+            if (_e43 > _e44) {
                 {
                     break;
                 }
             }
-            let _e70 = p_4;
-            let _e71 = cloudShape(_e70);
-            density_1 = _e71;
-            let _e73 = density_1;
-            if (_e73 > 0.001f) {
+            let _e46 = p_4;
+            let _e47 = cloudShape(_e46);
+            density_1 = _e47;
+            let _e49 = density_1;
+            if (_e49 > 0.001f) {
                 {
                     cloudColor = vec3<f32>(1f, 1f, 1f);
-                    let _e81 = density_1;
-                    alpha = _e81;
-                    let _e83 = accumulatedColor;
-                    let _e84 = cloudColor;
-                    let _e85 = alpha;
-                    let _e86 = (_e84 * _e85);
-                    let _e87 = alpha;
-                    let _e93 = accumulatedColor;
-                    accumulatedColor = (_e83 + (vec4<f32>(_e86.x, _e86.y, _e86.z, _e87) * (1f - _e93.w)));
+                    let _e57 = density_1;
+                    alpha = _e57;
+                    let _e59 = accumulatedColor;
+                    let _e60 = cloudColor;
+                    let _e61 = alpha;
+                    let _e62 = (_e60 * _e61);
+                    let _e63 = alpha;
+                    let _e69 = accumulatedColor;
+                    accumulatedColor = (_e59 + (vec4<f32>(_e62.x, _e62.y, _e62.z, _e63) * (1f - _e69.w)));
                 }
             }
-            let _e98 = d;
-            d = (_e98 + 0.1f);
+            let _e74 = d;
+            d = (_e74 + 0.1f);
         }
         continuing {
-            let _e42 = i;
-            i = (_e42 + 1i);
+            let _e23 = i;
+            i = (_e23 + 1i);
         }
     }
-    let _e101 = accumulatedColor;
-    return _e101;
+    let _e77 = accumulatedColor;
+    return _e77;
 }
 
 fn shortestDistanceToTorus(ro_2: vec3<f32>, t_2: vec2<f32>) -> f32 {
@@ -232,95 +196,24 @@ fn shortestDistanceToTorus(ro_2: vec3<f32>, t_2: vec2<f32>) -> f32 {
 
     ro_3 = ro_2;
     t_3 = t_2;
-    let _e27 = sdfMatrixInv;
-    let _e28 = ro_3;
-    ro_3 = (_e27 * vec4<f32>(_e28.x, _e28.y, _e28.z, 1f)).xyz;
-    let _e38 = ro_3;
-    let _e39 = t_3;
-    let _e40 = torus(_e38, _e39);
-    return _e40.x;
+    let _e5 = sdfMatrixInv;
+    let _e6 = ro_3;
+    ro_3 = (_e5 * vec4<f32>(_e6.x, _e6.y, _e6.z, 1f)).xyz;
+    let _e14 = ro_3;
+    let _e15 = t_3;
+    let _e16 = torus(_e14, _e15);
+    return _e16.x;
 }
 
 fn estimateNormal(p_5: vec3<f32>, torusParams: vec2<f32>) -> vec3<f32> {
-    var p_6: vec3<f32>;
-    var torusParams_1: vec2<f32>;
     var epsilon: f32 = 0.01f;
-
-    p_6 = p_5;
-    torusParams_1 = torusParams;
-    let _e29 = p_6;
-    let _e30 = epsilon;
-    let _e36 = p_6;
-    let _e37 = epsilon;
-    let _e42 = torusParams_1;
-    let _e43 = shortestDistanceToTorus((_e36 + vec3<f32>(_e37, 0f, 0f)), _e42);
-    let _e44 = p_6;
-    let _e45 = epsilon;
-    let _e51 = p_6;
-    let _e52 = epsilon;
-    let _e57 = torusParams_1;
-    let _e58 = shortestDistanceToTorus((_e51 - vec3<f32>(_e52, 0f, 0f)), _e57);
-    let _e60 = p_6;
-    let _e62 = epsilon;
-    let _e67 = p_6;
-    let _e69 = epsilon;
-    let _e73 = torusParams_1;
-    let _e74 = shortestDistanceToTorus((_e67 + vec3<f32>(0f, _e69, 0f)), _e73);
-    let _e75 = p_6;
-    let _e77 = epsilon;
-    let _e82 = p_6;
-    let _e84 = epsilon;
-    let _e88 = torusParams_1;
-    let _e89 = shortestDistanceToTorus((_e82 - vec3<f32>(0f, _e84, 0f)), _e88);
-    let _e91 = p_6;
-    let _e94 = epsilon;
-    let _e98 = p_6;
-    let _e101 = epsilon;
-    let _e104 = torusParams_1;
-    let _e105 = shortestDistanceToTorus((_e98 + vec3<f32>(0f, 0f, _e101)), _e104);
-    let _e106 = p_6;
-    let _e109 = epsilon;
-    let _e113 = p_6;
-    let _e116 = epsilon;
-    let _e119 = torusParams_1;
-    let _e120 = shortestDistanceToTorus((_e113 - vec3<f32>(0f, 0f, _e116)), _e119);
-    let _e123 = p_6;
-    let _e124 = epsilon;
-    let _e130 = p_6;
-    let _e131 = epsilon;
-    let _e136 = torusParams_1;
-    let _e137 = shortestDistanceToTorus((_e130 + vec3<f32>(_e131, 0f, 0f)), _e136);
-    let _e138 = p_6;
-    let _e139 = epsilon;
-    let _e145 = p_6;
-    let _e146 = epsilon;
-    let _e151 = torusParams_1;
-    let _e152 = shortestDistanceToTorus((_e145 - vec3<f32>(_e146, 0f, 0f)), _e151);
-    let _e154 = p_6;
-    let _e156 = epsilon;
-    let _e161 = p_6;
-    let _e163 = epsilon;
-    let _e167 = torusParams_1;
-    let _e168 = shortestDistanceToTorus((_e161 + vec3<f32>(0f, _e163, 0f)), _e167);
-    let _e169 = p_6;
-    let _e171 = epsilon;
-    let _e176 = p_6;
-    let _e178 = epsilon;
-    let _e182 = torusParams_1;
-    let _e183 = shortestDistanceToTorus((_e176 - vec3<f32>(0f, _e178, 0f)), _e182);
-    let _e185 = p_6;
-    let _e188 = epsilon;
-    let _e192 = p_6;
-    let _e195 = epsilon;
-    let _e198 = torusParams_1;
-    let _e199 = shortestDistanceToTorus((_e192 + vec3<f32>(0f, 0f, _e195)), _e198);
-    let _e200 = p_6;
-    let _e203 = epsilon;
-    let _e207 = p_6;
-    let _e210 = epsilon;
-    let _e213 = torusParams_1;
-    let _e214 = shortestDistanceToTorus((_e207 - vec3<f32>(0f, 0f, _e210)), _e213);
-    return normalize(vec3<f32>((_e137 - _e152), (_e168 - _e183), (_e199 - _e214)));
+    let _e61 = shortestDistanceToTorus((p_5 + vec3<f32>(epsilon, 0f, 0f)), torusParams);
+    let _e69 = shortestDistanceToTorus((p_5 - vec3<f32>(epsilon, 0f, 0f)), torusParams);
+    let _e78 = shortestDistanceToTorus((p_5 + vec3<f32>(0f, epsilon, 0f)), torusParams);
+    let _e86 = shortestDistanceToTorus((p_5 - vec3<f32>(0f, epsilon, 0f)), torusParams);
+    let _e95 = shortestDistanceToTorus((p_5 + vec3<f32>(0f, 0f, epsilon)), torusParams);
+    let _e103 = shortestDistanceToTorus((p_5 - vec3<f32>(0f, 0f, epsilon)), torusParams);
+    return normalize(vec3<f32>((_e61 - _e69), (_e78 - _e86), (_e95 - _e103)));
 }
 
 fn opUnion(d1_: f32, d2_: f32) -> f32 {
@@ -329,9 +222,9 @@ fn opUnion(d1_: f32, d2_: f32) -> f32 {
 
     d1_1 = d1_;
     d2_1 = d2_;
-    let _e29 = d1_1;
-    let _e30 = d2_1;
-    return min(_e29, _e30);
+    let _e4 = d1_1;
+    let _e5 = d2_1;
+    return min(_e4, _e5);
 }
 
 fn pal(t_4: f32, a: vec3<f32>, b: vec3<f32>, c_1: vec3<f32>, d_1: vec3<f32>) -> vec3<f32> {
@@ -346,24 +239,21 @@ fn pal(t_4: f32, a: vec3<f32>, b: vec3<f32>, c_1: vec3<f32>, d_1: vec3<f32>) -> 
     b_1 = b;
     c_2 = c_1;
     d_2 = d_1;
-    let _e33 = a_1;
-    let _e34 = b_1;
-    let _e36 = c_2;
-    let _e37 = t_5;
-    let _e39 = d_2;
-    let _e43 = c_2;
-    let _e44 = t_5;
-    let _e46 = d_2;
-    return (_e33 + (_e34 * cos((6.28318f * ((_e43 * _e44) + _e46)))));
+    let _e10 = a_1;
+    let _e11 = b_1;
+    let _e13 = c_2;
+    let _e14 = t_5;
+    let _e16 = d_2;
+    return (_e10 + (_e11 * cos((6.28318f * ((_e13 * _e14) + _e16)))));
 }
 
 fn spectrum(n: f32) -> vec3<f32> {
     var n_1: f32;
 
     n_1 = n;
-    let _e42 = n_1;
-    let _e59 = pal(_e42, vec3<f32>(0.5f, 0.5f, 0.5f), vec3<f32>(0.5f, 0.5f, 0.5f), vec3<f32>(1f, 1f, 1f), vec3<f32>(0f, 0.33f, 0.67f));
-    return _e59;
+    let _e2 = n_1;
+    let _e19 = pal(_e2, vec3<f32>(0.5f, 0.5f, 0.5f), vec3<f32>(0.5f, 0.5f, 0.5f), vec3<f32>(1f, 1f, 1f), vec3<f32>(0f, 0.33f, 0.67f));
+    return _e19;
 }
 
 fn gamma(color: vec3<f32>, g: f32) -> vec3<f32> {
@@ -372,10 +262,9 @@ fn gamma(color: vec3<f32>, g: f32) -> vec3<f32> {
 
     color_1 = color;
     g_1 = g;
-    let _e28 = g_1;
-    let _e30 = color_1;
-    let _e31 = g_1;
-    return pow(_e30, vec3(_e31));
+    let _e4 = color_1;
+    let _e5 = g_1;
+    return pow(_e4, vec3(_e5));
 }
 
 fn linearToScreen(linearRGB: vec3<f32>) -> vec3<f32> {
@@ -383,11 +272,10 @@ fn linearToScreen(linearRGB: vec3<f32>) -> vec3<f32> {
     var GAMMA: f32 = 2.2f;
 
     linearRGB_1 = linearRGB;
-    let _e29 = GAMMA;
-    let _e31 = linearRGB_1;
-    let _e33 = GAMMA;
-    let _e35 = gamma(_e31, (1f / _e33));
-    return _e35;
+    let _e4 = linearRGB_1;
+    let _e6 = GAMMA;
+    let _e8 = gamma(_e4, (1f / _e6));
+    return _e8;
 }
 
 fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
@@ -427,173 +315,127 @@ fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
 
     ro_5 = ro_4;
     rd_3 = rd_2;
-    let _e27 = sdfMatrixInv;
-    invsdfMatrix = _e27;
+    let _e11 = sdfMatrixInv;
+    invsdfMatrix = _e11;
     loop {
-        let _e33 = i_1;
-        let _e36 = d_3;
-        if !(((_e33 < 100i) && (_e36 < 5000f))) {
+        let _e17 = i_1;
+        let _e20 = d_3;
+        if !(((_e17 < 100i) && (_e20 < 5000f))) {
             break;
         }
         {
-            let _e44 = ro_5;
-            let _e45 = rd_3;
-            let _e46 = d_3;
-            p_7 = (_e44 + (_e45 * _e46));
-            let _e54 = p_7;
-            let _e58 = shortestDistanceToTorus(_e54, vec2<f32>(0.5f, 0.2f));
-            dist = _e58;
-            let _e60 = dist;
-            if (_e60 < 0.001f) {
+            let _e28 = ro_5;
+            let _e29 = rd_3;
+            let _e30 = d_3;
+            p_7 = (_e28 + (_e29 * _e30));
+            let _e34 = p_7;
+            let _e38 = shortestDistanceToTorus(_e34, vec2<f32>(0.5f, 0.2f));
+            dist = _e38;
+            let _e40 = dist;
+            if (_e40 < 0.001f) {
                 {
-                    let _e64 = vUv_1;
-                    let _e65 = textureSample(uDepthTexture, uDepthSampler, _e64);
-                    depth1_ = (_e65.x * 0.5f);
-                    let _e70 = depth1_;
-                    let _e83 = depth1_;
-                    linearDepth1_ = (exp2((_e83 * 26.575424f)) - 1f);
-                    let _e100 = d_3;
-                    let _e101 = linearDepth1_;
-                    if (_e100 > _e101) {
+                    let _e43 = vUv_1;
+                    let _e44 = textureSample(uDepthTexture, uDepthSampler, _e43);
+                    depth1_ = (_e44.x * 0.5f);
+                    let _e49 = depth1_;
+                    linearDepth1_ = (exp2((_e49 * 26.575424f)) - 1f);
+                    let _e56 = d_3;
+                    let _e57 = linearDepth1_;
+                    if (_e56 > _e57) {
                         {
                             break;
                         }
                     }
-                    let _e107 = p_7;
-                    let _e111 = estimateNormal(_e107, vec2<f32>(0.5f, 0.2f));
-                    normal = _e111;
-                    let _e113 = ro_5;
-                    let _e114 = p_7;
-                    let _e116 = ro_5;
-                    let _e117 = p_7;
-                    eyeDirection = normalize((_e116 - _e117));
-                    let _e123 = normal;
-                    let _e125 = rd_3;
-                    let _e127 = normal;
-                    reflection = reflect(_e125, normalize(_e127));
+                    let _e59 = p_7;
+                    let _e63 = estimateNormal(_e59, vec2<f32>(0.5f, 0.2f));
+                    normal = _e63;
+                    let _e65 = ro_5;
+                    let _e66 = p_7;
+                    eyeDirection = normalize((_e65 - _e66));
+                    let _e70 = rd_3;
+                    let _e71 = normal;
+                    reflection = reflect(_e70, normalize(_e71));
                     dome = vec3<f32>(0f, 1f, 0f);
-                    let _e140 = normal;
-                    nor = normalize(_e140);
-                    let _e143 = p_7;
-                    let _e146 = p_7;
-                    perturb = sin((_e146 * 10f));
-                    let _e151 = nor;
-                    let _e152 = perturb;
-                    let _e157 = nor;
-                    let _e158 = perturb;
-                    let _e162 = eyeDirection;
-                    let _e166 = nor;
-                    let _e167 = perturb;
-                    let _e172 = nor;
-                    let _e173 = perturb;
-                    let _e177 = eyeDirection;
-                    let _e181 = spectrum((dot((_e172 + (_e173 * 0.05f)), _e177) * 2f));
-                    iridescentColor = _e181;
-                    let _e185 = reflection;
-                    let _e186 = lightDirection;
-                    let _e192 = reflection;
-                    let _e193 = lightDirection;
-                    specular2_ = clamp(dot(_e192, _e193), 0f, 1f);
-                    let _e199 = specular2_;
-                    let _e204 = specular2_;
-                    let _e217 = specular2_;
-                    let _e222 = specular2_;
-                    let _e236 = specular2_;
-                    specular2_ = (pow((((sin(((_e222 * 20f) - 3f)) * 0.5f) + 0.5f) + 0.1f), 32f) * _e236);
-                    let _e238 = specular2_;
-                    specular2_ = (_e238 * 0.1f);
-                    let _e241 = specular2_;
-                    let _e244 = reflection;
-                    let _e245 = lightDirection;
-                    let _e251 = reflection;
-                    let _e252 = lightDirection;
-                    let _e262 = reflection;
-                    let _e263 = lightDirection;
-                    let _e269 = reflection;
-                    let _e270 = lightDirection;
-                    specular2_ = (_e241 + (pow((clamp(dot(_e269, _e270), 0f, 1f) + 0.3f), 8f) * 0.1f));
-                    let _e284 = nor;
-                    let _e285 = dome;
-                    let _e295 = nor;
-                    let _e296 = dome;
-                    let _e308 = nor;
-                    let _e309 = dome;
-                    let _e319 = nor;
-                    let _e320 = dome;
-                    shadow = pow(clamp(((dot(_e319, _e320) * 0.5f) + 1.2f), 0f, 1f), 3f);
-                    let _e332 = iridescentColor;
-                    let _e333 = shadow;
-                    let _e335 = specular2_;
-                    iridescentColor = ((_e332 * _e333) + vec3(_e335));
-                    let _e338 = p_7;
-                    let _e339 = cameraPos;
-                    let _e341 = p_7;
-                    let _e342 = cameraPos;
-                    cameraDist = length((_e341 - _e342));
-                    let _e351 = cameraDist;
-                    shade = smoothstep(0f, 5f, _e351);
+                    let _e80 = normal;
+                    nor = normalize(_e80);
+                    let _e83 = p_7;
+                    perturb = sin((_e83 * 10f));
+                    let _e88 = nor;
+                    let _e89 = perturb;
+                    let _e93 = eyeDirection;
+                    let _e97 = spectrum((dot((_e88 + (_e89 * 0.05f)), _e93) * 2f));
+                    iridescentColor = _e97;
+                    let _e99 = reflection;
+                    let _e100 = lightDirection;
+                    specular2_ = clamp(dot(_e99, _e100), 0f, 1f);
+                    let _e106 = specular2_;
+                    let _e120 = specular2_;
+                    specular2_ = (pow((((sin(((_e106 * 20f) - 3f)) * 0.5f) + 0.5f) + 0.1f), 32f) * _e120);
+                    let _e122 = specular2_;
+                    specular2_ = (_e122 * 0.1f);
+                    let _e125 = specular2_;
+                    let _e126 = reflection;
+                    let _e127 = lightDirection;
+                    specular2_ = (_e125 + (pow((clamp(dot(_e126, _e127), 0f, 1f) + 0.3f), 8f) * 0.1f));
+                    let _e139 = nor;
+                    let _e140 = dome;
+                    shadow = pow(clamp(((dot(_e139, _e140) * 0.5f) + 1.2f), 0f, 1f), 3f);
+                    let _e152 = iridescentColor;
+                    let _e153 = shadow;
+                    let _e155 = specular2_;
+                    iridescentColor = ((_e152 * _e153) + vec3(_e155));
+                    let _e158 = p_7;
+                    let _e159 = cameraPos;
+                    cameraDist = length((_e158 - _e159));
+                    let _e165 = cameraDist;
+                    shade = smoothstep(0f, 5f, _e165);
                     ambientColor = vec3<f32>(0.2f, 0.2f, 0.2f);
-                    let _e359 = uColor;
-                    diffuseColor = (_e359 * 2f);
+                    let _e173 = uColor;
+                    diffuseColor = (_e173 * 2f);
                     specularColor = vec3<f32>(1f, 1f, 1f);
                     shininess = 32f;
-                    let _e371 = lightDirection;
-                    normalLightDirection = normalize(_e371);
-                    let _e376 = normal;
-                    let _e378 = normalLightDirection;
-                    let _e381 = normal;
-                    let _e383 = normalLightDirection;
-                    let _e388 = normal;
-                    let _e390 = normalLightDirection;
-                    let _e393 = normal;
-                    let _e395 = normalLightDirection;
-                    diffuseFactor = max(0f, dot(normalize(_e393), -(_e395)));
-                    let _e400 = diffuseColor;
-                    let _e401 = diffuseFactor;
-                    diffuse = (_e400 * _e401);
-                    let _e404 = cameraPos;
-                    let _e405 = p_7;
-                    let _e407 = cameraPos;
-                    let _e408 = p_7;
-                    viewDirection = normalize((_e407 - _e408));
-                    let _e414 = normal;
-                    let _e416 = normalLightDirection;
-                    let _e418 = normal;
-                    reflectionDirection = reflect(_e416, normalize(_e418));
-                    let _e425 = viewDirection;
-                    let _e426 = reflectionDirection;
-                    let _e431 = viewDirection;
-                    let _e432 = reflectionDirection;
-                    let _e439 = viewDirection;
-                    let _e440 = reflectionDirection;
-                    let _e445 = viewDirection;
-                    let _e446 = reflectionDirection;
-                    let _e449 = shininess;
-                    specularFactor = pow(max(0f, dot(_e445, _e446)), _e449);
-                    let _e452 = specularColor;
-                    let _e453 = specularFactor;
-                    specular = (_e452 * _e453);
-                    let _e456 = ambientColor;
-                    let _e457 = diffuse;
-                    let _e459 = specular;
-                    phongColor = ((_e456 + _e457) + _e459);
-                    let _e468 = phongColor;
-                    let _e469 = shade;
-                    finalColor = mix(vec3(0f), _e468, vec3(_e469));
-                    let _e476 = finalColor;
-                    let _e477 = iridescentColor;
-                    let _e480 = mix(_e476, _e477, vec3(0.2f));
-                    finalColor = _e480;
-                    return _e480;
+                    let _e184 = lightDirection;
+                    normalLightDirection = normalize(_e184);
+                    let _e188 = normal;
+                    let _e190 = normalLightDirection;
+                    diffuseFactor = max(0f, dot(normalize(_e188), -(_e190)));
+                    let _e195 = diffuseColor;
+                    let _e196 = diffuseFactor;
+                    diffuse = (_e195 * _e196);
+                    let _e199 = cameraPos;
+                    let _e200 = p_7;
+                    viewDirection = normalize((_e199 - _e200));
+                    let _e204 = normalLightDirection;
+                    let _e205 = normal;
+                    reflectionDirection = reflect(_e204, normalize(_e205));
+                    let _e210 = viewDirection;
+                    let _e211 = reflectionDirection;
+                    let _e214 = shininess;
+                    specularFactor = pow(max(0f, dot(_e210, _e211)), _e214);
+                    let _e217 = specularColor;
+                    let _e218 = specularFactor;
+                    specular = (_e217 * _e218);
+                    let _e221 = ambientColor;
+                    let _e222 = diffuse;
+                    let _e224 = specular;
+                    phongColor = ((_e221 + _e222) + _e224);
+                    let _e229 = phongColor;
+                    let _e230 = shade;
+                    finalColor = mix(vec3(0f), _e229, vec3(_e230));
+                    let _e234 = finalColor;
+                    let _e235 = iridescentColor;
+                    let _e238 = mix(_e234, _e235, vec3(0.2f));
+                    finalColor = _e238;
+                    return _e238;
                 }
             }
-            let _e481 = d_3;
-            let _e482 = dist;
-            d_3 = (_e481 + _e482);
+            let _e239 = d_3;
+            let _e240 = dist;
+            d_3 = (_e239 + _e240);
         }
         continuing {
-            let _e41 = i_1;
-            i_1 = (_e41 + 1i);
+            let _e25 = i_1;
+            i_1 = (_e25 + 1i);
         }
     }
     return vec3(-1f);
@@ -610,88 +452,86 @@ fn main_1() {
     var outputColor: vec4<f32>;
     var local: f32;
 
-    let _e23 = vUv_1;
-    uv = _e23;
-    let _e26 = fov;
-    let _e31 = fov;
-    tanHalfFov = tan((radians(_e31) / 2f));
-    let _e37 = uv;
-    let _e41 = aspectRatio;
-    let _e45 = tanHalfFov;
-    let _e47 = uv;
-    let _e53 = tanHalfFov;
-    clipSpaceDir = vec3<f32>(((((_e37.x - 0.5f) * _e41) * 2f) * _e45), (((_e47.y - 0.5f) * 2f) * _e53), -1f);
-    let _e59 = cameraMatrix;
-    let _e60 = clipSpaceDir;
-    viewDir = (_e59 * vec4<f32>(_e60.x, _e60.y, _e60.z, 0f)).xyz;
-    let _e70 = viewDir;
-    viewDir = normalize(_e70);
-    let _e73 = uv;
-    let _e74 = textureSample(inputBufferTexture, inputBufferSampler, _e73);
-    FragColor = _e74;
-    let _e75 = mode;
-    if (_e75 == 0i) {
+    let _e12 = vUv_1;
+    uv = _e12;
+    let _e14 = fov;
+    tanHalfFov = tan((radians(_e14) / 2f));
+    let _e20 = uv;
+    let _e24 = aspectRatio;
+    let _e28 = tanHalfFov;
+    let _e30 = uv;
+    let _e36 = tanHalfFov;
+    clipSpaceDir = vec3<f32>(((((_e20.x - 0.5f) * _e24) * 2f) * _e28), (((_e30.y - 0.5f) * 2f) * _e36), -1f);
+    let _e41 = cameraMatrix;
+    let _e42 = clipSpaceDir;
+    viewDir = (_e41 * vec4<f32>(_e42.x, _e42.y, _e42.z, 0f)).xyz;
+    let _e51 = viewDir;
+    viewDir = normalize(_e51);
+    let _e53 = uv;
+    let _e54 = textureSample(inputBufferTexture, inputBufferSampler, _e53);
+    FragColor = _e54;
+    let _e55 = mode;
+    if (_e55 == 0i) {
         {
-            let _e80 = cameraPos;
-            let _e81 = viewDir;
-            let _e82 = rayMarchPhong(_e80, _e81);
-            color_2 = _e82;
-            let _e84 = color_2;
-            if any((_e84 != vec3(-1f))) {
+            let _e58 = cameraPos;
+            let _e59 = viewDir;
+            let _e60 = rayMarchPhong(_e58, _e59);
+            color_2 = _e60;
+            let _e62 = color_2;
+            if any((_e62 != vec3(-1f))) {
                 {
-                    let _e90 = color_2;
-                    FragColor = vec4<f32>(_e90.x, _e90.y, _e90.z, 1f);
+                    let _e67 = color_2;
+                    FragColor = vec4<f32>(_e67.x, _e67.y, _e67.z, 1f);
                 }
             }
         }
     } else {
-        let _e96 = mode;
-        if (_e96 == 3i) {
+        let _e73 = mode;
+        if (_e73 == 3i) {
             {
-                let _e101 = cameraPos;
-                let _e102 = viewDir;
-                let _e103 = rayMarchClouds(_e101, _e102);
-                cloudColor_1 = _e103;
-                let _e106 = uv;
-                let _e107 = textureSample(inputBufferTexture, inputBufferSampler, _e106);
-                backgroundColor = _e107;
-                let _e110 = outputColor;
-                let _e112 = cloudColor_1;
-                let _e114 = cloudColor_1;
-                let _e117 = backgroundColor;
-                let _e120 = cloudColor_1;
-                let _e124 = ((_e112.xyz * _e114.w) + (_e117.xyz * (1f - _e120.w)));
-                outputColor.x = _e124.x;
-                outputColor.y = _e124.y;
-                outputColor.z = _e124.z;
+                let _e76 = cameraPos;
+                let _e77 = viewDir;
+                let _e78 = rayMarchClouds(_e76, _e77);
+                cloudColor_1 = _e78;
+                let _e80 = uv;
+                let _e81 = textureSample(inputBufferTexture, inputBufferSampler, _e80);
+                backgroundColor = _e81;
+                let _e84 = cloudColor_1;
+                let _e86 = cloudColor_1;
+                let _e89 = backgroundColor;
+                let _e92 = cloudColor_1;
+                let _e96 = ((_e84.xyz * _e86.w) + (_e89.xyz * (1f - _e92.w)));
+                outputColor.x = _e96.x;
+                outputColor.y = _e96.y;
+                outputColor.z = _e96.z;
                 outputColor.w = 1f;
-                let _e133 = outputColor;
-                FragColor = _e133;
+                let _e105 = outputColor;
+                FragColor = _e105;
             }
         }
     }
-    let _e136 = vIsPerspective_1;
-    if (_e136 == 0f) {
-        let _e139 = gl_FragCoord_1;
-        local = _e139.z;
+    let _e108 = vIsPerspective_1;
+    if (_e108 == 0f) {
+        let _e111 = gl_FragCoord_1;
+        local = _e111.z;
     } else {
-        let _e142 = vFragDepth_1;
-        let _e144 = logDepthBufFC;
-        local = ((log2(_e142) * _e144) * 0.5f);
+        let _e113 = vFragDepth_1;
+        let _e115 = logDepthBufFC;
+        local = ((log2(_e113) * _e115) * 0.5f);
     }
-    let _e149 = local;
-    gl_FragDepth = _e149;
+    let _e120 = local;
+    gl_FragDepth = _e120;
     return;
 }
 
-@fragment 
+@fragment
 fn main(@location(0) vUv: vec2<f32>, @location(1) vFragDepth: f32, @location(2) vIsPerspective: f32, @builtin(position) gl_FragCoord: vec4<f32>) -> FragmentOutput {
     vUv_1 = vUv;
     vFragDepth_1 = vFragDepth;
     vIsPerspective_1 = vIsPerspective;
     gl_FragCoord_1 = gl_FragCoord;
     main_1();
-    let _e55 = FragColor;
-    let _e57 = gl_FragDepth;
-    return FragmentOutput(_e55, _e57);
+    let _e9 = FragColor;
+    let _e11 = gl_FragDepth;
+    return FragmentOutput(_e9, _e11);
 }
