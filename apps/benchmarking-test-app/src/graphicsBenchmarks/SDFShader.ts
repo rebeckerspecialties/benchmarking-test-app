@@ -662,3 +662,10 @@ fn main(@location(0) vUv: vec2<f32>, @location(1) vFragDepth: f32, @location(2) 
 }
 
 `;
+
+export const redFragWGSL = `
+@fragment
+fn main() -> @location(0) vec4f {
+  return vec4(1.0, 0.0, 0.0, 1.0);
+}
+`;
