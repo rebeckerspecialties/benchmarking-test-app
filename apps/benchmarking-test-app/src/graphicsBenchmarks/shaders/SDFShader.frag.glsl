@@ -2,11 +2,9 @@
 precision mediump float;
 
 layout(set = 1, binding = 0) uniform texture2D inputBufferTexture;
-layout(set = 1, binding = 1) uniform sampler inputBufferSampler;
-layout(set = 1, binding = 2) uniform texture2D noiseTexture;
-layout(set = 1, binding = 3) uniform sampler noiseSampler;
-layout(set = 1, binding = 4) uniform texture2D uDepthTexture;
-layout(set = 1, binding = 5) uniform sampler uDepthSampler;
+layout(set = 1, binding = 1) uniform texture2D noiseTexture;
+layout(set = 1, binding = 2) uniform texture2D uDepthTexture;
+layout(set = 1, binding = 3) uniform sampler samp;
 layout(binding = 2) uniform vec3 cameraPos;
 layout(binding = 3) uniform mat4 cameraMatrix;
 layout(binding = 4) uniform float uTime;
@@ -75,7 +73,7 @@ float cloudShape(vec3 p) {
   float y = (scaledP.y - floor(scaledP.y)) + slice * sliceSize; // Add the slice offset
 
   // Sample the noise texture
-  float density = texture(sampler2D(noiseTexture, noiseSampler), vec2(x, y)).r;
+  float density = texture(sampler2D(noiseTexture, samp), vec2(x, y)).r;
 
       // Adjust density as needed
   return density * 0.025;
@@ -90,7 +88,7 @@ vec4 rayMarchClouds(vec3 ro, vec3 rd) {
     float depthFromCamera = length(p - cameraPos);
 
           // Sample the depth texture using screen space coordinates
-    float depthFromTexture = texture(sampler2D(uDepthTexture, uDepthSampler), vUv).r * 10.0;
+    float depthFromTexture = texture(sampler2D(uDepthTexture, samp), vUv).r * 10.0;
 
     if(depthFromCamera > depthFromTexture) {
               // Skip this pixel if the depth from the camera is greater than the depth from the texture
@@ -154,7 +152,7 @@ vec3 rayMarchPhong(vec3 ro, vec3 rd) {
     float dist = shortestDistanceToTorus(p, vec2(0.5, 0.2));
     if(dist < MIN_DIST) {
             //reconstruct depth texture to linear space
-      float depth1 = texture(sampler2D(uDepthTexture, uDepthSampler), vUv).r * 0.5;
+      float depth1 = texture(sampler2D(uDepthTexture, samp), vUv).r * 0.5;
       float linearDepth1 = exp2(depth1 * log2(1.0 + 100000.0 / 0.001)) - 1.0;
 
             // Depth testing
@@ -231,7 +229,7 @@ void main() {
   viewDir = normalize(viewDir);
 
     // Existing code for texture
-  FragColor = texture(sampler2D(inputBufferTexture, inputBufferSampler), uv);
+  FragColor = texture(sampler2D(inputBufferTexture, samp), uv);
   if(mode == MODE_TORUS) {
       // Ray marching with correct world space direction
     vec3 color = rayMarchPhong(cameraPos, viewDir);
@@ -242,7 +240,7 @@ void main() {
     vec4 cloudColor = rayMarchClouds(cameraPos, viewDir);
 
       // Get color from inputBuffer
-    vec4 backgroundColor = texture(sampler2D(inputBufferTexture, inputBufferSampler), uv);
+    vec4 backgroundColor = texture(sampler2D(inputBufferTexture, samp), uv);
 
       // Blend using premultiplied alpha
     vec4 outputColor;

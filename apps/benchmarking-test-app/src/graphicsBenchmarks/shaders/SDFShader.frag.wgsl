@@ -6,15 +6,11 @@ struct FragmentOutput {
 @group(1) @binding(0) 
 var inputBufferTexture: texture_2d<f32>;
 @group(1) @binding(1) 
-var inputBufferSampler: sampler;
-@group(1) @binding(2) 
 var noiseTexture: texture_2d<f32>;
-@group(1) @binding(3) 
-var noiseSampler: sampler;
-@group(1) @binding(4) 
+@group(1) @binding(2) 
 var uDepthTexture: texture_2d<f32>;
-@group(1) @binding(5) 
-var uDepthSampler: sampler;
+@group(1) @binding(3) 
+var samp: sampler;
 @group(0) @binding(2) 
 var<uniform> cameraPos: vec3<f32>;
 @group(0) @binding(3) 
@@ -130,7 +126,7 @@ fn cloudShape(p_2: vec3<f32>) -> f32 {
     y = ((_e78.y - floor(_e80.y)) + (_e84 * _e85));
     let _e89 = x;
     let _e90 = y;
-    let _e92 = textureSample(noiseTexture, noiseSampler, vec2<f32>(_e89, _e90));
+    let _e92 = textureSample(noiseTexture, samp, vec2<f32>(_e89, _e90));
     density = _e92.x;
     let _e95 = density;
     return (_e95 * 0.025f);
@@ -166,7 +162,7 @@ fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
             let _e33 = cameraPos;
             depthFromCamera = length((_e32 - _e33));
             let _e37 = vUv_1;
-            let _e38 = textureSample(uDepthTexture, uDepthSampler, _e37);
+            let _e38 = textureSample(uDepthTexture, samp, _e37);
             depthFromTexture = (_e38.x * 10f);
             let _e43 = depthFromCamera;
             let _e44 = depthFromTexture;
@@ -397,7 +393,7 @@ fn rayMarchPhong(ro_4: vec3<f32>, rd_2: vec3<f32>) -> vec3<f32> {
             if (_e40 < 0.001f) {
                 {
                     let _e43 = vUv_1;
-                    let _e44 = textureSample(uDepthTexture, uDepthSampler, _e43);
+                    let _e44 = textureSample(uDepthTexture, samp, _e43);
                     depth1_ = (_e44.x * 0.5f);
                     let _e49 = depth1_;
                     linearDepth1_ = (exp2((_e49 * 26.575424f)) - 1f);
@@ -530,7 +526,7 @@ fn main_1() {
     let _e51 = viewDir;
     viewDir = normalize(_e51);
     let _e53 = uv;
-    let _e54 = textureSample(inputBufferTexture, inputBufferSampler, _e53);
+    let _e54 = textureSample(inputBufferTexture, samp, _e53);
     FragColor = _e54;
     let _e55 = mode;
     if (_e55 == 0i) {
@@ -556,7 +552,7 @@ fn main_1() {
                 let _e78 = rayMarchClouds(_e76, _e77);
                 cloudColor_1 = _e78;
                 let _e80 = uv;
-                let _e81 = textureSample(inputBufferTexture, inputBufferSampler, _e80);
+                let _e81 = textureSample(inputBufferTexture, samp, _e80);
                 backgroundColor = _e81;
                 let _e84 = cloudColor_1;
                 let _e86 = cloudColor_1;

@@ -1,4 +1,4 @@
-import { redFragWGSL, sdfShaderVertWGSL } from "./SDFShader";
+import { sdfShaderFragWGSL, sdfShaderVertWGSL } from "./SDFShader";
 import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
@@ -8,6 +8,7 @@ import {
   cubeVertexSize,
 } from "./cube";
 import { mat4, vec3 } from "wgpu-matrix";
+import Noise from "noisejs";
 
 export const runSignedDistanceField = async (
   context: CanvasContext,
@@ -55,9 +56,7 @@ export const runSignedDistanceField = async (
     },
     fragment: {
       module: device.createShaderModule({
-        // code: sdfShaderFragWGSL,
-        // TODO: implement buffers for sdfShaderFragWGSL
-        code: redFragWGSL,
+        code: sdfShaderFragWGSL,
       }),
       entryPoint: "main",
       targets: [
@@ -90,6 +89,7 @@ export const runSignedDistanceField = async (
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
+  // Bind group 0
   const uniformBufferSize = 4 * 16;
   const projectionMatrixBuffer = device.createBuffer({
     size: uniformBufferSize,
@@ -121,6 +121,52 @@ export const runSignedDistanceField = async (
       },
     ],
   });
+
+  // Bind group 1 (textures and samplers)
+
+  const inputBufferTexture = device.createTexture({
+    size: [512, 512, 1],
+    format: "rgba8unorm",
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const noiseTexture = device.createTexture({
+    size: [512, 512, 512],
+    format: "rgba8unorm",
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const perlinNoise = generateNoiseData(512);
+  const perlinSize = 512 * 8;
+  device.queue.writeTexture(
+    { texture: noiseTexture },
+    perlinNoise,
+    {},
+    { width: perlinSize, height: perlinSize, depthOrArrayLayers: perlinSize }
+  );
+
+  const sampler = device.createSampler({
+    magFilter: "linear",
+    minFilter: "linear",
+  });
+
+  const uniformBindGroup1 = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(1),
+    entries: [
+      { binding: 0, resource: inputBufferTexture.createView() },
+      { binding: 1, resource: noiseTexture.createView() },
+      { binding: 2, resource: depthTexture.createView() },
+      { binding: 3, resource: sampler },
+    ],
+  });
+
+  // Animation loop
 
   const aspect = canvas.width / canvas.height;
   const projectionMatrix = mat4.perspective(
@@ -178,6 +224,7 @@ export const runSignedDistanceField = async (
       passEncoder.setPipeline(pipeline);
       passEncoder.setVertexBuffer(0, verticesBuffer);
       passEncoder.setBindGroup(0, uniformBindGroup0);
+      passEncoder.setBindGroup(1, uniformBindGroup1);
       passEncoder.draw(cubeVertexCount);
       passEncoder.end();
 
@@ -208,4 +255,27 @@ function getViewMatrix() {
   );
 
   return viewMatrix;
+}
+
+function generateNoiseData(textureSize: number) {
+  const noise = new Noise(Math.random());
+
+  // Create a data array to store the noise values
+  const size = textureSize * textureSize * textureSize;
+  const data = new Uint8Array(4 * size);
+  const scale = 5;
+  // Fill the data array with noise values
+  for (let k = 0; k < textureSize; k++) {
+    for (let j = 0; j < textureSize; j++) {
+      for (let i = 0; i < textureSize; i++) {
+        let value = noise.perlin3(i / scale, j / scale, k / scale);
+        value = ((value + 1) / 2) * 255; // remap from -1,1 to 0,255
+
+        const index = i + j * textureSize + k * textureSize * textureSize;
+        data[index] = value; // Only set the red channel
+      }
+    }
+  }
+
+  return data;
 }
