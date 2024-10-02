@@ -1,4 +1,3 @@
-// https://webgpu.github.io/webgpu-samples/?sample=helloTriangle
 import { redFragWGSL, triangleVertWGSL } from "./triangle";
 import { CanvasContext } from "./types";
 import { fxaaFragWGSL, fxaaVertWGSL } from "./fxaa";
