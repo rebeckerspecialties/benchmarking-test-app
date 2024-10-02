@@ -1,3 +1,4 @@
+// from https://github.com/webgpu/webgpu-samples/blob/1e05ae987e74140db755b6e3c655ea113c896aef/meshes/utils.ts
 import { vec3, Vec3 } from "wgpu-matrix";
 
 export function computeSurfaceNormals(

@@ -1,3 +1,4 @@
+// from: https://github.com/webgpu/webgpu-samples/blob/1e05ae987e74140db755b6e3c655ea113c896aef/meshes/stanfordDragon.ts
 import dragonRawData from "./stanfordDragonData";
 import { computeProjectedPlaneUVs, generateNormals } from "./utils";
 
