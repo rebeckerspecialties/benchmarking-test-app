@@ -29,6 +29,7 @@ const runBenchmarkSuite = async () => {
   console.log("Running graphics benchmarks");
   await benchmarkWithWallClockTime("triangleWebGpuBenchmark");
   await benchmarkWithWallClockTime("sdfWebGpuBenchmark");
+  await benchmarkWithWallClockTime("dragonFxaaBenchmark");
 };
 
 runBenchmarkSuite();
