@@ -164,9 +164,9 @@ export const runSignedDistanceField = async (
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  const int16Size = 4;
+  const int32size = 4;
   const modeBuffer = device.createBuffer({
-    size: int16Size,
+    size: int32size,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
@@ -270,7 +270,7 @@ export const runSignedDistanceField = async (
         resource: {
           buffer: modeBuffer,
           offset: 0,
-          size: int16Size,
+          size: int32size,
         },
       },
       {
@@ -323,7 +323,7 @@ export const runSignedDistanceField = async (
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
-    size: [noiseTextureWidth, noiseTextureWidth * noiseTextureWidth, 1],
+    size: [noiseTextureWidth * noiseTextureWidth, noiseTextureWidth, 1],
     format: "rgba8unorm",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
@@ -337,10 +337,10 @@ export const runSignedDistanceField = async (
     { texture: noiseTexture },
     perlinNoise,
     {
-      bytesPerRow: perlinSize * 4,
-      rowsPerImage: perlinSize * perlinSize,
+      bytesPerRow: perlinSize * perlinSize * 4,
+      rowsPerImage: perlinSize,
     },
-    { width: perlinSize, height: perlinSize * perlinSize }
+    { width: perlinSize * perlinSize, height: perlinSize }
   );
 
   const sampler = device.createSampler({
@@ -402,18 +402,19 @@ export const runSignedDistanceField = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const projectionMatrix = mat4.perspective(
-    (2 * Math.PI) / 5,
+    (2 * Math.PI) / 4,
     aspect,
     1,
     100.0
   );
   const cameraPos = vec3.fromValues(0, 0, -4);
   const cameraMatrix = mat4.identity();
-  const color = vec3.fromValues(1, 0, 0);
+  mat4.translate(cameraMatrix, vec3.fromValues(0, 0, -4), cameraMatrix);
+  const color = vec3.fromValues(1, 1, 0);
   const scale = vec3.fromValues(0.25, 0.25, 0.25);
   // const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.identity();
-  const lightDirection = vec3.fromValues(1.0, 0.5, 1.0);
+  const lightDirection = vec3.fromValues(1.0, 1.0, 1.0);
 
   // Animation loop
 
@@ -480,6 +481,24 @@ export const runSignedDistanceField = async (
         timeBuffer.buffer,
         timeBuffer.byteOffset,
         timeBuffer.byteLength
+      );
+      const fov = new Float32Array(1);
+      fov.fill(70, 0);
+      device.queue.writeBuffer(
+        fovBuffer,
+        0,
+        fov.buffer,
+        fov.byteOffset,
+        fov.byteLength
+      );
+      const aspectRatio = new Float32Array(1);
+      aspectRatio.fill(aspect, 0);
+      device.queue.writeBuffer(
+        aspectRatioBuffer,
+        0,
+        aspectRatio.buffer,
+        aspectRatio.byteOffset,
+        aspectRatio.byteLength
       );
       device.queue.writeBuffer(
         uColorBuffer,
@@ -564,8 +583,8 @@ function getViewMatrix() {
   // TODO: calc rotation from frame value
   const viewMatrix = mat4.identity();
   mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-  const now = Date.now() / 1000;
-  // const now = 0;
+  // const now = Date.now() / 1000;
+  const now = 0;
   mat4.rotate(
     viewMatrix,
     vec3.fromValues(Math.sin(now), Math.cos(now), 0),
