@@ -7,6 +7,7 @@ export const WebGpuBenchmark: React.FC<{
   run: (
     context: CanvasContext,
     device: GPUDevice,
+    canvas: HTMLCanvasElement,
     requestAnimationFrame: (callback: (time: number) => void) => number
   ) => Promise<void>;
 }> = ({ onComplete, run }) => {
@@ -31,10 +32,11 @@ export const WebGpuBenchmark: React.FC<{
     context.configure({
       device,
       format: presentationFormat,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
       alphaMode: "opaque",
     });
 
-    await run(context, device, requestAnimationFrame);
+    await run(context, device, canvas, requestAnimationFrame);
     onComplete(startTime);
   });
 

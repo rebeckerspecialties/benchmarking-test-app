@@ -14,6 +14,7 @@ export const GraphicsBenchmark: React.FC<{
   run: (
     context: CanvasContext,
     device: GPUDevice,
+    canvas: HTMLCanvasElement,
     requestAnimationFrame: (callback: (time: number) => void) => number
   ) => Promise<void>;
 }> = ({ run, name }) => {
