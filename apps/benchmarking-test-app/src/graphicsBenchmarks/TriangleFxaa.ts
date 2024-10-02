@@ -161,7 +161,7 @@ export const runTriangleFxaa = async (
         colorAttachments: [
           {
             view: textureView,
-            clearValue: [0, 0, 0, 1],
+            clearValue: [0.2, 0.2, 0.2, 1],
             loadOp: "clear",
             storeOp: "store",
           },
@@ -172,7 +172,7 @@ export const runTriangleFxaa = async (
         colorAttachments: [
           {
             view: textureView,
-            clearValue: [0, 0, 0, 1],
+            clearValue: [0.2, 0.2, 0.2, 1],
             loadOp: "clear",
             storeOp: "store",
           },
@@ -191,6 +191,17 @@ export const runTriangleFxaa = async (
         floatBuffer.buffer,
         floatBuffer.byteOffset,
         floatBuffer.byteLength
+      );
+
+      const texelArray = new Float32Array(2);
+      texelArray.fill(0.005, 0, 2);
+
+      device.queue.writeBuffer(
+        texelBuffer,
+        0,
+        texelArray.buffer,
+        texelArray.byteOffset,
+        texelArray.byteLength
       );
 
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
