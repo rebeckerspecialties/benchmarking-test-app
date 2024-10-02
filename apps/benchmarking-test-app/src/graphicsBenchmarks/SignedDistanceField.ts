@@ -333,7 +333,7 @@ export const runSignedDistanceField = async (
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
-    size: [noiseTextureWidth * noiseTextureWidth, noiseTextureWidth, 1],
+    size: [noiseTextureWidth, noiseTextureWidth * noiseTextureWidth, 1],
     format: "rgba8unorm",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
@@ -342,20 +342,24 @@ export const runSignedDistanceField = async (
   });
 
   const perlinNoise = generateNoiseData(noiseTextureWidth);
-  const perlinSize = noiseTextureWidth;
   device.queue.writeTexture(
     { texture: noiseTexture },
     perlinNoise,
     {
-      bytesPerRow: perlinSize * perlinSize * 4,
-      rowsPerImage: perlinSize,
+      bytesPerRow: noiseTextureWidth * 4,
+      rowsPerImage: noiseTextureWidth * noiseTextureWidth,
     },
-    { width: perlinSize * perlinSize, height: perlinSize }
+    {
+      width: noiseTextureWidth,
+      height: noiseTextureWidth * noiseTextureWidth,
+    }
   );
 
   const sampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
+    addressModeU: "repeat",
+    addressModeV: "repeat",
   });
 
   // Create the depth texture for rendering/sampling the shadow map.
@@ -422,7 +426,7 @@ export const runSignedDistanceField = async (
   const cameraMatrix = mat4.identity();
   mat4.translate(cameraMatrix, vec3.fromValues(0, 0, -4), cameraMatrix);
   const color = vec3.fromValues(1, 1, 0);
-  const scale = vec3.fromValues(0.25, 0.25, 0.25);
+  const scale = vec3.fromValues(0.25, 0.001, 0.25);
   // const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.identity();
   const lightDirection = vec3.fromValues(1.0, 1.0, 1.0);
