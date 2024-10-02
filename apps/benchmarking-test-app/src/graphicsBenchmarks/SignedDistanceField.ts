@@ -329,7 +329,6 @@ export const runSignedDistanceField = async (
   });
 
   // Bind group 1 (textures and samplers)
-  // const inputBufferWidth = 512;
   const inputBufferTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
     format: presentationFormat,
@@ -338,16 +337,6 @@ export const runSignedDistanceField = async (
       GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
-  // const inputBufferData = generateColorData(inputBufferWidth);
-  // device.queue.writeTexture(
-  //   { texture: inputBufferTexture },
-  //   inputBufferData,
-  //   {
-  //     bytesPerRow: inputBufferWidth * 4,
-  //     rowsPerImage: inputBufferWidth,
-  //   },
-  //   { width: inputBufferWidth, height: inputBufferWidth }
-  // );
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
@@ -464,8 +453,6 @@ export const runSignedDistanceField = async (
   const fov = Math.PI / 2;
   const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
   const cameraPos = vec3.fromValues(0, 0, -4);
-  const cameraMatrix = mat4.identity();
-  mat4.translate(cameraMatrix, vec3.fromValues(0, 0, -4), cameraMatrix);
   const color = vec3.fromValues(1, 1, 0);
   const scale = vec3.fromValues(0.25, 0.001, 0.25);
   // const sdfMatrix = mat4.identity();
@@ -518,6 +505,10 @@ export const runSignedDistanceField = async (
         modelViewMatrix
       );
 
+      const cameraMatrix = mat4.inverse(
+        mat4.multiply(projectionMatrix, getViewMatrix(0))
+      );
+
       device.queue.writeBuffer(
         projectionMatrixBuffer,
         0,
@@ -554,7 +545,7 @@ export const runSignedDistanceField = async (
         cameraMatrix.byteLength
       );
       const timeBuffer = new Float32Array(1);
-      timeBuffer.fill(Date.now(), 0);
+      timeBuffer.fill(Date.now() / 1000, 0);
       device.queue.writeBuffer(
         uTimeBuffer,
         0,
@@ -563,7 +554,7 @@ export const runSignedDistanceField = async (
         timeBuffer.byteLength
       );
       const fov = new Float32Array(1);
-      fov.fill(70, 0);
+      fov.fill(90, 0);
       device.queue.writeBuffer(
         fovBuffer,
         0,
@@ -618,7 +609,7 @@ export const runSignedDistanceField = async (
         lightDirection.byteLength
       );
       const logDepthBufFC = new Float32Array(1);
-      logDepthBufFC.fill(0.01, 0);
+      logDepthBufFC.fill(0.05, 0);
       device.queue.writeBuffer(
         logDepthBufFCBuffer,
         0,
@@ -675,7 +666,6 @@ export const runSignedDistanceField = async (
 };
 
 function getViewMatrix(now: number) {
-  // TODO: calc rotation from frame value
   const viewMatrix = mat4.identity();
   mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
   mat4.rotate(
