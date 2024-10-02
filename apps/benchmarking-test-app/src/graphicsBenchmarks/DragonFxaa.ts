@@ -10,7 +10,7 @@ import {
 import { mesh } from "./meshes/stanfordDragon";
 import { mat4, vec3 } from "wgpu-matrix";
 
-export const runTriangleFxaa = async (
+export const runDragonFxaa = async (
   context: CanvasContext,
   device: GPUDevice,
   canvas: HTMLCanvasElement,
