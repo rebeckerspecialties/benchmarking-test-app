@@ -1,6 +1,5 @@
-import { redFragWGSL, triangleVertWGSL } from "./triangle";
 import { CanvasContext } from "./types";
-import { fxaaFragWGSL, fxaaVertWGSL } from "./fxaa";
+import { fxaaFragWGSL, fxaaVertWGSL, meshFragWGSL, meshVertWGSL } from "./fxaa";
 import {
   screenPositionOffset,
   screenUVOffset,
@@ -8,6 +7,8 @@ import {
   screenVertexCount,
   screenVertexSize,
 } from "./screen";
+import { mesh } from "./meshes/stanfordDragon";
+import { mat4, vec3 } from "wgpu-matrix";
 
 export const runTriangleFxaa = async (
   context: CanvasContext,
@@ -16,17 +17,69 @@ export const runTriangleFxaa = async (
   requestAnimationFrame: (callback: (time: number) => void) => number
 ) => {
   const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+
+  // Create the model vertex buffer.
+  const vertexBuffer = device.createBuffer({
+    size: mesh.positions.length * 3 * 2 * Float32Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.VERTEX,
+    mappedAtCreation: true,
+  });
+  {
+    const mapping = new Float32Array(vertexBuffer.getMappedRange());
+    for (let i = 0; i < mesh.positions.length; ++i) {
+      mapping.set(mesh.positions[i], 6 * i);
+      mapping.set(mesh.normals[i], 6 * i + 3);
+    }
+    vertexBuffer.unmap();
+  }
+
+  // Create the model index buffer.
+  const indexCount = mesh.triangles.length * 3;
+  const indexBuffer = device.createBuffer({
+    size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.INDEX,
+    mappedAtCreation: true,
+  });
+  {
+    const mapping = new Uint16Array(indexBuffer.getMappedRange());
+    for (let i = 0; i < mesh.triangles.length; ++i) {
+      mapping.set(mesh.triangles[i], 3 * i);
+    }
+    indexBuffer.unmap();
+  }
+
+  const meshVertexBuffers: Iterable<GPUVertexBufferLayout> = [
+    {
+      arrayStride: Float32Array.BYTES_PER_ELEMENT * 6,
+      attributes: [
+        {
+          // position
+          shaderLocation: 0,
+          offset: 0,
+          format: "float32x3",
+        },
+        {
+          // normal
+          shaderLocation: 1,
+          offset: Float32Array.BYTES_PER_ELEMENT * 3,
+          format: "float32x3",
+        },
+      ],
+    },
+  ];
+
   const pipeline = device.createRenderPipeline({
     layout: "auto",
     vertex: {
       module: device.createShaderModule({
-        code: triangleVertWGSL,
+        code: meshVertWGSL,
       }),
       entryPoint: "main",
+      buffers: meshVertexBuffers,
     },
     fragment: {
       module: device.createShaderModule({
-        code: redFragWGSL,
+        code: meshFragWGSL,
       }),
       entryPoint: "main",
       targets: [
@@ -37,6 +90,7 @@ export const runTriangleFxaa = async (
     },
     primitive: {
       topology: "triangle-list",
+      cullMode: "back",
     },
   });
 
@@ -93,7 +147,7 @@ export const runTriangleFxaa = async (
   new Float32Array(screenBuffer.getMappedRange()).set(screenVertexArray);
   screenBuffer.unmap();
 
-  const uniformBufferSize = 4;
+  const uniformBufferSize = 4 * 16;
   const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -180,20 +234,38 @@ export const runTriangleFxaa = async (
 
       const commandEncoder = device.createCommandEncoder();
 
-      const floatBuffer = new Float32Array(1);
-      floatBuffer.fill(frame, 0);
       frame++;
 
+      const aspect = canvas.width / canvas.height;
+      const eyePosition = vec3.fromValues(0, 50, -100);
+      const upVector = vec3.fromValues(0, 1, 0);
+      const origin = vec3.fromValues(0, 0, 0);
+
+      const projectionMatrix = mat4.perspective(
+        (2 * Math.PI) / 5,
+        aspect,
+        1,
+        2000.0
+      );
+
+      const viewMatrix = mat4.lookAt(eyePosition, origin, upVector);
+
+      const viewProjMatrix = mat4.multiply(projectionMatrix, viewMatrix);
+
+      // Move the model so it's centered.
+      const modelMatrix = mat4.translation([0, -45, 0]);
+
+      const modelViewProjection = mat4.multiply(viewProjMatrix, modelMatrix);
       device.queue.writeBuffer(
         uniformBuffer,
         0,
-        floatBuffer.buffer,
-        floatBuffer.byteOffset,
-        floatBuffer.byteLength
+        modelViewProjection.buffer,
+        modelViewProjection.byteOffset,
+        modelViewProjection.byteLength
       );
 
       const texelArray = new Float32Array(2);
-      texelArray.fill(0.005, 0, 2);
+      texelArray.fill(frame * 0.00005, 0, 2);
 
       device.queue.writeBuffer(
         texelBuffer,
@@ -206,7 +278,9 @@ export const runTriangleFxaa = async (
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
       passEncoder.setBindGroup(0, uniformBindGroup);
-      passEncoder.draw(3);
+      passEncoder.setVertexBuffer(0, vertexBuffer);
+      passEncoder.setIndexBuffer(indexBuffer, "uint16");
+      passEncoder.drawIndexed(indexCount);
       passEncoder.end();
 
       const renderView = context.getCurrentTexture();
