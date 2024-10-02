@@ -1,4 +1,5 @@
 import {
+  redFragWGSL,
   sdfShaderFragWGSL,
   sdfShaderVertWGSL,
   vertexShadowWGSL,
@@ -67,6 +68,23 @@ export const runSignedDistanceField = async (
     topology: "triangle-list",
     cullMode: "back",
   };
+
+  const cubePipeline = device.createRenderPipeline({
+    layout: "auto",
+    vertex: {
+      module: device.createShaderModule({
+        code: vertexShadowWGSL,
+      }),
+      buffers: vertexBuffers,
+    },
+    fragment: {
+      module: device.createShaderModule({
+        code: redFragWGSL,
+      }),
+      targets: [{ format: presentationFormat }],
+    },
+    primitive,
+  });
 
   const shadowPipeline = device.createRenderPipeline({
     layout: "auto",
@@ -311,25 +329,25 @@ export const runSignedDistanceField = async (
   });
 
   // Bind group 1 (textures and samplers)
-  const inputBufferWidth = 512;
+  // const inputBufferWidth = 512;
   const inputBufferTexture = device.createTexture({
-    size: [inputBufferWidth, inputBufferWidth, 1],
-    format: "rgba8unorm",
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
-  const inputBufferData = generateColorData(inputBufferWidth);
-  device.queue.writeTexture(
-    { texture: inputBufferTexture },
-    inputBufferData,
-    {
-      bytesPerRow: inputBufferWidth * 4,
-      rowsPerImage: inputBufferWidth,
-    },
-    { width: inputBufferWidth, height: inputBufferWidth }
-  );
+  // const inputBufferData = generateColorData(inputBufferWidth);
+  // device.queue.writeTexture(
+  //   { texture: inputBufferTexture },
+  //   inputBufferData,
+  //   {
+  //     bytesPerRow: inputBufferWidth * 4,
+  //     rowsPerImage: inputBufferWidth,
+  //   },
+  //   { width: inputBufferWidth, height: inputBufferWidth }
+  // );
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
@@ -408,6 +426,29 @@ export const runSignedDistanceField = async (
     ],
   });
 
+  // Cube rendering bind group
+  const sceneBindGroupForCube = device.createBindGroup({
+    layout: cubePipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: projectionMatrixBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: shadowModelViewMatrixBuffer,
+          offset: 0,
+          size: uniformBufferSize,
+        },
+      },
+    ],
+  });
+
   const shadowPassDescriptor: GPURenderPassDescriptor = {
     colorAttachments: [],
     depthStencilAttachment: {
@@ -454,6 +495,17 @@ export const runSignedDistanceField = async (
           depthLoadOp: "clear",
           depthStoreOp: "store",
         },
+      };
+
+      const cubePassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: textureView,
+            clearValue: [0, 0, 0, 1],
+            loadOp: "clear",
+            storeOp: "store",
+          },
+        ],
       };
 
       frame++;
@@ -577,6 +629,21 @@ export const runSignedDistanceField = async (
 
       const commandEncoder = device.createCommandEncoder();
 
+      const cubePass = commandEncoder.beginRenderPass(cubePassDescriptor);
+      cubePass.setPipeline(cubePipeline);
+      cubePass.setBindGroup(0, sceneBindGroupForCube);
+      cubePass.setVertexBuffer(0, verticesBuffer);
+      cubePass.draw(cubeVertexCount);
+
+      cubePass.end();
+
+      const renderView = context.getCurrentTexture();
+      commandEncoder.copyTextureToTexture(
+        { texture: renderView },
+        { texture: inputBufferTexture },
+        [canvas.width, canvas.height]
+      );
+
       const shadowPass = commandEncoder.beginRenderPass(shadowPassDescriptor);
       shadowPass.setPipeline(shadowPipeline);
       shadowPass.setBindGroup(0, sceneBindGroupForShadow);
@@ -635,28 +702,11 @@ function generateNoiseData(textureSize: number) {
         let value = noise.perlin3(i / scale, j / scale, k / scale);
         value = ((value + 1) / 2) * 255; // remap from -1,1 to 0,255
 
-        const index = i + j * textureSize + k * textureSize * textureSize;
+        const index = 4 * (i + j * textureSize + k * textureSize * textureSize);
         data[index] = value; // Only set the red channel
       }
     }
   }
 
-  return data;
-}
-
-function generateColorData(textureSize: number) {
-  const size = textureSize * textureSize;
-  const data = new Uint8Array(4 * size);
-  // Fill the data array with noise values
-  for (let k = 0; k < textureSize; k++) {
-    for (let j = 0; j < textureSize; j++) {
-      const index = 4 * (j + k * textureSize);
-      data[index] = 127;
-      data[index + 1] = 0;
-      data[index + 2] = 255;
-      data[index + 3] = 255;
-    }
-  }
-  // console.log(data);
   return data;
 }
