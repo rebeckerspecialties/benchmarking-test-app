@@ -500,7 +500,7 @@ export const runSignedDistanceField = async (
       const modelViewMatrix = mat4.identity();
       mat4.translate(
         modelViewMatrix,
-        vec3.fromValues(0, 0, -2),
+        vec3.fromValues(0, 0, -1),
         modelViewMatrix
       );
 
