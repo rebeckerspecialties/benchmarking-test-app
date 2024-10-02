@@ -145,7 +145,7 @@ fn torus(p: vec3<f32>, t: vec2<f32>) -> vec3<f32> {
 @diagnostic(off,derivative_uniformity)
 fn cloudShape(p_2: vec3<f32>) -> f32 {
     var p_3: vec3<f32>;
-    var textureSize: f32 = 128f;
+    var textureSize: f32 = 64f;
     var thisScale: vec3<f32>;
     var transformedP: vec3<f32>;
     var scaledP: vec3<f32>;

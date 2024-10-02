@@ -11,6 +11,7 @@ import {
   cubeVertexCount,
   cubeVertexSize,
 } from "./cube";
+import { screenVertexArray, screenVertexCount } from "./screen";
 import { mat4, vec3 } from "wgpu-matrix";
 import Noise from "./perlin";
 
@@ -32,6 +33,15 @@ export const runSignedDistanceField = async (
 
   new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray);
   verticesBuffer.unmap();
+
+  const screenBuffer = device.createBuffer({
+    size: screenVertexArray.byteLength,
+    usage: GPUBufferUsage.VERTEX,
+    mappedAtCreation: true,
+  });
+
+  new Float32Array(screenBuffer.getMappedRange()).set(screenVertexArray);
+  screenBuffer.unmap();
 
   const vertexBuffers: GPUVertexBufferLayout[] = [
     {
@@ -367,6 +377,11 @@ export const runSignedDistanceField = async (
   });
 
   // Shadow bind group
+  const shadowModelViewMatrixBuffer = device.createBuffer({
+    size: uniformBufferSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
   const sceneBindGroupForShadow = device.createBindGroup({
     layout: shadowPipeline.getBindGroupLayout(0),
     entries: [
@@ -381,7 +396,7 @@ export const runSignedDistanceField = async (
       {
         binding: 1,
         resource: {
-          buffer: modelViewMatrixBuffer,
+          buffer: shadowModelViewMatrixBuffer,
           offset: 0,
           size: uniformBufferSize,
         },
@@ -401,12 +416,8 @@ export const runSignedDistanceField = async (
 
   // Calculate constants
   const aspect = canvas.width / canvas.height;
-  const projectionMatrix = mat4.perspective(
-    (2 * Math.PI) / 4,
-    aspect,
-    1,
-    100.0
-  );
+  const fov = Math.PI / 2;
+  const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
   const cameraPos = vec3.fromValues(0, 0, -4);
   const cameraMatrix = mat4.identity();
   mat4.translate(cameraMatrix, vec3.fromValues(0, 0, -4), cameraMatrix);
@@ -443,7 +454,13 @@ export const runSignedDistanceField = async (
 
       frame++;
 
-      const modelViewMatrix = getViewMatrix();
+      const shadowModelViewMatrix = getViewMatrix(Date.now() / 1000);
+      const modelViewMatrix = mat4.identity();
+      mat4.translate(
+        modelViewMatrix,
+        vec3.fromValues(0, 0, -2),
+        modelViewMatrix
+      );
 
       device.queue.writeBuffer(
         projectionMatrixBuffer,
@@ -458,6 +475,13 @@ export const runSignedDistanceField = async (
         modelViewMatrix.buffer,
         modelViewMatrix.byteOffset,
         modelViewMatrix.byteLength
+      );
+      device.queue.writeBuffer(
+        shadowModelViewMatrixBuffer,
+        0,
+        shadowModelViewMatrix.buffer,
+        shadowModelViewMatrix.byteOffset,
+        shadowModelViewMatrix.byteLength
       );
       device.queue.writeBuffer(
         cameraBuffer,
@@ -559,10 +583,10 @@ export const runSignedDistanceField = async (
 
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
-      passEncoder.setVertexBuffer(0, verticesBuffer);
+      passEncoder.setVertexBuffer(0, screenBuffer);
       passEncoder.setBindGroup(0, uniformBindGroup0);
       passEncoder.setBindGroup(1, uniformBindGroup1);
-      passEncoder.draw(cubeVertexCount);
+      passEncoder.draw(screenVertexCount);
       passEncoder.end();
 
       device.queue.submit([commandEncoder.finish()]);
@@ -579,12 +603,10 @@ export const runSignedDistanceField = async (
   });
 };
 
-function getViewMatrix() {
+function getViewMatrix(now: number) {
   // TODO: calc rotation from frame value
   const viewMatrix = mat4.identity();
   mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-  // const now = Date.now() / 1000;
-  const now = 0;
   mat4.rotate(
     viewMatrix,
     vec3.fromValues(Math.sin(now), Math.cos(now), 0),
