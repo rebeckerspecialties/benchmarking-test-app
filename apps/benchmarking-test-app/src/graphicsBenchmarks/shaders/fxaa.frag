@@ -13,27 +13,42 @@
 
 #define QUALITY(q) ((q) < 5 ? 1.0 : ((q) > 5 ? ((q) < 10 ? 2.0 : ((q) < 11 ? 4.0 : 8.0)) : 1.5))
 #define ONE_OVER_TWELVE 0.08333333333333333
+#define EDGE_THRESHOLD_MIN 0.0312
+#define EDGE_THRESHOLD_MAX 0.125
+#define SUBPIXEL_QUALITY 0.75
+#define SAMPLES 12
 
-varying vec2 vUvDown;
-varying vec2 vUvUp;
-varying vec2 vUvLeft;
-varying vec2 vUvRight;
+layout(binding = 0) uniform vec2 texelSize;
+layout(binding = 1) uniform texture2D inputBufferTexture;
+layout(binding = 2) uniform sampler samp;
 
-varying vec2 vUvDownLeft;
-varying vec2 vUvUpRight;
-varying vec2 vUvUpLeft;
-varying vec2 vUvDownRight;
+layout(location = 0) in vec2 uv;
+layout(location = 1) in vec2 vUvDown;
+layout(location = 2) in vec2 vUvUp;
+layout(location = 3) in vec2 vUvLeft;
+layout(location = 4) in vec2 vUvRight;
 
-vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
+layout(location = 5) in vec2 vUvDownLeft;
+layout(location = 6) in vec2 vUvUpRight;
+layout(location = 7) in vec2 vUvUpLeft;
+layout(location = 8) in vec2 vUvDownRight;
+
+layout(location = 0) out vec4 outputColor;
+
+float luminance(vec3 color) {
+  return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
+vec4 fxaa(vec4 inputColor, vec2 uv) {
 
 	// Luma at the current fragment.
 	float lumaCenter = luminance(inputColor.rgb);
 
 	// Luma at the four direct neighbours of the current fragment.
-	float lumaDown = luminance(texture2D(inputBuffer, vUvDown).rgb);
-	float lumaUp = luminance(texture2D(inputBuffer, vUvUp).rgb);
-	float lumaLeft = luminance(texture2D(inputBuffer, vUvLeft).rgb);
-	float lumaRight = luminance(texture2D(inputBuffer, vUvRight).rgb);
+	float lumaDown = luminance(texture(sampler2D(inputBufferTexture, samp), vUvDown).rgb);
+	float lumaUp = luminance(texture(sampler2D(inputBufferTexture, samp), vUvUp).rgb);
+	float lumaLeft = luminance(texture(sampler2D(inputBufferTexture, samp), vUvLeft).rgb);
+	float lumaRight = luminance(texture(sampler2D(inputBufferTexture, samp), vUvRight).rgb);
 
 	// Find the maximum and minimum luma around the current fragment.
 	float lumaMin = min(lumaCenter, min(min(lumaDown, lumaUp), min(lumaLeft, lumaRight)));
@@ -50,10 +65,10 @@ vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
 	}
 
 	// Query the 4 remaining corners lumas.
-	float lumaDownLeft = luminance(texture2D(inputBuffer, vUvDownLeft).rgb);
-	float lumaUpRight = luminance(texture2D(inputBuffer, vUvUpRight).rgb);
-	float lumaUpLeft = luminance(texture2D(inputBuffer, vUvUpLeft).rgb);
-	float lumaDownRight = luminance(texture2D(inputBuffer, vUvDownRight).rgb);
+	float lumaDownLeft = luminance(texture(sampler2D(inputBufferTexture, samp), vUvDownLeft).rgb);
+	float lumaUpRight = luminance(texture(sampler2D(inputBufferTexture, samp), vUvUpRight).rgb);
+	float lumaUpLeft = luminance(texture(sampler2D(inputBufferTexture, samp), vUvUpLeft).rgb);
+	float lumaDownRight = luminance(texture(sampler2D(inputBufferTexture, samp), vUvDownRight).rgb);
 
 	// Combine the four edges lumas (using intermediary variables for future computations with the same values).
 	float lumaDownUp = lumaDown + lumaUp;
@@ -134,8 +149,8 @@ vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
 	vec2 uv2 = currentUv + offset * QUALITY(0);
 
 	// Read lumas at both extremities of the exploration segment, and compute the delta w.r.t. the local average luma.
-	float lumaEnd1 = luminance(texture2D(inputBuffer, uv1).rgb);
-	float lumaEnd2 = luminance(texture2D(inputBuffer, uv2).rgb);
+	float lumaEnd1 = luminance(texture(sampler2D(inputBufferTexture, samp), uv1).rgb);
+	float lumaEnd2 = luminance(texture(sampler2D(inputBufferTexture, samp), uv2).rgb);
 	lumaEnd1 -= lumaLocalAverage;
 	lumaEnd2 -= lumaLocalAverage;
 
@@ -165,7 +180,7 @@ vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
 			// If needed, read luma in 1st direction, compute delta.
 			if(!reached1) {
 
-				lumaEnd1 = luminance(texture2D(inputBuffer, uv1).rgb);
+				lumaEnd1 = luminance(texture(sampler2D(inputBufferTexture, samp), uv1).rgb);
 				lumaEnd1 = lumaEnd1 - lumaLocalAverage;
 
 			}
@@ -173,7 +188,7 @@ vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
 			// If needed, read luma in opposite direction, compute delta.
 			if(!reached2) {
 
-				lumaEnd2 = luminance(texture2D(inputBuffer, uv2).rgb);
+				lumaEnd2 = luminance(texture(sampler2D(inputBufferTexture, samp), uv2).rgb);
 				lumaEnd2 = lumaEnd2 - lumaLocalAverage;
 
 			}
@@ -259,12 +274,11 @@ vec4 fxaa(const in vec4 inputColor, const in vec2 uv) {
 
 	}
 
-	return texture2D(inputBuffer, finalUv);
+	return texture(sampler2D(inputBufferTexture, samp), finalUv);
 
 }
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-
+void main() {
+	vec4 inputColor = texture(sampler2D(inputBufferTexture, samp), uv);
 	outputColor = fxaa(inputColor, uv);
-
 }
