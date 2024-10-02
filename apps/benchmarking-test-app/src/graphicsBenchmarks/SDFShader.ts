@@ -1,3 +1,5 @@
+// Contents generated using naga: https://github.com/gfx-rs/wgpu/tree/trunk/naga#readme
+
 export const sdfShaderVertWGSL = `
 struct VertexOutput {
     @location(0) vUv: vec2<f32>,

@@ -1,3 +1,5 @@
+// Source: https://github.com/alanko0511/noisejs-typescript
+
 class Grad {
   constructor(readonly x: number, readonly y: number, readonly z: number) {}
 
