@@ -1,3 +1,4 @@
+// from: https://github.com/pmndrs/postprocessing/blob/main/src/effects/glsl/fxaa.frag
 /**
  * FXAA 3.11 by Timothy Lottes
  *
