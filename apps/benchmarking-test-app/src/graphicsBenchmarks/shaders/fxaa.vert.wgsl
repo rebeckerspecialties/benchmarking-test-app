@@ -57,7 +57,7 @@ fn main_1() {
 }
 
 @vertex 
-fn main(@location(0) uv: vec2<f32>) -> VertexOutput {
+fn main(@location(1) uv: vec2<f32>) -> VertexOutput {
     uv_1 = uv;
     main_1();
     let _e25 = vUv;

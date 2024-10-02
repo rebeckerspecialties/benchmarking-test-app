@@ -5,6 +5,7 @@ import { CanvasContext } from "./types";
 export const runHelloTriangle = async (
   context: CanvasContext,
   device: GPUDevice,
+  _canvas: HTMLCanvasElement,
   requestAnimationFrame: (callback: (time: number) => void) => number
 ) => {
   const presentationFormat = navigator.gpu.getPreferredCanvasFormat();

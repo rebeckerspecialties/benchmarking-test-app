@@ -19,6 +19,7 @@ import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
+import { runTriangleFxaa } from "./src/graphicsBenchmarks/TriangleFxaa";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -73,6 +74,7 @@ const App = () => {
           run={runHelloTriangle}
           name="triangleWebGpuBenchmark"
         />
+        <GraphicsBenchmark run={runTriangleFxaa} name="triangleFxaaBenchmark" />
       </SafeAreaView>
     </>
   );

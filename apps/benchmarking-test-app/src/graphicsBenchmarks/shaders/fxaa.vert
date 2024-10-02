@@ -1,6 +1,6 @@
 layout(binding = 0) uniform vec2 texelSize;
 
-layout(location = 0) in vec2 uv;
+layout(location = 1) in vec2 uv;
 
 layout(location = 0) out vec2 vUv;
 layout(location = 1) out vec2 vUvDown;
