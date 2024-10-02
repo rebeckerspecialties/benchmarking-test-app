@@ -1,5 +1,6 @@
 layout(binding = 0) uniform vec2 texelSize;
 
+layout(location = 0) in vec4 position;
 layout(location = 1) in vec2 uv;
 
 layout(location = 0) out vec2 vUv;
@@ -26,5 +27,5 @@ void main() {
   vUvUpLeft = uv + vec2(-1.0, 1.0) * texelSize;
   vUvDownRight = uv + vec2(1.0, -1.0) * texelSize;
 
-  gl_Position = vec4(0.0);
+  gl_Position = vec4(position.x, -position.y, position.z, 1);
 }
