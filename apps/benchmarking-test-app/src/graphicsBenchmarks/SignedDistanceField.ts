@@ -428,16 +428,6 @@ export const runSignedDistanceField = async (
     ],
   });
 
-  const shadowPassDescriptor: GPURenderPassDescriptor = {
-    colorAttachments: [],
-    depthStencilAttachment: {
-      view: shadowDepthTextureView,
-      depthClearValue: 1.0,
-      depthLoadOp: "clear",
-      depthStoreOp: "store",
-    },
-  };
-
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
@@ -468,6 +458,16 @@ export const runSignedDistanceField = async (
         depthStencilAttachment: {
           view: depthTexture.createView(),
 
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
+      };
+
+      const shadowPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [],
+        depthStencilAttachment: {
+          view: shadowDepthTexture.createView(),
           depthClearValue: 1.0,
           depthLoadOp: "clear",
           depthStoreOp: "store",
@@ -542,14 +542,14 @@ export const runSignedDistanceField = async (
         timeBuffer.byteOffset,
         timeBuffer.byteLength
       );
-      const fov = new Float32Array(1);
-      fov.fill(90, 0);
+      const fovArray = new Float32Array(1);
+      fovArray.fill(fov * (180 / Math.PI), 0);
       device.queue.writeBuffer(
         fovBuffer,
         0,
-        fov.buffer,
-        fov.byteOffset,
-        fov.byteLength
+        fovArray.buffer,
+        fovArray.byteOffset,
+        fovArray.byteLength
       );
       const aspectRatio = new Float32Array(1);
       aspectRatio.fill(aspect, 0);
