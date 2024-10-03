@@ -11,10 +11,10 @@ import {
   cubeVertexArray,
   cubeVertexCount,
   cubeVertexSize,
-} from "./cube";
-import { screenVertexArray, screenVertexCount } from "./screen";
+} from "./meshes/cube";
+import { screenVertexArray, screenVertexCount } from "./meshes/screen";
 import { mat4, vec3 } from "wgpu-matrix";
-import { generateNoiseData } from "./perlin";
+import { generateNoiseData } from "./textures/perlin";
 
 const shadowDepthTextureSize = 1024;
 
