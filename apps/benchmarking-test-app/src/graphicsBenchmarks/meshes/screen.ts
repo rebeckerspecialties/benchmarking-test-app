@@ -6,15 +6,15 @@ export const screenVertexCount = 6;
 export const screenVertexArray = new Float32Array([
   // float4 position, float2 uv
 
-  1, 1, 1, 1, 0, 1,
+  1, 1, 0, 1, 1, 0,
 
-  -1, 1, 1, 1, 1, 1,
+  -1, 1, 0, 1, 0, 0,
 
-  -1, -1, 1, 1, 1, 0,
+  -1, -1, 0, 1, 0, 1,
 
-  -1, -1, 1, 1, 1, 0,
+  -1, -1, 0, 1, 0, 1,
 
-  1, -1, 1, 1, 0, 0,
+  1, -1, 0, 1, 1, 1,
 
-  1, 1, 1, 1, 0, 1,
+  1, 1, 0, 1, 1, 0,
 ]);

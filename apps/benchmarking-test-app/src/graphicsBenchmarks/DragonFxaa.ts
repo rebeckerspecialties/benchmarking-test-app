@@ -1,12 +1,17 @@
 import { CanvasContext } from "./types";
-import { fxaaFragWGSL, fxaaVertWGSL, meshFragWGSL, meshVertWGSL } from "./fxaa";
+import {
+  fxaaFragWGSL,
+  fxaaVertWGSL,
+  meshFragWGSL,
+  meshVertWGSL,
+} from "./shaders/fxaaShader";
 import {
   screenPositionOffset,
   screenUVOffset,
   screenVertexArray,
   screenVertexCount,
   screenVertexSize,
-} from "./screen";
+} from "./meshes/screen";
 import { mesh } from "./meshes/stanfordDragon";
 import { mat4, vec3 } from "wgpu-matrix";
 

@@ -19,6 +19,7 @@ import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
 import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
+import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
 
 const App = () => {
@@ -73,6 +74,10 @@ const App = () => {
         <GraphicsBenchmark
           run={runHelloTriangle}
           name="triangleWebGpuBenchmark"
+        />
+        <GraphicsBenchmark
+          run={runSignedDistanceField}
+          name="sdfWebGpuBenchmark"
         />
         <GraphicsBenchmark run={runDragonFxaa} name="dragonFxaaBenchmark" />
       </SafeAreaView>

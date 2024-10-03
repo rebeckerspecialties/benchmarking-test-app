@@ -1,5 +1,5 @@
 // https://webgpu.github.io/webgpu-samples/?sample=helloTriangle
-import { redFragWGSL, triangleVertWGSL } from "./triangle";
+import { redFragWGSL, triangleVertWGSL } from "./shaders/triangleShader";
 import { CanvasContext } from "./types";
 
 export const runHelloTriangle = async (
