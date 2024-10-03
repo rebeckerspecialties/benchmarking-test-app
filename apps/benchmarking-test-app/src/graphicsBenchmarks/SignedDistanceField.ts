@@ -3,7 +3,7 @@ import {
   sdfShaderFragWGSL,
   sdfShaderVertWGSL,
   vertexShadowWGSL,
-} from "./SDFShader";
+} from "./shaders/SDFShader";
 import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
@@ -14,7 +14,7 @@ import {
 } from "./cube";
 import { screenVertexArray, screenVertexCount } from "./screen";
 import { mat4, vec3 } from "wgpu-matrix";
-import Noise from "./perlin";
+import { generateNoiseData } from "./perlin";
 
 const shadowDepthTextureSize = 1024;
 
@@ -177,11 +177,6 @@ export const runSignedDistanceField = async (
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  // const nearBuffer = device.createBuffer({
-  //   size: floatSize,
-  //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  // });
-
   const uColorBuffer = device.createBuffer({
     size: vec3Size,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -197,11 +192,6 @@ export const runSignedDistanceField = async (
     size: int32size,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
-
-  // const sfdMatrixBuffer = device.createBuffer({
-  //   size: uniformBufferSize,
-  //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  // });
 
   const sfdMatrixInvBuffer = device.createBuffer({
     size: uniformBufferSize,
@@ -457,6 +447,7 @@ export const runSignedDistanceField = async (
   const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.inverse(sdfMatrix);
   const lightDirection = vec3.fromValues(1.0, 1.0, 1.0);
+  const modelViewMatrix = mat4.translation(vec3.fromValues(0, 0, -1));
 
   // Animation loop
 
@@ -498,21 +489,14 @@ export const runSignedDistanceField = async (
 
       // const shadowModelViewMatrix = getViewMatrix(Date.now() / 1000);
       const viewMatrix = mat4.lookAt(
-        vec3.fromValues(0, 0, -4 + Math.sin(Date.now() / 1000)),
+        vec3.fromValues(0, 0, -4 + 2 * Math.sin(Date.now() / 1000)),
         vec3.fromValues(0, 0, 0),
         vec3.fromValues(0, 1, 0)
       );
 
-      const modelViewMatrix = mat4.identity();
-      mat4.translate(
-        modelViewMatrix,
-        vec3.fromValues(0, 0, -1),
-        modelViewMatrix
-      );
-
       const cameraPos = vec3.getTranslation(viewMatrix);
       const cameraMatrix = viewMatrix;
-      const shadowModelViewMatrix = mat4.inverse(viewMatrix);
+      const shadowModelViewMatrix = viewMatrix;
 
       device.queue.writeBuffer(
         projectionMatrixBuffer,
@@ -669,26 +653,3 @@ export const runSignedDistanceField = async (
     requestAnimationFrame(animate);
   });
 };
-
-function generateNoiseData(textureSize: number) {
-  const noise = new Noise(7);
-
-  // Create a data array to store the noise values
-  const size = textureSize * textureSize * textureSize;
-  const data = new Uint8Array(4 * size);
-  const scale = 5;
-  // Fill the data array with noise values
-  for (let k = 0; k < textureSize; k++) {
-    for (let j = 0; j < textureSize; j++) {
-      for (let i = 0; i < textureSize; i++) {
-        let value = noise.perlin3(i / scale, j / scale, k / scale);
-        value = ((value + 1) / 2) * 255; // remap from -1,1 to 0,255
-
-        const index = 4 * (i + j * textureSize + k * textureSize * textureSize);
-        data[index] = value; // Only set the red channel
-      }
-    }
-  }
-
-  return data;
-}

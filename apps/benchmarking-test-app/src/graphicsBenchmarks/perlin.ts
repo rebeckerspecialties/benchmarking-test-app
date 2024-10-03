@@ -369,3 +369,26 @@ class Perlin {
 }
 
 export default Perlin;
+
+export function generateNoiseData(textureSize: number) {
+  const noise = new Perlin(7);
+
+  // Create a data array to store the noise values
+  const size = textureSize * textureSize * textureSize;
+  const data = new Uint8Array(4 * size);
+  const scale = 5;
+  // Fill the data array with noise values
+  for (let k = 0; k < textureSize; k++) {
+    for (let j = 0; j < textureSize; j++) {
+      for (let i = 0; i < textureSize; i++) {
+        let value = noise.perlin3(i / scale, j / scale, k / scale);
+        value = ((value + 1) / 2) * 255; // remap from -1,1 to 0,255
+
+        const index = 4 * (i + j * textureSize + k * textureSize * textureSize);
+        data[index] = value; // Only set the red channel
+      }
+    }
+  }
+
+  return data;
+}
