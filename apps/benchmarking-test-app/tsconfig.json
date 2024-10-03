@@ -7,5 +7,6 @@
       "three": ["../../node_modules/@types/three/src/Three.WebGPU.d.ts"]
     },
     "types": ["@webgpu/types"]
-  }
+  },
+  "exclude": ["node_modules/", "dist/"]
 }
