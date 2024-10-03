@@ -146,62 +146,24 @@ fn torus(p: vec3<f32>, t: vec2<f32>) -> vec3<f32> {
 
 @diagnostic(off,derivative_uniformity)
 fn cloudShape(p_2: vec3<f32>) -> f32 {
-    var p_3: vec3<f32>;
     var textureSize: f32 = 64f;
-    var thisScale: vec3<f32>;
-    var transformedP: vec3<f32>;
-    var scaledP: vec3<f32>;
-    var sliceSize: f32;
-    var slice: f32;
-    var x: f32;
-    var y: f32;
-    var density: f32;
 
-    p_3 = p_2;
-    let _e8 = scale;
-    thisScale = _e8;
-    let _e10 = p_3;
-    transformedP = _e10;
-    let _e13 = transformedP;
-    let _e15 = uTime;
-    let _e16 = uTime;
-    transformedP.x = (_e13.x + (sin((_e15 + (sin((_e16 * 0.27f)) * 0.5f))) * 5f));
-    let _e28 = transformedP;
-    let _e30 = uTime;
-    let _e31 = uTime;
-    transformedP.y = (_e28.y + (cos((_e30 + (cos((_e31 * 0.33f)) * 0.3f))) * 5f));
-    let _e43 = transformedP;
-    let _e45 = uTime;
-    let _e46 = uTime;
-    transformedP.z = (_e43.z + (sin((_e45 + (sin((_e46 * 0.22f)) * 0.4f))) * 5f));
-    let _e57 = transformedP;
-    let _e58 = thisScale;
-    scaledP = (_e57 * _e58);
-    let _e62 = textureSize;
-    sliceSize = (1f / _e62);
-    let _e65 = scaledP;
-    let _e67 = textureSize;
-    slice = floor((_e65.z * _e67));
-    let _e71 = scaledP;
-    let _e73 = scaledP;
-    x = (_e71.x - floor(_e73.x));
-    let _e78 = scaledP;
-    let _e80 = scaledP;
-    let _e84 = slice;
-    let _e85 = sliceSize;
-    y = ((_e78.y - floor(_e80.y)) + (_e84 * _e85));
-    let _e89 = x;
-    let _e90 = y;
-    let _e92 = textureSample(noiseTexture, samp, vec2<f32>(_e89, _e90));
-    density = _e92.x;
-    let _e95 = density;
-    return (_e95 * 0.025f);
+    var thisScale = scale;
+    var transformedP = p_2;
+    transformedP.x = (transformedP.x + (sin((uTime + (sin((uTime * 0.27f)) * 0.5f))) * 5f));
+    transformedP.y = (transformedP.y + (cos((uTime + (cos((uTime * 0.33f)) * 0.3f))) * 5f));
+    transformedP.z = (transformedP.z + (sin((uTime + (sin((uTime * 0.22f)) * 0.4f))) * 5f));
+    var scaledP = (transformedP * thisScale);
+    var sliceSize = (1f / textureSize);
+    var slice = floor((scaledP.z * textureSize));
+    var x = (scaledP.x - floor(scaledP.x));
+    var y = ((scaledP.y - floor(scaledP.y)) + (slice * sliceSize));
+    var density = textureSample(noiseTexture, samp, vec2<f32>(x, y)).r;
+    return (density * 0.025f);
 }
 
 @diagnostic(off,derivative_uniformity)
 fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
-    var ro_1: vec3<f32>;
-    var rd_1: vec3<f32>;
     var d: f32 = 0f;
     var accumulatedColor: vec4<f32> = vec4(0f);
     var i: i32 = 0i;
@@ -212,60 +174,32 @@ fn rayMarchClouds(ro: vec3<f32>, rd: vec3<f32>) -> vec4<f32> {
     var cloudColor: vec3<f32>;
     var alpha: f32;
 
-    ro_1 = ro;
-    rd_1 = rd;
     loop {
-        let _e15 = i;
-        let _e18 = d;
-        if !(((_e15 < 100i) && (_e18 < 5000f))) {
+        if !(((i < 100i) && (d < 5000f))) {
             break;
         }
         {
-            let _e26 = ro_1;
-            let _e27 = rd_1;
-            let _e28 = d;
-            p_4 = (_e26 + (_e27 * _e28));
-            let _e32 = p_4;
-            let _e33 = cameraPos;
-            depthFromCamera = length((_e32 - _e33));
-            let _e37 = vUv_1;
-            let _e38 = textureSample(uDepthTexture, samp, _e37);
-            depthFromTexture = (_e38 * 10f);
-            let _e43 = depthFromCamera;
-            let _e44 = depthFromTexture;
-            if (_e43 > _e44) {
-                {
-                    break;
-                }
+            p_4 = (ro + (rd * d));
+            depthFromCamera = length((p_4 - cameraPos));
+            depthFromTexture = (textureSample(uDepthTexture, samp, vUv_1) * 10f);
+            if (depthFromCamera > depthFromTexture) {
+                break;
             }
-            let _e46 = p_4;
-            let _e47 = cloudShape(_e46);
-            density_1 = _e47;
-            let _e49 = density_1;
-            if (_e49 > 0.001f) {
-                {
-                    cloudColor = vec3<f32>(1f, 1f, 1f);
-                    let _e57 = density_1;
-                    alpha = _e57;
-                    let _e59 = accumulatedColor;
-                    let _e60 = cloudColor;
-                    let _e61 = alpha;
-                    let _e62 = (_e60 * _e61);
-                    let _e63 = alpha;
-                    let _e69 = accumulatedColor;
-                    accumulatedColor = (_e59 + (vec4<f32>(_e62.x, _e62.y, _e62.z, _e63) * (1f - _e69.w)));
-                }
+            density_1 = cloudShape(p_4);
+            if (density_1 > 0.001f) {
+                cloudColor = vec3<f32>(1f, 1f, 1f);
+                alpha = density_1;
+                let _e62 = (cloudColor * alpha);
+                accumulatedColor = (accumulatedColor + (vec4<f32>(_e62.x, _e62.y, _e62.z, alpha) * (1f - accumulatedColor.w)));
             }
-            let _e74 = d;
-            d = (_e74 + 0.1f);
+            d = (d + 0.1f);
         }
         continuing {
             let _e23 = i;
             i = (_e23 + 1i);
         }
     }
-    let _e77 = accumulatedColor;
-    return _e77;
+    return accumulatedColor;
 }
 
 fn shortestDistanceToTorus(ro_2: vec3<f32>, t_2: vec2<f32>) -> f32 {
@@ -290,30 +224,6 @@ fn estimateNormal(p_5: vec3<f32>, torusParams: vec2<f32>) -> vec3<f32> {
 
     p_6 = p_5;
     torusParams_1 = torusParams;
-    let _e6 = p_6;
-    let _e7 = epsilon;
-    let _e12 = torusParams_1;
-    let _e13 = shortestDistanceToTorus((_e6 + vec3<f32>(_e7, 0f, 0f)), _e12);
-    let _e14 = p_6;
-    let _e15 = epsilon;
-    let _e20 = torusParams_1;
-    let _e21 = shortestDistanceToTorus((_e14 - vec3<f32>(_e15, 0f, 0f)), _e20);
-    let _e22 = p_6;
-    let _e24 = epsilon;
-    let _e28 = torusParams_1;
-    let _e29 = shortestDistanceToTorus((_e22 + vec3<f32>(0f, _e24, 0f)), _e28);
-    let _e30 = p_6;
-    let _e32 = epsilon;
-    let _e36 = torusParams_1;
-    let _e37 = shortestDistanceToTorus((_e30 - vec3<f32>(0f, _e32, 0f)), _e36);
-    let _e38 = p_6;
-    let _e41 = epsilon;
-    let _e44 = torusParams_1;
-    let _e45 = shortestDistanceToTorus((_e38 + vec3<f32>(0f, 0f, _e41)), _e44);
-    let _e46 = p_6;
-    let _e49 = epsilon;
-    let _e52 = torusParams_1;
-    let _e53 = shortestDistanceToTorus((_e46 - vec3<f32>(0f, 0f, _e49)), _e52);
     let _e54 = p_6;
     let _e55 = epsilon;
     let _e60 = torusParams_1;
@@ -579,75 +489,35 @@ fn main_1() {
     var outputColor: vec4<f32>;
     var local: f32;
 
-    let _e12 = vUv_1;
-    uv = _e12;
-    let _e14 = fov;
-    tanHalfFov = tan((radians(_e14) / 2f));
-    let _e20 = uv;
-    let _e24 = aspectRatio;
-    let _e28 = tanHalfFov;
-    let _e30 = uv;
-    let _e36 = tanHalfFov;
-    clipSpaceDir = vec3<f32>(((((_e20.x - 0.5f) * _e24) * 2f) * _e28), (((_e30.y - 0.5f) * 2f) * _e36), -1f);
-    let _e41 = cameraMatrix;
-    let _e42 = clipSpaceDir;
-    viewDir = (_e41 * vec4<f32>(_e42.x, _e42.y, _e42.z, 0f)).xyz;
-    let _e51 = viewDir;
-    viewDir = normalize(_e51);
-    let _e53 = uv;
-    let _e54 = textureSample(inputBufferTexture, samp, _e53);
-    FragColor = _e54;
-    let _e55 = mode;
-    if (_e55 == 0i) {
-        {
-            let _e58 = cameraPos;
-            let _e59 = viewDir;
-            let _e60 = rayMarchPhong(_e58, _e59);
-            color_2 = _e60;
-            let _e62 = color_2;
-            if any((_e62 != vec3(-1f))) {
-                {
-                    let _e67 = color_2;
-                    FragColor = vec4<f32>(_e67.x, _e67.y, _e67.z, 1f);
-                }
-            }
+    uv = vUv_1;
+    tanHalfFov = tan((radians(fov) / 2f));
+    clipSpaceDir = vec3<f32>(((((uv.x - 0.5f) * aspectRatio) * 2f) * tanHalfFov), (((uv.y - 0.5f) * 2f) * tanHalfFov), -1f);
+    viewDir = (cameraMatrix * vec4<f32>(clipSpaceDir.x, clipSpaceDir.y, clipSpaceDir.z, 0f)).xyz;
+    viewDir = normalize(viewDir);
+    FragColor = textureSample(inputBufferTexture, samp, uv);
+    if (mode == 0i) {
+        color_2 = rayMarchPhong(cameraPos, viewDir);
+        if any((color_2 != vec3(-1f))) {
+            FragColor = vec4<f32>(color_2.x, color_2.y, color_2.z, 1f);
         }
     } else {
-        let _e73 = mode;
-        if (_e73 == 3i) {
-            {
-                let _e76 = cameraPos;
-                let _e77 = viewDir;
-                let _e78 = rayMarchClouds(_e76, _e77);
-                cloudColor_1 = _e78;
-                let _e80 = uv;
-                let _e81 = textureSample(inputBufferTexture, samp, _e80);
-                backgroundColor = _e81;
-                let _e84 = cloudColor_1;
-                let _e86 = cloudColor_1;
-                let _e89 = backgroundColor;
-                let _e92 = cloudColor_1;
-                let _e96 = ((_e84.xyz * _e86.w) + (_e89.xyz * (1f - _e92.w)));
-                outputColor.x = _e96.x;
-                outputColor.y = _e96.y;
-                outputColor.z = _e96.z;
-                outputColor.w = 1f;
-                let _e105 = outputColor;
-                FragColor = _e105;
-            }
+        if (mode == 3i) {
+            cloudColor_1 = rayMarchClouds(cameraPos, viewDir);
+            backgroundColor = textureSample(inputBufferTexture, samp, uv);
+            let _e96 = ((cloudColor_1.xyz * cloudColor_1.w) + (backgroundColor.xyz * (1f - cloudColor_1.w)));
+            outputColor.x = _e96.x;
+            outputColor.y = _e96.y;
+            outputColor.z = _e96.z;
+            outputColor.w = 1f;
+            FragColor = outputColor;
         }
     }
-    let _e108 = vIsPerspective_1;
-    if (_e108 == 0f) {
-        let _e111 = gl_FragCoord_1;
-        local = _e111.z;
+    if (vIsPerspective_1 == 0f) {
+        local = gl_FragCoord_1.z;
     } else {
-        let _e113 = vFragDepth_1;
-        let _e115 = logDepthBufFC;
-        local = ((log2(_e113) * _e115) * 0.5f);
+        local = ((log2(vFragDepth_1) * logDepthBufFC) * 0.5f);
     }
-    let _e120 = local;
-    gl_FragDepth = _e120;
+    gl_FragDepth = local;
     return;
 }
 
