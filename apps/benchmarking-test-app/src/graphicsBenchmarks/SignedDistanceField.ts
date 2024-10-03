@@ -453,7 +453,7 @@ export const runSignedDistanceField = async (
   const fov = Math.PI / 2;
   const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
   const color = vec3.fromValues(1, 1, 0);
-  const scale = vec3.fromValues(0.25, 0.001, 0.25);
+  const scale = vec3.fromValues(0.25, 0.005, 0.25);
   const sdfMatrix = mat4.identity();
   const sdfMatrixInv = mat4.inverse(sdfMatrix);
   const lightDirection = vec3.fromValues(1.0, 1.0, 1.0);
@@ -496,7 +496,13 @@ export const runSignedDistanceField = async (
 
       frame++;
 
-      const shadowModelViewMatrix = getViewMatrix(Date.now() / 1000);
+      // const shadowModelViewMatrix = getViewMatrix(Date.now() / 1000);
+      const viewMatrix = mat4.lookAt(
+        vec3.fromValues(0, 0, -4 + Math.sin(Date.now() / 1000)),
+        vec3.fromValues(0, 0, 0),
+        vec3.fromValues(0, 1, 0)
+      );
+
       const modelViewMatrix = mat4.identity();
       mat4.translate(
         modelViewMatrix,
@@ -504,10 +510,9 @@ export const runSignedDistanceField = async (
         modelViewMatrix
       );
 
-      const cameraPos = vec3.getTranslation(shadowModelViewMatrix);
-      const cameraMatrix = mat4.inverse(
-        mat4.multiply(projectionMatrix, shadowModelViewMatrix)
-      );
+      const cameraPos = vec3.getTranslation(viewMatrix);
+      const cameraMatrix = viewMatrix;
+      const shadowModelViewMatrix = mat4.inverse(viewMatrix);
 
       device.queue.writeBuffer(
         projectionMatrixBuffer,
@@ -664,19 +669,6 @@ export const runSignedDistanceField = async (
     requestAnimationFrame(animate);
   });
 };
-
-function getViewMatrix(now: number) {
-  const viewMatrix = mat4.identity();
-  mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
-  mat4.rotate(
-    viewMatrix,
-    vec3.fromValues(Math.sin(now), Math.cos(now), 0),
-    1,
-    viewMatrix
-  );
-
-  return viewMatrix;
-}
 
 function generateNoiseData(textureSize: number) {
   const noise = new Noise(7);
