@@ -485,18 +485,15 @@ export const runSignedDistanceField = async (
         ],
       };
 
+      const positionOffset = 2 * Math.sin(Math.PI * (frame / 250));
       frame++;
 
-      // const shadowModelViewMatrix = getViewMatrix(Date.now() / 1000);
-      const viewMatrix = mat4.lookAt(
-        vec3.fromValues(0, 0, -4 + 2 * Math.sin(Date.now() / 1000)),
-        vec3.fromValues(0, 0, 0),
-        vec3.fromValues(0, 1, 0)
-      );
+      const cameraPos = vec3.fromValues(positionOffset, 0, -4 + positionOffset);
+      const targetPos = vec3.fromValues(0, 0, 0);
+      const axis = vec3.fromValues(0, 1, 0);
 
-      const cameraPos = vec3.getTranslation(viewMatrix);
-      const cameraMatrix = viewMatrix;
-      const shadowModelViewMatrix = viewMatrix;
+      const shadowModelViewMatrix = mat4.lookAt(cameraPos, targetPos, axis);
+      const cameraMatrix = mat4.cameraAim(cameraPos, targetPos, axis);
 
       device.queue.writeBuffer(
         projectionMatrixBuffer,
