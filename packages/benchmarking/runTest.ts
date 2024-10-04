@@ -31,7 +31,7 @@ async function runBenchmark(testId: string, driver: Browser) {
 async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   const perfTracePath = `${perfTraceDir}/${testId}-trace.zip`;
   await driver.execute("mobile: startPerfRecord", {
-    profileName: "Time Profiler",
+    profileName: "Allocations",
     pid: "current",
     timeout: 2000,
   });
@@ -39,7 +39,7 @@ async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
   await runBenchmark(testId, driver);
 
   const output = (await driver.execute("mobile: stopPerfRecord", {
-    profileName: "Time Profiler",
+    profileName: "Allocations",
   })) as string;
 
   let buff = Buffer.from(output, "base64");
