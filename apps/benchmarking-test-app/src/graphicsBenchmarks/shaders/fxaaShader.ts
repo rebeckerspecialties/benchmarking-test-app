@@ -57,7 +57,7 @@ fn main_1() {
     let _e76 = position_1;
     let _e78 = position_1;
     let _e81 = position_1;
-    gl_Position = vec4<f32>(_e76.x, -(_e78.y), _e81.z, 1f);
+    gl_Position = vec4<f32>(_e76.x, _e78.y, _e81.z, 1f);
     return;
 }
 

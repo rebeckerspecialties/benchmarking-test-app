@@ -28,5 +28,5 @@ void main() {
   vUvUpLeft = uv + vec2(-1.0, 1.0) * texelSize;
   vUvDownRight = uv + vec2(1.0, -1.0) * texelSize;
 
-  gl_Position = vec4(position.x, -position.y, position.z, 1);
+  gl_Position = vec4(position.x, position.y, position.z, 1);
 }
