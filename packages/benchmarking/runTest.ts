@@ -45,6 +45,7 @@ async function runBenchmark(
 }
 
 async function runBenchmarkWithProfiler(
+  profileName: string,
   testId: string,
   driver: Browser,
   skipIfJavaScriptCore: boolean
@@ -52,7 +53,7 @@ async function runBenchmarkWithProfiler(
   const perfTracePath = `${perfTraceDir}/${testId}-trace.zip`;
   try {
     await driver.execute("mobile: startPerfRecord", {
-      profileName: "Allocations",
+      profileName,
       pid: "current",
       timeout: 1000,
     });
@@ -60,7 +61,7 @@ async function runBenchmarkWithProfiler(
     await runBenchmark(testId, driver, skipIfJavaScriptCore);
 
     const output = (await driver.execute("mobile: stopPerfRecord", {
-      profileName: "Allocations",
+      profileName,
     })) as string;
 
     let buff = Buffer.from(output, "base64");
@@ -140,5 +141,10 @@ function withDriver(benchmarkAsync: benchmarkAsync) {
 export const benchmarkWithWallClockTime = withDriver(
   runBenchmarkWithWallClockTime
 );
-export const benchmarkWithProfiler = withDriver(runBenchmarkWithProfiler);
+export const benchmarkWithProfiler = withDriver(
+  runBenchmarkWithProfiler.bind(null, "Time Profiler")
+);
+export const benchmarkWithMemoryProfiler = withDriver(
+  runBenchmarkWithProfiler.bind(null, "Allocations")
+);
 export const benchmarkWithFlamegraph = withDriver(runBenchmarkWithFlameGraph);

@@ -1,5 +1,6 @@
 import {
   benchmarkWithFlamegraph,
+  benchmarkWithMemoryProfiler,
   benchmarkWithProfiler,
   benchmarkWithWallClockTime,
 } from "./runTest";
@@ -30,6 +31,7 @@ const runBenchmarkSuite = async () => {
   await benchmarkWithWallClockTime("triangleWebGpuBenchmark");
   await benchmarkWithWallClockTime("sdfWebGpuBenchmark", true);
   await benchmarkWithWallClockTime("dragonFxaaBenchmark", true);
+  await benchmarkWithMemoryProfiler("sdfWebGpuBenchmark", true);
 };
 
 runBenchmarkSuite();
