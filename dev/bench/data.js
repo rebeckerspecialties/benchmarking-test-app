@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1726691889531,
+  "lastUpdate": 1728333081565,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -2034,6 +2034,118 @@ window.BENCHMARK_DATA = {
           {
             "name": "Executable Size",
             "value": 3920,
+            "unit": "kiB"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Henry Allen",
+            "username": "hmallen99",
+            "email": "hmallen99@gmail.com"
+          },
+          "committer": {
+            "name": "Henry Allen",
+            "username": "hmallen99",
+            "email": "hmallen99@gmail.com"
+          },
+          "id": "8c43f6833ffe2b629dcdc48f0f0ee45ddee0d641",
+          "message": "Benchmark memory",
+          "timestamp": "2024-10-07T20:27:36Z",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/8c43f6833ffe2b629dcdc48f0f0ee45ddee0d641"
+        },
+        "date": 1728333080708,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4384,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 6748,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 10303,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5747,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 702,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8436,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4431,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": 8535,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 11572,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 11209,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": 9102,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5764,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1268,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8419,
+            "unit": "ms"
+          },
+          {
+            "name": "Bundle Size",
+            "value": 2816,
+            "unit": "kiB"
+          },
+          {
+            "name": "Executable Size",
+            "value": 4144,
             "unit": "kiB"
           }
         ]
