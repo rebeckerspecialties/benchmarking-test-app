@@ -10,12 +10,20 @@ import {
 import { parseBenchmarks, parseBenchmarkType } from "./parseBenchmarks";
 import { readFile } from "fs/promises";
 import * as child_process from "child_process";
+import { exampleProfile } from "./exampleProfileXml";
 
 const mockError = jest.spyOn(console, "error").mockImplementation(() => null);
 
 jest.mock("child_process");
 
 const mockExec = jest.spyOn(child_process, "exec");
+const paths = {
+  pathToBenchmarks: "benchmarks",
+  bundlePath: "file.ios.bundle",
+  executablePath: "benchmark.ipa",
+  outputPath: "benchmark.json",
+  xmlPath: "profile.xml",
+};
 
 describe("parseBenchmark", () => {
   beforeEach(() => {
@@ -34,13 +42,9 @@ describe("parseBenchmark", () => {
       benchmarks: {
         "benchmark-ms.txt": "1234567",
       },
+      "profile.xml": exampleProfile,
     });
-    await parseBenchmarks(
-      "benchmarks",
-      "file.ios.bundle",
-      "benchmark.ipa",
-      "benchmark.json"
-    );
+    await parseBenchmarks(paths);
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
@@ -48,6 +52,7 @@ describe("parseBenchmark", () => {
       { name: "benchmark-ms.txt", value: 1234567, unit: "ms" },
       { name: "Bundle Size", value: 10000, unit: "kiB" },
       { name: "Executable Size", value: 10000, unit: "kiB" },
+      { name: "Memory Usage", value: 21102453, unit: "bytes" },
     ]);
   });
 
@@ -60,12 +65,7 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks(
-      "benchmarks",
-      "file.ios.bundle",
-      "benchmark.ipa",
-      "benchmark.json"
-    );
+    await parseBenchmarks(paths);
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
@@ -91,12 +91,7 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks(
-      "benchmarks",
-      "file.ios.bundle",
-      "benchmark.ipa",
-      "benchmark.json"
-    );
+    await parseBenchmarks(paths);
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
@@ -121,12 +116,7 @@ describe("parseBenchmark", () => {
       },
     });
 
-    await parseBenchmarks(
-      "benchmarks",
-      "file.ios.bundle",
-      "benchmark.ipa",
-      "benchmark.json"
-    );
+    await parseBenchmarks(paths);
 
     const benchmarkResult = await readFile("benchmark.json", "utf-8");
 
