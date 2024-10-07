@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Iterates over all AWS Device Farm artifacts, unzips benchmark results, 
+# Iterates over all AWS Device Farm artifacts, unzips benchmark results,
 # and exports results to a target directory
 
 #### Arguments
@@ -18,6 +18,11 @@ do
   unzip "$artifactPath" -d "$2/$deviceType/output" -x *.zip
 
   find "$2/$deviceType/output" -name '*-*.txt' | while read benchmarkFile; do
+    echo "$benchmarkFile"
+    mv "$benchmarkFile" "$2/$deviceType"
+  done
+
+  find "$2/$deviceType/output" -name '*.xml' | while read benchmarkFile; do
     echo "$benchmarkFile"
     mv "$benchmarkFile" "$2/$deviceType"
   done
