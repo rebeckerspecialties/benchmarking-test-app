@@ -53,7 +53,7 @@ async function runBenchmarkWithProfiler(
   await driver.execute("mobile: startPerfRecord", {
     profileName: "Allocations",
     pid: "current",
-    timeout: 2000,
+    timeout: 1000,
   });
 
   await runBenchmark(testId, driver, skipIfJavaScriptCore);
