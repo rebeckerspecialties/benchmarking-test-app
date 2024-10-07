@@ -31,7 +31,7 @@ async function runBenchmark(
   const engineVersionText = await engineVersion.getText();
 
   if (skipIfJavaScriptCore && engineVersionText === "Using JavaScriptCore") {
-    return "0";
+    return "-1";
   }
 
   const benchmark = driver.$(`~${testId}`);
@@ -76,7 +76,12 @@ async function runBenchmarkWithFlameGraph(
   const toggleFlamegraphButton = driver.$("~toggleFlamegraph");
   await toggleFlamegraphButton.click();
 
-  await runBenchmark(testId, driver, skipIfJavaScriptCore);
+  let result = await runBenchmark(testId, driver, skipIfJavaScriptCore);
+
+  if (parseInt(result) === -1) {
+    console.log("Skipped writing flamegraph");
+    return;
+  }
 
   const profileLocationText = driver.$("~profileLocation");
   const path = await profileLocationText.getText();
