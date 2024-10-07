@@ -50,21 +50,25 @@ async function runBenchmarkWithProfiler(
   skipIfJavaScriptCore: boolean
 ) {
   const perfTracePath = `${perfTraceDir}/${testId}-trace.zip`;
-  await driver.execute("mobile: startPerfRecord", {
-    profileName: "Allocations",
-    pid: "current",
-    timeout: 1000,
-  });
+  try {
+    await driver.execute("mobile: startPerfRecord", {
+      profileName: "Allocations",
+      pid: "current",
+      timeout: 1000,
+    });
 
-  await runBenchmark(testId, driver, skipIfJavaScriptCore);
+    await runBenchmark(testId, driver, skipIfJavaScriptCore);
 
-  const output = (await driver.execute("mobile: stopPerfRecord", {
-    profileName: "Allocations",
-  })) as string;
+    const output = (await driver.execute("mobile: stopPerfRecord", {
+      profileName: "Allocations",
+    })) as string;
 
-  let buff = Buffer.from(output, "base64");
-  await writeFile(perfTracePath, buff);
-  console.log("Performance profile written to", perfTracePath);
+    let buff = Buffer.from(output, "base64");
+    await writeFile(perfTracePath, buff);
+    console.log("Performance profile written to", perfTracePath);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function runBenchmarkWithFlameGraph(
