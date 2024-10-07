@@ -6,11 +6,11 @@ import {
 
 const runBenchmarkSuite = async () => {
   console.log("Running benchmarks with flamegraph");
-  await benchmarkWithFlamegraph("simpleBenchmark");
-  await benchmarkWithFlamegraph("bitEcsBenchmark");
-  await benchmarkWithFlamegraph("threeJsBenchmark");
-  await benchmarkWithFlamegraph("hyperfluxBenchmark");
-  await benchmarkWithFlamegraph("irEcsBenchmark");
+  await benchmarkWithFlamegraph("simpleBenchmark", true);
+  await benchmarkWithFlamegraph("bitEcsBenchmark", true);
+  await benchmarkWithFlamegraph("threeJsBenchmark", true);
+  await benchmarkWithFlamegraph("hyperfluxBenchmark", true);
+  await benchmarkWithFlamegraph("irEcsBenchmark", true);
 
   console.log("Running benchmarks with profiler");
   await benchmarkWithProfiler("simpleBenchmark");
@@ -28,8 +28,8 @@ const runBenchmarkSuite = async () => {
 
   console.log("Running graphics benchmarks");
   await benchmarkWithWallClockTime("triangleWebGpuBenchmark");
-  await benchmarkWithWallClockTime("sdfWebGpuBenchmark");
-  await benchmarkWithWallClockTime("dragonFxaaBenchmark");
+  await benchmarkWithWallClockTime("sdfWebGpuBenchmark", true);
+  await benchmarkWithWallClockTime("dragonFxaaBenchmark", true);
 };
 
 runBenchmarkSuite();
