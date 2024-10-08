@@ -8,7 +8,7 @@ import {
   cubeVertexSize,
 } from "./meshes/cube";
 import { screenVertexArray, screenVertexCount } from "./meshes/screen";
-import { mat4, vec3 } from "wgpu-matrix";
+import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
   basicVertWGSL,
@@ -534,12 +534,14 @@ export const runScreenSpaceGlobalIllumination = async (
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
   const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
-  const color = vec3.fromValues(1, 1, 0);
-  const scale = vec3.fromValues(0.25, 0.005, 0.25);
-  const sdfMatrix = mat4.identity();
-  const sdfMatrixInv = mat4.inverse(sdfMatrix);
-  const lightDirection = vec3.fromValues(1.0, 1.0, 1.0);
-  const modelViewMatrix = mat4.translation(vec3.fromValues(0, 0, -1));
+  const projectionMatrixInverse = mat4.inverse(projectionMatrix);
+  const backgroundColor = vec3.fromValues(1, 1, 0);
+  const resolution = vec2.fromValues(canvas.width, canvas.height);
+  const cameraNear = 1.0;
+  const cameraFar = 100.0;
+  const nearMinusFar = cameraNear - cameraFar;
+  const nearMulFar = cameraNear * cameraFar;
+  const farMinusNear = cameraFar - cameraNear;
 
   // Animation loop
 
@@ -548,6 +550,7 @@ export const runScreenSpaceGlobalIllumination = async (
     const animate = () => {
       const textureView = context.getCurrentTexture().createView();
 
+      // Render Pass Descriptors
       const renderPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
@@ -587,6 +590,7 @@ export const runScreenSpaceGlobalIllumination = async (
         ],
       };
 
+      // Fill buffers
       const positionOffset = 2 * Math.sin(Math.PI * (frame / 250));
       frame++;
 
@@ -594,8 +598,32 @@ export const runScreenSpaceGlobalIllumination = async (
       const targetPos = vec3.fromValues(0, 0, 0);
       const axis = vec3.fromValues(0, 1, 0);
 
-      const shadowModelViewMatrix = mat4.lookAt(cameraPos, targetPos, axis);
+      const viewMatrix = mat4.lookAt(cameraPos, targetPos, axis);
       const cameraMatrix = mat4.cameraAim(cameraPos, targetPos, axis);
+
+      device.queue.writeBuffer(
+        shadowModelViewMatrixBuffer,
+        0,
+        viewMatrix.buffer,
+        viewMatrix.byteOffset,
+        viewMatrix.byteLength
+      );
+
+      device.queue.writeBuffer(
+        backgroundColorBuffer,
+        0,
+        backgroundColor.buffer,
+        backgroundColor.byteOffset,
+        backgroundColor.byteLength
+      );
+
+      device.queue.writeBuffer(
+        viewMatrixBuffer,
+        0,
+        viewMatrix.buffer,
+        viewMatrix.byteOffset,
+        viewMatrix.byteLength
+      );
 
       device.queue.writeBuffer(
         projectionMatrixBuffer,
@@ -604,12 +632,119 @@ export const runScreenSpaceGlobalIllumination = async (
         projectionMatrix.byteOffset,
         projectionMatrix.byteLength
       );
+
       device.queue.writeBuffer(
-        shadowModelViewMatrixBuffer,
+        projectionMatrixInverseBuffer,
         0,
-        shadowModelViewMatrix.buffer,
-        shadowModelViewMatrix.byteOffset,
-        shadowModelViewMatrix.byteLength
+        projectionMatrixInverse.buffer,
+        projectionMatrixInverse.byteOffset,
+        projectionMatrixInverse.byteLength
+      );
+
+      device.queue.writeBuffer(
+        cameraMatrixWorldBuffer,
+        0,
+        cameraMatrix.buffer,
+        cameraMatrix.byteOffset,
+        cameraMatrix.byteLength
+      );
+
+      const maxEnvMapMipLevelArray = new Float32Array(1);
+      maxEnvMapMipLevelArray.fill(4, 0);
+      device.queue.writeBuffer(
+        maxEnvMapMipLevelBuffer,
+        0,
+        maxEnvMapMipLevelArray.buffer,
+        maxEnvMapMipLevelArray.byteOffset,
+        maxEnvMapMipLevelArray.byteLength
+      );
+
+      const rayDistanceArray = new Float32Array(1);
+      rayDistanceArray.fill(100.0, 0);
+      device.queue.writeBuffer(
+        rayDistanceBuffer,
+        0,
+        rayDistanceArray.buffer,
+        rayDistanceArray.byteOffset,
+        rayDistanceArray.byteLength
+      );
+
+      const thicknessArray = new Float32Array(1);
+      thicknessArray.fill(1, 0);
+      device.queue.writeBuffer(
+        thicknessBuffer,
+        0,
+        thicknessArray.buffer,
+        thicknessArray.byteOffset,
+        thicknessArray.byteLength
+      );
+
+      const envBlurArray = new Float32Array(1);
+      envBlurArray.fill(1, 0);
+      device.queue.writeBuffer(
+        envBlurBuffer,
+        0,
+        envBlurArray.buffer,
+        envBlurArray.byteOffset,
+        envBlurArray.byteLength
+      );
+
+      device.queue.writeBuffer(
+        resolutionBuffer,
+        0,
+        resolution.buffer,
+        resolution.byteOffset,
+        resolution.byteLength
+      );
+
+      const cameraNearArray = new Float32Array(1);
+      cameraNearArray.fill(cameraNear, 0);
+      device.queue.writeBuffer(
+        cameraNearBuffer,
+        0,
+        cameraNearArray.buffer,
+        cameraNearArray.byteOffset,
+        cameraNearArray.byteLength
+      );
+
+      const cameraFarArray = new Float32Array(1);
+      cameraFarArray.fill(cameraFar, 0);
+      device.queue.writeBuffer(
+        cameraFarBuffer,
+        0,
+        cameraFarArray.buffer,
+        cameraFarArray.byteOffset,
+        cameraFarArray.byteLength
+      );
+
+      const nearMinusFarArray = new Float32Array(1);
+      nearMinusFarArray.fill(nearMinusFar, 0);
+      device.queue.writeBuffer(
+        nearMinusFarBuffer,
+        0,
+        nearMinusFarArray.buffer,
+        nearMinusFarArray.byteOffset,
+        nearMinusFarArray.byteLength
+      );
+
+      const nearMulFarArray = new Float32Array(1);
+      nearMulFarArray.fill(nearMulFar, 0);
+      device.queue.writeBuffer(
+        nearMulFarBuffer,
+        0,
+        nearMulFarArray.buffer,
+        nearMulFarArray.byteOffset,
+        nearMulFarArray.byteLength
+      );
+
+      const farMinusNearArray = new Float32Array(1);
+      farMinusNearArray.fill(farMinusNear, 0);
+      device.queue.writeBuffer(
+        farMinusNearBuffer,
+        0,
+        farMinusNearArray.buffer,
+        farMinusNearArray.byteOffset,
+        farMinusNearArray.byteLength
       );
 
       const modeArr = new Uint32Array(1);
@@ -622,6 +757,7 @@ export const runScreenSpaceGlobalIllumination = async (
         modeArr.byteLength
       );
 
+      // Render pass
       const commandEncoder = device.createCommandEncoder();
 
       const cubePass = commandEncoder.beginRenderPass(cubePassDescriptor);
