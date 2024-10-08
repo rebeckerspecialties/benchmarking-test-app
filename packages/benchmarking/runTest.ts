@@ -15,9 +15,25 @@ const wdOpts = {
 
 const perfTraceDir = process.env.DEVICEFARM_LOG_DIR ?? ".";
 
-type benchmarkAsync = (testId: string, driver: Browser) => Promise<void>;
+type benchmarkAsync = (
+  testId: string,
+  driver: Browser,
+  skipIfJavaScriptCore: boolean
+) => Promise<void>;
 
-async function runBenchmark(testId: string, driver: Browser) {
+async function runBenchmark(
+  testId: string,
+  driver: Browser,
+  skipIfJavaScriptCore: boolean
+) {
+  const engineVersion = driver.$(`~EngineVersion`);
+  await engineVersion.waitForDisplayed({ timeout: 20000 });
+  const engineVersionText = await engineVersion.getText();
+
+  if (skipIfJavaScriptCore && engineVersionText === "Using JavaScriptCore") {
+    return "-1";
+  }
+
   const benchmark = driver.$(`~${testId}`);
   await benchmark.click();
 
@@ -28,31 +44,49 @@ async function runBenchmark(testId: string, driver: Browser) {
   return result;
 }
 
-async function runBenchmarkWithProfiler(testId: string, driver: Browser) {
+async function runBenchmarkWithProfiler(
+  profileName: string,
+  testId: string,
+  driver: Browser,
+  skipIfJavaScriptCore: boolean
+) {
   const perfTracePath = `${perfTraceDir}/${testId}-trace.zip`;
-  await driver.execute("mobile: startPerfRecord", {
-    profileName: "Time Profiler",
-    pid: "current",
-    timeout: 2000,
-  });
+  try {
+    await driver.execute("mobile: startPerfRecord", {
+      profileName,
+      pid: "current",
+      timeout: 1000,
+    });
 
-  await runBenchmark(testId, driver);
+    await runBenchmark(testId, driver, skipIfJavaScriptCore);
 
-  const output = (await driver.execute("mobile: stopPerfRecord", {
-    profileName: "Time Profiler",
-  })) as string;
+    const output = (await driver.execute("mobile: stopPerfRecord", {
+      profileName,
+    })) as string;
 
-  let buff = Buffer.from(output, "base64");
-  await writeFile(perfTracePath, buff);
-  console.log("Performance profile written to", perfTracePath);
+    let buff = Buffer.from(output, "base64");
+    await writeFile(perfTracePath, buff);
+    console.log("Performance profile written to", perfTracePath);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
+async function runBenchmarkWithFlameGraph(
+  testId: string,
+  driver: Browser,
+  skipIfJavaScriptCore: boolean
+) {
   const perfTracePath = `${perfTraceDir}/${testId}-flamegraph.cpuprofile`;
   const toggleFlamegraphButton = driver.$("~toggleFlamegraph");
   await toggleFlamegraphButton.click();
 
-  await runBenchmark(testId, driver);
+  let result = await runBenchmark(testId, driver, skipIfJavaScriptCore);
+
+  if (parseInt(result) === -1) {
+    console.log("Skipped writing flamegraph");
+    return;
+  }
 
   const profileLocationText = driver.$("~profileLocation");
   const path = await profileLocationText.getText();
@@ -78,20 +112,24 @@ async function runBenchmarkWithFlameGraph(testId: string, driver: Browser) {
   console.log("Flamegraph written to", perfTracePath);
 }
 
-async function runBenchmarkWithWallClockTime(testId: string, driver: Browser) {
+async function runBenchmarkWithWallClockTime(
+  testId: string,
+  driver: Browser,
+  skipIfJavaScriptCore: boolean
+) {
   const outputPath = `${perfTraceDir}/${testId}WallClock-ms.txt`;
 
-  const text = await runBenchmark(testId, driver);
+  const text = await runBenchmark(testId, driver, skipIfJavaScriptCore);
 
   await writeFile(outputPath, text);
   console.log("Benchmark time written to", outputPath);
 }
 
 function withDriver(benchmarkAsync: benchmarkAsync) {
-  return async (testId: string) => {
+  return async (testId: string, skipIfJavaScriptCore = false) => {
     const driver = await remote(wdOpts);
     try {
-      await benchmarkAsync(testId, driver);
+      await benchmarkAsync(testId, driver, skipIfJavaScriptCore);
     } catch (err) {
       throw new Error(`${testId} failed with the following error: ${err}`);
     } finally {
@@ -103,5 +141,10 @@ function withDriver(benchmarkAsync: benchmarkAsync) {
 export const benchmarkWithWallClockTime = withDriver(
   runBenchmarkWithWallClockTime
 );
-export const benchmarkWithProfiler = withDriver(runBenchmarkWithProfiler);
+export const benchmarkWithProfiler = withDriver(
+  runBenchmarkWithProfiler.bind(null, "Time Profiler")
+);
+export const benchmarkWithMemoryProfiler = withDriver(
+  runBenchmarkWithProfiler.bind(null, "Allocations")
+);
 export const benchmarkWithFlamegraph = withDriver(runBenchmarkWithFlameGraph);
