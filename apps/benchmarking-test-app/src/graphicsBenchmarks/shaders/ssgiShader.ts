@@ -1476,6 +1476,7 @@ fn main_1() {
     var diffuseRay: vec3<f32>;
     var local_10: vec3<f32>;
     var specularRay: vec3<f32>;
+    var directLight_1: vec3<f32>;
     var gDiffuse: vec4<f32>;
     var gSpecular: vec4<f32>;
     var rayLength: f32 = 0f;
@@ -1763,60 +1764,69 @@ fn main_1() {
     let _e568 = gi;
     let _e570 = specularSamples;
     specularGI = mix(_e567, _e568, vec3((1f / _e570)));
-    let _e576 = mode;
-    if (_e576 == 0i) {
+    let _e576 = vUv_1;
+    let _e578 = textureSampleLevel(directLightTexture, samp, _e576, 0f);
+    directLight_1 = _e578.xyz;
+    let _e581 = diffuseGI;
+    let _e582 = directLight_1;
+    diffuseGI = (_e581 + _e582);
+    let _e584 = specularGI;
+    let _e585 = directLight_1;
+    specularGI = (_e584 + _e585);
+    let _e589 = mode;
+    if (_e589 == 0i) {
         {
-            let _e579 = diffuseSamples;
-            if (_e579 == 0f) {
+            let _e592 = diffuseSamples;
+            if (_e592 == 0f) {
                 diffuseGI = vec3(-1f);
             }
-            let _e585 = diffuseGI;
-            let _e586 = mat;
-            gDiffuse = vec4<f32>(_e585.x, _e585.y, _e585.z, _e586.roughness);
+            let _e598 = diffuseGI;
+            let _e599 = mat;
+            gDiffuse = vec4<f32>(_e598.x, _e598.y, _e598.z, _e599.roughness);
         }
     }
-    let _e597 = cameraMatrixWorld[3];
-    cameraPosWS = _e597.xyz;
-    let _e600 = hitPos_3;
-    isMissedRay_1 = (_e600.x > 1000000000f);
-    let _e604 = isMissedRay_1;
-    if !(_e604) {
+    let _e610 = cameraMatrixWorld[3];
+    cameraPosWS = _e610.xyz;
+    let _e613 = hitPos_3;
+    isMissedRay_1 = (_e613.x > 1000000000f);
+    let _e617 = isMissedRay_1;
+    if !(_e617) {
         {
-            let _e606 = cameraMatrixWorld;
-            let _e607 = specularHitPos;
-            hitPosWS = (_e606 * vec4<f32>(_e607.x, _e607.y, _e607.z, 1f));
-            let _e615 = hitPosWS;
-            let _e617 = cameraPosWS;
-            let _e618 = hitPosWS;
-            rayLength = distance(_e617, _e618.xyz);
+            let _e619 = cameraMatrixWorld;
+            let _e620 = specularHitPos;
+            hitPosWS = (_e619 * vec4<f32>(_e620.x, _e620.y, _e620.z, 1f));
+            let _e628 = hitPosWS;
+            let _e630 = cameraPosWS;
+            let _e631 = hitPosWS;
+            rayLength = distance(_e630, _e631.xyz);
         }
     }
-    let _e621 = rayLength;
-    let _e622 = mat;
-    let _e625 = rayLength;
-    let _e626 = mat;
-    packedRoughnessRayLength = pack2x16float(vec2<f32>(_e625, _e626.roughness));
-    let _e632 = packedRoughnessRayLength;
-    a_5 = bitcast<f32>(_e632);
-    let _e635 = mode;
-    if (_e635 == 0i) {
+    let _e634 = rayLength;
+    let _e635 = mat;
+    let _e638 = rayLength;
+    let _e639 = mat;
+    packedRoughnessRayLength = pack2x16float(vec2<f32>(_e638, _e639.roughness));
+    let _e645 = packedRoughnessRayLength;
+    a_5 = bitcast<f32>(_e645);
+    let _e648 = mode;
+    if (_e648 == 0i) {
         {
-            let _e638 = specularGI;
-            let _e639 = rayLength;
-            gSpecular = vec4<f32>(_e638.x, _e638.y, _e638.z, _e639);
-            let _e646 = gDiffuse;
-            let _e647 = gSpecular;
-            let _e648 = packTwoVec4_(_e646, _e647);
-            fragColor = _e648;
+            let _e651 = specularGI;
+            let _e652 = rayLength;
+            gSpecular = vec4<f32>(_e651.x, _e651.y, _e651.z, _e652);
+            let _e659 = gDiffuse;
+            let _e660 = gSpecular;
+            let _e661 = packTwoVec4_(_e659, _e660);
+            fragColor = _e661;
             return;
         }
     } else {
         {
-            let _e649 = specularGI;
-            let _e650 = a_5;
-            gSpecular = vec4<f32>(_e649.x, _e649.y, _e649.z, _e650);
-            let _e655 = gSpecular;
-            fragColor = _e655;
+            let _e662 = specularGI;
+            let _e663 = a_5;
+            gSpecular = vec4<f32>(_e662.x, _e662.y, _e662.z, _e663);
+            let _e668 = gSpecular;
+            fragColor = _e668;
             return;
         }
     }

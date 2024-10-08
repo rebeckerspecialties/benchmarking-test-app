@@ -800,12 +800,10 @@ void main() {
 
   specularGI = mix(specularGI, gi, 1. / specularSamples);
 
-#ifdef useDirectLight
   vec3 directLight = textureLod(directLightTexture, vUv, 0.).rgb;
 
   diffuseGI += directLight;
   specularGI += directLight;
-#endif
 
   vec4 gDiffuse, gSpecular;
 

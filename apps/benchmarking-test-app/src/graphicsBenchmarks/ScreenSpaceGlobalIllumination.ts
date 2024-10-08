@@ -728,6 +728,16 @@ export const runScreenSpaceGlobalIllumination = async (
         { texture: sceneTexture },
         [canvas.width, canvas.height]
       );
+      commandEncoder.copyTextureToTexture(
+        { texture: sceneRenderView },
+        { texture: accumulatedTexture },
+        [canvas.width, canvas.height]
+      );
+      commandEncoder.copyTextureToTexture(
+        { texture: sceneRenderView },
+        { texture: directLightTexture },
+        [canvas.width, canvas.height]
+      );
 
       const depthPass = commandEncoder.beginRenderPass(depthPassDescriptor);
       depthPass.setPipeline(depthPipeline);
