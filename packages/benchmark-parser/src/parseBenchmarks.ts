@@ -14,7 +14,6 @@ interface paths {
   pathToBenchmarks: string;
   bundlePath: string;
   executablePath: string;
-  xmlPath: string;
   outputPath: string;
 }
 
@@ -37,8 +36,7 @@ interface XmlRow {
 }
 
 export async function parseBenchmarks(paths: paths) {
-  const { pathToBenchmarks, bundlePath, executablePath, xmlPath, outputPath } =
-    paths;
+  const { pathToBenchmarks, bundlePath, executablePath, outputPath } = paths;
   const files = await readdir(pathToBenchmarks, {
     recursive: true,
   });
@@ -66,15 +64,21 @@ export async function parseBenchmarks(paths: paths) {
     benchmarkEntries.push(executableSizeEntry);
   }
 
-  const memoryUsageEntry = await processXmlProfile(
-    xmlPath,
-    "Memory Usage"
-  ).catch((err) => {
-    console.error(err);
-    return null;
-  });
-  if (memoryUsageEntry) {
-    benchmarkEntries.push(memoryUsageEntry);
+  const xmlFiles = files.filter((file) => file.split(".").at(-1) === "xml");
+
+  for (const file of xmlFiles) {
+    const benchmarkPath = `${pathToBenchmarks}/${file}`;
+    const benchmarkEntry = await processXmlProfile(
+      benchmarkPath,
+      "Memory Usage"
+    ).catch((err) => {
+      console.error(err);
+      return null;
+    });
+
+    if (benchmarkEntry) {
+      benchmarkEntries.push(benchmarkEntry);
+    }
   }
 
   await writeFile(outputPath, JSON.stringify(benchmarkEntries));

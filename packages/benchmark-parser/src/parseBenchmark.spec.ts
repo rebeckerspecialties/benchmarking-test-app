@@ -41,8 +41,8 @@ describe("parseBenchmark", () => {
     mock({
       benchmarks: {
         "benchmark-ms.txt": "1234567",
+        "profile.xml": exampleProfile,
       },
-      "profile.xml": exampleProfile,
     });
     await parseBenchmarks(paths);
 
