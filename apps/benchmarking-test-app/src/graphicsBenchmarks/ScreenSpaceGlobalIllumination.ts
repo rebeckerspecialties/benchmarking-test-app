@@ -87,7 +87,7 @@ export const runScreenSpaceGlobalIllumination = async (
     primitive,
   });
 
-  const shadowPipeline = device.createRenderPipeline({
+  const depthPipeline = device.createRenderPipeline({
     layout: "auto",
     vertex: {
       module: device.createShaderModule({
@@ -171,186 +171,7 @@ export const runScreenSpaceGlobalIllumination = async (
     usage: GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  // Bind group 0
-  const uniformBufferSize = 4 * 16;
-  const projectionMatrixBuffer = device.createBuffer({
-    size: uniformBufferSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-  const modelViewMatrixBuffer = device.createBuffer({
-    size: uniformBufferSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const vec3Size = 4 * 3;
-  const cameraBuffer = device.createBuffer({
-    size: vec3Size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const cameraMatrixBuffer = device.createBuffer({
-    size: uniformBufferSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const floatSize = 4;
-  const uTimeBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const fovBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const aspectRatioBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const uColorBuffer = device.createBuffer({
-    size: vec3Size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const scaleBuffer = device.createBuffer({
-    size: vec3Size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const int32size = 4;
-  const modeBuffer = device.createBuffer({
-    size: int32size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const sfdMatrixInvBuffer = device.createBuffer({
-    size: uniformBufferSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const lightDirectionBuffer = device.createBuffer({
-    size: vec3Size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const logDepthBufFCBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const uniformBindGroup0 = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: projectionMatrixBuffer,
-          offset: 0,
-          size: uniformBufferSize,
-        },
-      },
-      {
-        binding: 1,
-        resource: {
-          buffer: modelViewMatrixBuffer,
-          offset: 0,
-          size: uniformBufferSize,
-        },
-      },
-      {
-        binding: 2,
-        resource: {
-          buffer: cameraBuffer,
-          offset: 0,
-          size: vec3Size,
-        },
-      },
-      {
-        binding: 3,
-        resource: {
-          buffer: cameraMatrixBuffer,
-          offset: 0,
-          size: uniformBufferSize,
-        },
-      },
-      {
-        binding: 4,
-        resource: {
-          buffer: uTimeBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
-        binding: 5,
-        resource: {
-          buffer: fovBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
-        binding: 6,
-        resource: {
-          buffer: aspectRatioBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
-        binding: 8,
-        resource: {
-          buffer: uColorBuffer,
-          offset: 0,
-          size: vec3Size,
-        },
-      },
-      {
-        binding: 9,
-        resource: {
-          buffer: scaleBuffer,
-          offset: 0,
-          size: vec3Size,
-        },
-      },
-      {
-        binding: 10,
-        resource: {
-          buffer: modeBuffer,
-          offset: 0,
-          size: int32size,
-        },
-      },
-      {
-        binding: 12,
-        resource: {
-          buffer: sfdMatrixInvBuffer,
-          offset: 0,
-          size: uniformBufferSize,
-        },
-      },
-      {
-        binding: 13,
-        resource: {
-          buffer: lightDirectionBuffer,
-          offset: 0,
-          size: vec3Size,
-        },
-      },
-      {
-        binding: 14,
-        resource: {
-          buffer: logDepthBufFCBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-    ],
-  });
-
-  // Bind group 1 (textures and samplers)
+  // Bind group 0 (textures and samplers)
   const inputBufferTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
     format: presentationFormat,
@@ -392,38 +213,287 @@ export const runScreenSpaceGlobalIllumination = async (
   });
 
   // Create the depth texture for rendering/sampling the shadow map.
+  const accumulatedTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
   const shadowDepthTexture = device.createTexture({
     size: [shadowDepthTextureSize, shadowDepthTextureSize, 1],
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
     format: "depth32float",
   });
-  const shadowDepthTextureView = shadowDepthTexture.createView();
 
-  const uniformBindGroup1 = device.createBindGroup({
+  const velocityTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const directLightTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const uniformBindGroup0 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(1),
     entries: [
-      { binding: 0, resource: inputBufferTexture.createView() },
-      { binding: 1, resource: noiseTexture.createView() },
-      { binding: 2, resource: shadowDepthTextureView },
-      { binding: 3, resource: sampler },
+      { binding: 0, resource: accumulatedTexture.createView() },
+      { binding: 1, resource: shadowDepthTexture.createView() },
+      { binding: 2, resource: velocityTexture.createView() },
+      { binding: 3, resource: directLightTexture.createView() },
+      { binding: 4, resource: sampler },
+    ],
+  });
+
+  // Bind group 1
+  const intSize = 4;
+  const floatSize = 4;
+  const vec2Size = 4 * 2;
+  const vec3Size = 4 * 3;
+  const matrixSize = 4 * 16;
+
+  // Buffers
+  const backgroundColorBuffer = device.createBuffer({
+    size: vec3Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const viewMatrixBuffer = device.createBuffer({
+    size: matrixSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const projectionMatrixBuffer = device.createBuffer({
+    size: matrixSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const projectionMatrixInverseBuffer = device.createBuffer({
+    size: matrixSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const cameraMatrixWorldBuffer = device.createBuffer({
+    size: matrixSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const maxEnvMapMipLevelBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const rayDistanceBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const thicknessBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const envBlurBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const resolutionBuffer = device.createBuffer({
+    size: vec2Size,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const cameraNearBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const cameraFarBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const nearMinusFarBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const nearMulFarBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const farMinusNearBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const modeBuffer = device.createBuffer({
+    size: intSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const uniformBindGroup1 = device.createBindGroup({
+    layout: pipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: backgroundColorBuffer,
+          offset: 0,
+          size: vec3Size,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: viewMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 2,
+        resource: {
+          buffer: projectionMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 3,
+        resource: {
+          buffer: projectionMatrixInverseBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 4,
+        resource: {
+          buffer: cameraMatrixWorldBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 5,
+        resource: {
+          buffer: maxEnvMapMipLevelBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 6,
+        resource: {
+          buffer: rayDistanceBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 7,
+        resource: {
+          buffer: thicknessBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 8,
+        resource: {
+          buffer: envBlurBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 9,
+        resource: {
+          buffer: resolutionBuffer,
+          offset: 0,
+          size: vec2Size,
+        },
+      },
+      {
+        binding: 10,
+        resource: {
+          buffer: cameraNearBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 11,
+        resource: {
+          buffer: cameraFarBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 12,
+        resource: {
+          buffer: nearMinusFarBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 13,
+        resource: {
+          buffer: nearMulFarBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 14,
+        resource: {
+          buffer: farMinusNearBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 15,
+        resource: {
+          buffer: modeBuffer,
+          offset: 0,
+          size: intSize,
+        },
+      },
     ],
   });
 
   // Shadow bind group
   const shadowModelViewMatrixBuffer = device.createBuffer({
-    size: uniformBufferSize,
+    size: matrixSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
   const sceneBindGroupForShadow = device.createBindGroup({
-    layout: shadowPipeline.getBindGroupLayout(0),
+    layout: depthPipeline.getBindGroupLayout(0),
     entries: [
       {
         binding: 0,
         resource: {
           buffer: projectionMatrixBuffer,
           offset: 0,
-          size: uniformBufferSize,
+          size: matrixSize,
         },
       },
       {
@@ -431,7 +501,7 @@ export const runScreenSpaceGlobalIllumination = async (
         resource: {
           buffer: shadowModelViewMatrixBuffer,
           offset: 0,
-          size: uniformBufferSize,
+          size: matrixSize,
         },
       },
     ],
@@ -446,7 +516,7 @@ export const runScreenSpaceGlobalIllumination = async (
         resource: {
           buffer: projectionMatrixBuffer,
           offset: 0,
-          size: uniformBufferSize,
+          size: matrixSize,
         },
       },
       {
@@ -454,7 +524,7 @@ export const runScreenSpaceGlobalIllumination = async (
         resource: {
           buffer: shadowModelViewMatrixBuffer,
           offset: 0,
-          size: uniformBufferSize,
+          size: matrixSize,
         },
       },
     ],
@@ -496,7 +566,7 @@ export const runScreenSpaceGlobalIllumination = async (
         },
       };
 
-      const shadowPassDescriptor: GPURenderPassDescriptor = {
+      const depthPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [],
         depthStencilAttachment: {
           view: shadowDepthTexture.createView(),
@@ -535,105 +605,21 @@ export const runScreenSpaceGlobalIllumination = async (
         projectionMatrix.byteLength
       );
       device.queue.writeBuffer(
-        modelViewMatrixBuffer,
-        0,
-        modelViewMatrix.buffer,
-        modelViewMatrix.byteOffset,
-        modelViewMatrix.byteLength
-      );
-      device.queue.writeBuffer(
         shadowModelViewMatrixBuffer,
         0,
         shadowModelViewMatrix.buffer,
         shadowModelViewMatrix.byteOffset,
         shadowModelViewMatrix.byteLength
       );
-      device.queue.writeBuffer(
-        cameraBuffer,
-        0,
-        cameraPos.buffer,
-        cameraPos.byteOffset,
-        cameraPos.byteLength
-      );
-      device.queue.writeBuffer(
-        cameraMatrixBuffer,
-        0,
-        cameraMatrix.buffer,
-        cameraMatrix.byteOffset,
-        cameraMatrix.byteLength
-      );
-      const timeBuffer = new Float32Array(1);
-      timeBuffer.fill(Date.now() / 1000, 0);
-      device.queue.writeBuffer(
-        uTimeBuffer,
-        0,
-        timeBuffer.buffer,
-        timeBuffer.byteOffset,
-        timeBuffer.byteLength
-      );
-      const fovArray = new Float32Array(1);
-      fovArray.fill(fov * (180 / Math.PI), 0);
-      device.queue.writeBuffer(
-        fovBuffer,
-        0,
-        fovArray.buffer,
-        fovArray.byteOffset,
-        fovArray.byteLength
-      );
-      const aspectRatio = new Float32Array(1);
-      aspectRatio.fill(aspect, 0);
-      device.queue.writeBuffer(
-        aspectRatioBuffer,
-        0,
-        aspectRatio.buffer,
-        aspectRatio.byteOffset,
-        aspectRatio.byteLength
-      );
-      device.queue.writeBuffer(
-        uColorBuffer,
-        0,
-        color.buffer,
-        color.byteOffset,
-        color.byteLength
-      );
-      device.queue.writeBuffer(
-        scaleBuffer,
-        0,
-        scale.buffer,
-        scale.byteOffset,
-        scale.byteLength
-      );
+
       const modeArr = new Uint32Array(1);
-      modeArr.fill(3, 0);
+      modeArr.fill(0, 0);
       device.queue.writeBuffer(
         modeBuffer,
         0,
         modeArr.buffer,
         modeArr.byteOffset,
         modeArr.byteLength
-      );
-      device.queue.writeBuffer(
-        sfdMatrixInvBuffer,
-        0,
-        sdfMatrixInv.buffer,
-        sdfMatrixInv.byteOffset,
-        sdfMatrixInv.byteLength
-      );
-      device.queue.writeBuffer(
-        lightDirectionBuffer,
-        0,
-        lightDirection.buffer,
-        lightDirection.byteOffset,
-        lightDirection.byteLength
-      );
-      const logDepthBufFC = new Float32Array(1);
-      logDepthBufFC.fill(0.05, 0);
-      device.queue.writeBuffer(
-        logDepthBufFCBuffer,
-        0,
-        logDepthBufFC.buffer,
-        logDepthBufFC.byteOffset,
-        logDepthBufFC.byteLength
       );
 
       const commandEncoder = device.createCommandEncoder();
@@ -653,13 +639,13 @@ export const runScreenSpaceGlobalIllumination = async (
         [canvas.width, canvas.height]
       );
 
-      const shadowPass = commandEncoder.beginRenderPass(shadowPassDescriptor);
-      shadowPass.setPipeline(shadowPipeline);
-      shadowPass.setBindGroup(0, sceneBindGroupForShadow);
-      shadowPass.setVertexBuffer(0, verticesBuffer);
-      shadowPass.draw(cubeVertexCount);
+      const depthPass = commandEncoder.beginRenderPass(depthPassDescriptor);
+      depthPass.setPipeline(depthPipeline);
+      depthPass.setBindGroup(0, sceneBindGroupForShadow);
+      depthPass.setVertexBuffer(0, verticesBuffer);
+      depthPass.draw(cubeVertexCount);
 
-      shadowPass.end();
+      depthPass.end();
 
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
