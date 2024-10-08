@@ -253,15 +253,9 @@ export const runScreenSpaceGlobalIllumination = async (
   const intSize = 4;
   const floatSize = 4;
   const vec2Size = 4 * 2;
-  const vec3Size = 4 * 3;
   const matrixSize = 4 * 16;
 
   // Buffers
-  const backgroundColorBuffer = device.createBuffer({
-    size: vec3Size,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
   const viewMatrixBuffer = device.createBuffer({
     size: matrixSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -282,11 +276,6 @@ export const runScreenSpaceGlobalIllumination = async (
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  const maxEnvMapMipLevelBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
   const rayDistanceBuffer = device.createBuffer({
     size: floatSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -297,27 +286,12 @@ export const runScreenSpaceGlobalIllumination = async (
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  const envBlurBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
   const resolutionBuffer = device.createBuffer({
     size: vec2Size,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
-  const cameraNearBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
   const cameraFarBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const nearMinusFarBuffer = device.createBuffer({
     size: floatSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
@@ -340,14 +314,6 @@ export const runScreenSpaceGlobalIllumination = async (
   const uniformBindGroup1 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(1),
     entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: backgroundColorBuffer,
-          offset: 0,
-          size: vec3Size,
-        },
-      },
       {
         binding: 1,
         resource: {
@@ -381,14 +347,6 @@ export const runScreenSpaceGlobalIllumination = async (
         },
       },
       {
-        binding: 5,
-        resource: {
-          buffer: maxEnvMapMipLevelBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
         binding: 6,
         resource: {
           buffer: rayDistanceBuffer,
@@ -405,14 +363,6 @@ export const runScreenSpaceGlobalIllumination = async (
         },
       },
       {
-        binding: 8,
-        resource: {
-          buffer: envBlurBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
         binding: 9,
         resource: {
           buffer: resolutionBuffer,
@@ -421,25 +371,9 @@ export const runScreenSpaceGlobalIllumination = async (
         },
       },
       {
-        binding: 10,
-        resource: {
-          buffer: cameraNearBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
         binding: 11,
         resource: {
           buffer: cameraFarBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      {
-        binding: 12,
-        resource: {
-          buffer: nearMinusFarBuffer,
           offset: 0,
           size: floatSize,
         },
@@ -568,11 +502,9 @@ export const runScreenSpaceGlobalIllumination = async (
   const fov = Math.PI / 2;
   const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
-  const backgroundColor = vec3.fromValues(1, 1, 0);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
   const cameraNear = 1.0;
   const cameraFar = 100.0;
-  const nearMinusFar = cameraNear - cameraFar;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
 
@@ -635,14 +567,6 @@ export const runScreenSpaceGlobalIllumination = async (
       const cameraMatrix = mat4.cameraAim(cameraPos, targetPos, axis);
 
       device.queue.writeBuffer(
-        backgroundColorBuffer,
-        0,
-        backgroundColor.buffer,
-        backgroundColor.byteOffset,
-        backgroundColor.byteLength
-      );
-
-      device.queue.writeBuffer(
         viewMatrixBuffer,
         0,
         viewMatrix.buffer,
@@ -674,16 +598,6 @@ export const runScreenSpaceGlobalIllumination = async (
         cameraMatrix.byteLength
       );
 
-      const maxEnvMapMipLevelArray = new Float32Array(1);
-      maxEnvMapMipLevelArray.fill(4, 0);
-      device.queue.writeBuffer(
-        maxEnvMapMipLevelBuffer,
-        0,
-        maxEnvMapMipLevelArray.buffer,
-        maxEnvMapMipLevelArray.byteOffset,
-        maxEnvMapMipLevelArray.byteLength
-      );
-
       const rayDistanceArray = new Float32Array(1);
       rayDistanceArray.fill(100.0, 0);
       device.queue.writeBuffer(
@@ -704,32 +618,12 @@ export const runScreenSpaceGlobalIllumination = async (
         thicknessArray.byteLength
       );
 
-      const envBlurArray = new Float32Array(1);
-      envBlurArray.fill(1, 0);
-      device.queue.writeBuffer(
-        envBlurBuffer,
-        0,
-        envBlurArray.buffer,
-        envBlurArray.byteOffset,
-        envBlurArray.byteLength
-      );
-
       device.queue.writeBuffer(
         resolutionBuffer,
         0,
         resolution.buffer,
         resolution.byteOffset,
         resolution.byteLength
-      );
-
-      const cameraNearArray = new Float32Array(1);
-      cameraNearArray.fill(cameraNear, 0);
-      device.queue.writeBuffer(
-        cameraNearBuffer,
-        0,
-        cameraNearArray.buffer,
-        cameraNearArray.byteOffset,
-        cameraNearArray.byteLength
       );
 
       const cameraFarArray = new Float32Array(1);
@@ -740,16 +634,6 @@ export const runScreenSpaceGlobalIllumination = async (
         cameraFarArray.buffer,
         cameraFarArray.byteOffset,
         cameraFarArray.byteLength
-      );
-
-      const nearMinusFarArray = new Float32Array(1);
-      nearMinusFarArray.fill(nearMinusFar, 0);
-      device.queue.writeBuffer(
-        nearMinusFarBuffer,
-        0,
-        nearMinusFarArray.buffer,
-        nearMinusFarArray.byteOffset,
-        nearMinusFarArray.byteLength
       );
 
       const nearMulFarArray = new Float32Array(1);
