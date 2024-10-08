@@ -131,6 +131,9 @@ phases:
   # we recommend adding them to this section.
   post_test:
     commands:
+      - cd $DEVICEFARM_LOG_DIR
+      - unzip sdfWebGpuBenchmark-trace.zip
+      - xctrace export --input *.trace --output sdfWebGpuBenchmarkTrace.xml --xpath '/trace-toc/run[@number="1"]/tracks/track[@name="Allocations"]/details/detail[@name="Statistics"]'
 
 # Artifacts are a list of paths on the filesystem where you can store test output and reports.
 # All files in these paths will be collected by Device Farm.

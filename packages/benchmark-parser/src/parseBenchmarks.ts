@@ -1,5 +1,6 @@
 import { readdir, readFile, writeFile } from "fs/promises";
 import { exec } from "child_process";
+import { parseString, parseStringPromise } from "xml2js";
 
 interface BenchmarkEntry {
   name: string;
@@ -9,12 +10,33 @@ interface BenchmarkEntry {
   extra?: string;
 }
 
-export async function parseBenchmarks(
-  pathToBenchmarks: string,
-  bundlePath: string,
-  executablePath: string,
-  outputPath: string
-) {
+interface paths {
+  pathToBenchmarks: string;
+  bundlePath: string;
+  executablePath: string;
+  outputPath: string;
+}
+
+interface XmlProfile {
+  "trace-query-result": {
+    node: XmlNode[];
+  };
+}
+
+interface XmlNode {
+  $: string;
+  row: XmlRow[];
+}
+
+interface XmlRow {
+  $: {
+    category: string;
+    "total-bytes": string;
+  };
+}
+
+export async function parseBenchmarks(paths: paths) {
+  const { pathToBenchmarks, bundlePath, executablePath, outputPath } = paths;
   const files = await readdir(pathToBenchmarks, {
     recursive: true,
   });
@@ -40,6 +62,23 @@ export async function parseBenchmarks(
   });
   if (executableSizeEntry) {
     benchmarkEntries.push(executableSizeEntry);
+  }
+
+  const xmlFiles = files.filter((file) => file.split(".").at(-1) === "xml");
+
+  for (const file of xmlFiles) {
+    const benchmarkPath = `${pathToBenchmarks}/${file}`;
+    const benchmarkEntry = await processXmlProfile(
+      benchmarkPath,
+      "Memory Usage"
+    ).catch((err) => {
+      console.error(err);
+      return null;
+    });
+
+    if (benchmarkEntry) {
+      benchmarkEntries.push(benchmarkEntry);
+    }
   }
 
   await writeFile(outputPath, JSON.stringify(benchmarkEntries));
@@ -82,6 +121,25 @@ async function processBundleSize(bundlePath: string, name: string) {
   }
 
   return createBenchmarkEntry(name, bundleSizeKib, "kiB");
+}
+
+async function processXmlProfile(xmlPath: string, name: string) {
+  const xmlProfile = await readFile(xmlPath, "utf-8");
+  const parsedXml: XmlProfile = await parseStringPromise(xmlProfile);
+
+  const totalBytes = parsedXml["trace-query-result"].node[0].row.find(
+    ({ $ }) => {
+      return $.category === "All Heap Allocations";
+    }
+  );
+
+  if (!totalBytes) {
+    throw new Error(
+      `Failed to parse total memory usage from instruments trace`
+    );
+  }
+
+  return createBenchmarkEntry(name, totalBytes.$["total-bytes"], "bytes");
 }
 
 function createBenchmarkEntry(
