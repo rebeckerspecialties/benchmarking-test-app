@@ -74,7 +74,7 @@ var<private> fragColor: vec4<f32>;
 @group(0) @binding(0)
 var accumulatedTexture: texture_2d<f32>;
 @group(0) @binding(1)
-var depthTexture: texture_2d<f32>;
+var depthTexture: texture_depth_2d;
 @group(0) @binding(2)
 var velocityTexture: texture_2d<f32>;
 @group(0) @binding(3)
@@ -1127,8 +1127,8 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
             let _e52 = viewSpaceToScreenSpace(_e51);
             uv_6 = _e52;
             let _e55 = uv_6;
-            let _e57 = textureSampleLevel(depthTexture, samp, _e55, 0f);
-            unpackedDepth = _e57.x;
+            let _e57 = textureSampleLevel(depthTexture, samp, _e55, 0);
+            unpackedDepth = _e57;
             let _e61 = unpackedDepth;
             let _e62 = getViewZ(_e61);
             z = _e62;
@@ -1200,8 +1200,8 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
             let _e103 = viewSpaceToScreenSpace(_e102);
             uv_7 = _e103;
             let _e106 = uv_7;
-            let _e108 = textureSampleLevel(depthTexture, samp, _e106, 0f);
-            unpackedDepth_1 = _e108.x;
+            let _e108 = textureSampleLevel(depthTexture, samp, _e106, 0);
+            unpackedDepth_1 = _e108;
             let _e112 = unpackedDepth_1;
             let _e113 = getViewZ(_e112);
             z_1 = _e113;
@@ -1485,8 +1485,8 @@ fn main_1() {
     var a_5: f32;
 
     let _e33 = vUv_1;
-    let _e35 = textureSampleLevel(depthTexture, samp, _e33, 0f);
-    unpackedDepth_2 = _e35.x;
+    let _e35 = textureSampleLevel(depthTexture, samp, _e33, 0);
+    unpackedDepth_2 = _e35;
     let _e38 = unpackedDepth_2;
     if (_e38 == 1f) {
         {
@@ -1844,7 +1844,7 @@ var inputTexture: texture_2d<f32>;
 @group(0) @binding(1)
 var sceneTexture: texture_2d<f32>;
 @group(0) @binding(2)
-var depthTexture: texture_2d<f32>;
+var depthTexture: texture_depth_2d;
 @group(0) @binding(3)
 var samp: sampler;
 
@@ -1853,8 +1853,8 @@ fn main_1() {
     var ssgiClr: vec3<f32>;
 
     let _e8 = uv_1;
-    let _e10 = textureSampleLevel(depthTexture, samp, _e8, 0f);
-    depth = _e10.x;
+    let _e10 = textureSampleLevel(depthTexture, samp, _e8, 0);
+    depth = _e10;
     let _e14 = depth;
     if (_e14 == 1f) {
         {
