@@ -16,7 +16,7 @@ import {
   ssgiFragWGSL,
 } from "./shaders/ssgiShader";
 
-const shadowDepthTextureSize = 1024;
+const depthTextureSize = 1024;
 
 export const runScreenSpaceGlobalIllumination = async (
   context: CanvasContext,
@@ -172,14 +172,6 @@ export const runScreenSpaceGlobalIllumination = async (
   });
 
   // Bind group 0 (textures and samplers)
-  const inputBufferTexture = device.createTexture({
-    size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
-    usage:
-      GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.COPY_DST |
-      GPUTextureUsage.RENDER_ATTACHMENT,
-  });
 
   const noiseTextureWidth = 64;
   const noiseTexture = device.createTexture({
@@ -212,7 +204,7 @@ export const runScreenSpaceGlobalIllumination = async (
     addressModeV: "repeat",
   });
 
-  // Create the depth texture for rendering/sampling the shadow map.
+  // Create the depth texture for rendering/sampling the depth pass.
   const accumulatedTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
     format: presentationFormat,
@@ -222,8 +214,8 @@ export const runScreenSpaceGlobalIllumination = async (
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const shadowDepthTexture = device.createTexture({
-    size: [shadowDepthTextureSize, shadowDepthTextureSize, 1],
+  const depthPassTexture = device.createTexture({
+    size: [depthTextureSize, depthTextureSize, 1],
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
     format: "depth32float",
   });
@@ -247,10 +239,10 @@ export const runScreenSpaceGlobalIllumination = async (
   });
 
   const uniformBindGroup0 = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(1),
+    layout: pipeline.getBindGroupLayout(0),
     entries: [
       { binding: 0, resource: accumulatedTexture.createView() },
-      { binding: 1, resource: shadowDepthTexture.createView() },
+      { binding: 1, resource: depthPassTexture.createView() },
       { binding: 2, resource: velocityTexture.createView() },
       { binding: 3, resource: directLightTexture.createView() },
       { binding: 4, resource: sampler },
@@ -346,7 +338,7 @@ export const runScreenSpaceGlobalIllumination = async (
   });
 
   const uniformBindGroup1 = device.createBindGroup({
-    layout: pipeline.getBindGroupLayout(0),
+    layout: pipeline.getBindGroupLayout(1),
     entries: [
       {
         binding: 0,
@@ -479,13 +471,8 @@ export const runScreenSpaceGlobalIllumination = async (
     ],
   });
 
-  // Shadow bind group
-  const shadowModelViewMatrixBuffer = device.createBuffer({
-    size: matrixSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const sceneBindGroupForShadow = device.createBindGroup({
+  // Depth pass bind group
+  const depthPassBindGroup = device.createBindGroup({
     layout: depthPipeline.getBindGroupLayout(0),
     entries: [
       {
@@ -499,7 +486,7 @@ export const runScreenSpaceGlobalIllumination = async (
       {
         binding: 1,
         resource: {
-          buffer: shadowModelViewMatrixBuffer,
+          buffer: viewMatrixBuffer,
           offset: 0,
           size: matrixSize,
         },
@@ -522,10 +509,56 @@ export const runScreenSpaceGlobalIllumination = async (
       {
         binding: 1,
         resource: {
-          buffer: shadowModelViewMatrixBuffer,
+          buffer: viewMatrixBuffer,
           offset: 0,
           size: matrixSize,
         },
+      },
+    ],
+  });
+
+  // Compose bind group
+  const inputTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const sceneTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const composeSampler = device.createSampler({
+    magFilter: "linear",
+    minFilter: "linear",
+  });
+
+  const composeBindGroup = device.createBindGroup({
+    layout: composePipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: inputTexture.createView(),
+      },
+      {
+        binding: 1,
+        resource: sceneTexture.createView(),
+      },
+      {
+        binding: 2,
+        resource: depthPassTexture.createView(),
+      },
+      {
+        binding: 3,
+        resource: composeSampler,
       },
     ],
   });
@@ -572,7 +605,7 @@ export const runScreenSpaceGlobalIllumination = async (
       const depthPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [],
         depthStencilAttachment: {
-          view: shadowDepthTexture.createView(),
+          view: depthPassTexture.createView(),
           depthClearValue: 1.0,
           depthLoadOp: "clear",
           depthStoreOp: "store",
@@ -600,14 +633,6 @@ export const runScreenSpaceGlobalIllumination = async (
 
       const viewMatrix = mat4.lookAt(cameraPos, targetPos, axis);
       const cameraMatrix = mat4.cameraAim(cameraPos, targetPos, axis);
-
-      device.queue.writeBuffer(
-        shadowModelViewMatrixBuffer,
-        0,
-        viewMatrix.buffer,
-        viewMatrix.byteOffset,
-        viewMatrix.byteLength
-      );
 
       device.queue.writeBuffer(
         backgroundColorBuffer,
@@ -768,16 +793,16 @@ export const runScreenSpaceGlobalIllumination = async (
 
       cubePass.end();
 
-      const renderView = context.getCurrentTexture();
+      const sceneRenderView = context.getCurrentTexture();
       commandEncoder.copyTextureToTexture(
-        { texture: renderView },
-        { texture: inputBufferTexture },
+        { texture: sceneRenderView },
+        { texture: sceneTexture },
         [canvas.width, canvas.height]
       );
 
       const depthPass = commandEncoder.beginRenderPass(depthPassDescriptor);
       depthPass.setPipeline(depthPipeline);
-      depthPass.setBindGroup(0, sceneBindGroupForShadow);
+      depthPass.setBindGroup(0, depthPassBindGroup);
       depthPass.setVertexBuffer(0, verticesBuffer);
       depthPass.draw(cubeVertexCount);
 
@@ -791,15 +816,18 @@ export const runScreenSpaceGlobalIllumination = async (
       passEncoder.draw(screenVertexCount);
       passEncoder.end();
 
-      // TODO: copy outputBuffer to inputBuffer
+      const ssgiRenderView = context.getCurrentTexture();
+      commandEncoder.copyTextureToTexture(
+        { texture: ssgiRenderView },
+        { texture: inputTexture },
+        [canvas.width, canvas.height]
+      );
 
       const composePassEncoder =
         commandEncoder.beginRenderPass(renderPassDescriptor);
       composePassEncoder.setPipeline(composePipeline);
       composePassEncoder.setVertexBuffer(0, screenBuffer);
-      // TODO: bind groups
-      // composePassEncoder.setBindGroup(0, uniformBindGroup0);
-      // composePassEncoder.setBindGroup(1, uniformBindGroup1);
+      composePassEncoder.setBindGroup(0, composeBindGroup);
       composePassEncoder.draw(screenVertexCount);
       composePassEncoder.end();
 
