@@ -287,7 +287,6 @@ fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @loca
     vEmissive_1 = vEmissive;
     main_1();
     let _e27 = outColor;
-    return FragmentOutput(vec4f(vNormal.x, vNormal.y, vNormal.z, 1f));
-    // return FragmentOutput(_e27);
+    return FragmentOutput(_e27);
 }
 `;
