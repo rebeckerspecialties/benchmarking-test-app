@@ -919,7 +919,7 @@ const runScreenSpaceShader = async (
       const zPostion = Math.sin(Math.PI * (frame / 250));
       frame++;
 
-      const cameraPos = vec3.fromValues(150 * xPosition, 100, -150 * zPostion);
+      const cameraPos = vec3.fromValues(150 * xPosition, 100, 150 * zPostion);
       const targetPos = vec3.fromValues(0, 25, 0);
       const axis = vec3.fromValues(0, 1, 0);
 
