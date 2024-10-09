@@ -635,7 +635,8 @@ fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
     let _e75 = roughness_2;
     let _e76 = metalness_2;
     let _e77 = emissive_2;
-    return Material(_e73, _e74, _e75, _e76, _e77);
+    return Material(vec4f(0, 1, 0, 1), vec3f(0, 1, 0), 1f, 0f, _e77);
+    // return Material(_e73, _e74, _e75, _e76, _e77);
 }
 
 fn getMaterial_1(uv_2: vec2<f32>) -> Material {
@@ -1769,10 +1770,10 @@ fn main_1() {
     directLight_1 = _e578.xyz;
     let _e581 = diffuseGI;
     let _e582 = directLight_1;
-    diffuseGI = (_e581 + _e582);
+    // diffuseGI = (_e581 + _e582);
     let _e584 = specularGI;
     let _e585 = directLight_1;
-    specularGI = (_e584 + _e585);
+    // specularGI = (_e584 + _e585);
     let _e589 = mode;
     if (_e589 == 0i) {
         {
@@ -1890,6 +1891,114 @@ fn main(@location(0) uv: vec2<f32>) -> FragmentOutput {
     main_1();
     let _e15 = outputColor;
     return FragmentOutput(_e15);
+}
+
+`;
+
+export const accumulateFragWGSL = `
+struct TexelLighting {
+    diffuse: vec4<f32>,
+    specular: vec4<f32>,
+}
+
+struct FragmentOutput {
+    @location(0) outputColor: vec4<f32>,
+}
+
+var<private> uv_1: vec2<f32>;
+var<private> outputColor: vec4<f32>;
+@group(0) @binding(0)
+var inputTexture: texture_2d<f32>;
+@group(0) @binding(1)
+var<uniform> roughness: f32;
+@group(0) @binding(2)
+var samp: sampler;
+
+fn unpackTwoVec4_(encoded: vec4<f32>) -> TexelLighting {
+    var encoded_1: vec4<f32>;
+    var v1_: vec4<f32> = vec4(0f);
+    var v2_: vec4<f32> = vec4(0f);
+    var r: u32;
+    var g: u32;
+    var b: u32;
+    var a: u32;
+
+    encoded_1 = encoded;
+    let _e13 = encoded_1;
+    let _e15 = encoded_1;
+    r = bitcast<u32>(_e15.x);
+    let _e19 = encoded_1;
+    let _e21 = encoded_1;
+    g = bitcast<u32>(_e21.y);
+    let _e25 = encoded_1;
+    let _e27 = encoded_1;
+    b = bitcast<u32>(_e27.z);
+    let _e31 = encoded_1;
+    let _e33 = encoded_1;
+    a = bitcast<u32>(_e33.w);
+    let _e37 = v1_;
+    let _e40 = r;
+    let _e41 = unpack2x16float(_e40);
+    v1_.x = _e41.x;
+    v1_.y = _e41.y;
+    let _e46 = v1_;
+    let _e49 = g;
+    let _e50 = unpack2x16float(_e49);
+    v1_.z = _e50.x;
+    v1_.w = _e50.y;
+    let _e55 = v2_;
+    let _e58 = b;
+    let _e59 = unpack2x16float(_e58);
+    v2_.x = _e59.x;
+    v2_.y = _e59.y;
+    let _e64 = v2_;
+    let _e67 = a;
+    let _e68 = unpack2x16float(_e67);
+    v2_.z = _e68.x;
+    v2_.w = _e68.y;
+    let _e73 = v1_;
+    v1_ = (_e73 - vec4(0.0001f));
+    let _e77 = v2_;
+    v2_ = (_e77 - vec4(0.0001f));
+    let _e81 = v1_;
+    let _e82 = v2_;
+    return TexelLighting(_e81, _e82);
+}
+
+fn accumulate(inputTexel: vec4<f32>) -> vec4<f32> {
+    var inputTexel_1: vec4<f32>;
+    var t: TexelLighting;
+
+    inputTexel_1 = inputTexel;
+    let _e8 = inputTexel_1;
+    let _e9 = unpackTwoVec4_(_e8);
+    t = _e9;
+    let _e11 = t;
+    let _e13 = t;
+    let _e16 = t;
+    let _e18 = t;
+    let _e20 = roughness;
+    return mix(_e16.diffuse, _e18.specular, vec4(_e20));
+}
+
+fn main_1() {
+    var inputTexel_2: vec4<f32>;
+
+    let _e6 = uv_1;
+    let _e7 = textureSample(inputTexture, samp, _e6);
+    inputTexel_2 = _e7;
+    let _e10 = inputTexel_2;
+    let _e11 = accumulate(_e10);
+    outputColor = _e11;
+    return;
+}
+
+@fragment
+fn main(@location(0) uv: vec2<f32>) -> FragmentOutput {
+    uv_1 = uv;
+    main_1();
+    let _e13 = outputColor;
+    return FragmentOutput(_e13);
 }
 
 `;
