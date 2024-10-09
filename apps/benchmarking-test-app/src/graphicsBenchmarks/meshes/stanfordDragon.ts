@@ -10,16 +10,20 @@ const { positions, normals, triangles } = generateNormals(
 
 const uvs = computeProjectedPlaneUVs(positions, "xy");
 
+const colors: [number, number, number][] = positions.map(() => [
+  0.2 + Math.random() / 10,
+  0.1 + Math.random() / 10,
+  0.4 + Math.random() / 10,
+]);
+const roughness: [number][] = positions.map(() => [0.8]);
+const metalness: [number][] = positions.map(() => [0.2]);
+const emissives: [number, number, number][] = positions.map(() => [0, 0, 0]);
+
 // Push indices for an additional ground plane
 triangles.push(
   [positions.length, positions.length + 2, positions.length + 1],
   [positions.length, positions.length + 1, positions.length + 3]
 );
-
-const colors: [number, number, number][] = triangles.map(() => [0.2, 0.1, 0.4]);
-const roughness: [number][] = triangles.map(() => [0.8]);
-const metalness: [number][] = triangles.map(() => [0.2]);
-const emissives: [number, number, number][] = triangles.map(() => [0, 0, 0]);
 
 // Push vertex attributes for an additional ground plane
 // prettier-ignore
@@ -42,9 +46,9 @@ uvs.push(
   [1, 0]
 );
 colors.push([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]);
-roughness.push([0], [0], [0], [0]);
-metalness.push([1], [1], [1], [1]);
-emissives.push([1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]);
+roughness.push([0.2], [0.2], [0.2], [0.2]);
+metalness.push([0.8], [0.8], [0.8], [0.8]);
+emissives.push([0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]);
 
 export const mesh = {
   positions,
