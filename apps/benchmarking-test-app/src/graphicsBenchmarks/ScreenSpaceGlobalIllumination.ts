@@ -10,6 +10,7 @@ import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
   basicVertWGSL,
+  poissonDenoiseFragWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
 } from "./shaders/ssgiShader";
@@ -214,6 +215,13 @@ export const runScreenSpaceGlobalIllumination = async (
     presentationFormat,
     ssgiFragWGSL,
     "ssgi"
+  );
+
+  const denoisePipeline = createFullscreenPipeline(
+    device,
+    presentationFormat,
+    poissonDenoiseFragWGSL,
+    "denoise"
   );
 
   const composePipeline = createFullscreenPipeline(
@@ -556,6 +564,140 @@ export const runScreenSpaceGlobalIllumination = async (
     ],
   });
 
+  // denoise bind groups
+  const denoiseInputTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const denoiseBindGroup0 = device.createBindGroup({
+    layout: denoisePipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: denoiseInputTexture.createView(),
+      },
+      {
+        binding: 1,
+        resource: depthPassTexture.createView(),
+      },
+      {
+        binding: 2,
+        resource: sampler,
+      },
+    ],
+  });
+
+  const radiusBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const phiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const lumaPhiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const depthPhiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const normalPhiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const roughnessPhiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  const specularPhiBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const denoiseBindGroup1 = device.createBindGroup({
+    layout: denoisePipeline.getBindGroupLayout(1),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: radiusBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: phiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 2,
+        resource: {
+          buffer: lumaPhiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 3,
+        resource: {
+          buffer: depthPhiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 4,
+        resource: {
+          buffer: normalPhiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 5,
+        resource: {
+          buffer: roughnessPhiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 6,
+        resource: {
+          buffer: specularPhiBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      {
+        binding: 7,
+        resource: {
+          buffer: resolutionBuffer,
+          offset: 0,
+          size: vec2Size,
+        },
+      },
+    ],
+  });
+  const denoiseBindGroup2 = device.createBindGroup({
+    layout: denoisePipeline.getBindGroupLayout(2),
+    entries: [
+      { binding: 0, resource: gBufferTexture.createView() },
+      { binding: 1, resource: gBufferSampler },
+    ],
+  });
+
   // Compose bind group
   const inputTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
@@ -623,6 +765,11 @@ export const runScreenSpaceGlobalIllumination = async (
 
       // Render Pass Descriptors
       const renderPassDescriptor = createDefaultRenderPass(
+        textureView,
+        depthTextureView
+      );
+
+      const denoisePassRenderDescriptor = createDefaultRenderPass(
         textureView,
         depthTextureView
       );
@@ -793,6 +940,56 @@ export const runScreenSpaceGlobalIllumination = async (
         modeArr.byteLength
       );
 
+      const radiusArray = new Float32Array(1);
+      radiusArray.fill(3, 0);
+      device.queue.writeBuffer(
+        radiusBuffer,
+        0,
+        radiusArray.buffer,
+        radiusArray.byteOffset,
+        radiusArray.byteLength
+      );
+
+      const phiArray = new Float32Array(1);
+      phiArray.fill(0.5, 0);
+      device.queue.writeBuffer(
+        phiBuffer,
+        0,
+        phiArray.buffer,
+        phiArray.byteOffset,
+        phiArray.byteLength
+      );
+
+      const lumaPhiArray = new Float32Array(1);
+      lumaPhiArray.fill(5, 0);
+      device.queue.writeBuffer(
+        lumaPhiBuffer,
+        0,
+        lumaPhiArray.buffer,
+        lumaPhiArray.byteOffset,
+        lumaPhiArray.byteLength
+      );
+
+      const depthPhiArray = new Float32Array(1);
+      depthPhiArray.fill(2, 0);
+      device.queue.writeBuffer(
+        depthPhiBuffer,
+        0,
+        depthPhiArray.buffer,
+        depthPhiArray.byteOffset,
+        depthPhiArray.byteLength
+      );
+
+      const normalPhiArray = new Float32Array(1);
+      normalPhiArray.fill(3.25, 0);
+      device.queue.writeBuffer(
+        normalPhiBuffer,
+        0,
+        normalPhiArray.buffer,
+        normalPhiArray.byteOffset,
+        normalPhiArray.byteLength
+      );
+
       // Render pass
       const commandEncoder = device.createCommandEncoder();
 
@@ -854,8 +1051,21 @@ export const runScreenSpaceGlobalIllumination = async (
       passEncoder.end();
 
       // TODO: poisson denoise pass
-
-      // TODO: denoiser compose pass
+      commandEncoder.copyTextureToTexture(
+        { texture: context.getCurrentTexture() },
+        { texture: denoiseInputTexture },
+        [canvas.width, canvas.height]
+      );
+      const denoisePass = commandEncoder.beginRenderPass(
+        denoisePassRenderDescriptor
+      );
+      denoisePass.setPipeline(denoisePipeline);
+      denoisePass.setVertexBuffer(0, screenBuffer);
+      denoisePass.setBindGroup(0, denoiseBindGroup0);
+      denoisePass.setBindGroup(1, denoiseBindGroup1);
+      denoisePass.setBindGroup(2, denoiseBindGroup2);
+      denoisePass.draw(screenVertexCount);
+      denoisePass.end();
 
       const ssgiRenderView = context.getCurrentTexture();
       commandEncoder.copyTextureToTexture(

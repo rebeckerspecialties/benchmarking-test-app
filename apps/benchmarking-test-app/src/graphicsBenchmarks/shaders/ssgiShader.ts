@@ -1773,10 +1773,10 @@ fn main_1() {
     directLight_1 = _e578.xyz;
     let _e581 = diffuseGI;
     let _e582 = directLight_1;
-    diffuseGI = (_e581 + _e582);
+    // diffuseGI = (_e581 + _e582);
     let _e584 = specularGI;
     let _e585 = directLight_1;
-    specularGI = (_e584 + _e585);
+    // specularGI = (_e584 + _e585);
     let _e589 = mode;
     if (_e589 == 0i) {
         {
@@ -1898,4 +1898,593 @@ fn main(@location(0) uv: vec2<f32>) -> FragmentOutput {
     return FragmentOutput(_e15);
 }
 
+`;
+
+export const poissonDenoiseFragWGSL = `
+struct Material {
+    diffuse: vec4<f32>,
+    normal: vec3<f32>,
+    roughness: f32,
+    metalness: f32,
+    emissive: vec3<f32>,
+}
+
+struct InputTexel {
+    rgb: vec3<f32>,
+    a: f32,
+    luminance: f32,
+    w: f32,
+    totalWeight: f32,
+    isSpecular: bool,
+}
+
+struct FragmentOutput {
+    @location(0) outputColor: vec4<f32>,
+}
+
+const c_precision: f32 = 256f;
+const c_precisionp1_: f32 = 257f;
+
+var<private> vUv_1: vec2<f32>;
+var<private> outputColor: vec4<f32>;
+@group(0) @binding(0)
+var inputTexture: texture_2d<f32>;
+@group(0) @binding(1)
+var depthTexture: texture_depth_2d;
+@group(0) @binding(2)
+var samp: sampler;
+@group(1) @binding(0)
+var<uniform> radius: f32;
+@group(1) @binding(1)
+var<uniform> phi: f32;
+@group(1) @binding(2)
+var<uniform> lumaPhi: f32;
+@group(1) @binding(3)
+var<uniform> depthPhi: f32;
+@group(1) @binding(4)
+var<uniform> normalPhi: f32;
+@group(1) @binding(5)
+var<uniform> roughnessPhi: f32;
+@group(1) @binding(6)
+var<uniform> specularPhi: f32;
+@group(1) @binding(7)
+var<uniform> resolution: vec2<f32>;
+@group(2) @binding(0)
+var gBufferTexture_1: texture_2d<f32>;
+@group(2) @binding(1)
+var gBufferSamp: sampler;
+var<private> mat_2: Material;
+var<private> normal_1: vec3<f32>;
+var<private> depth: f32;
+var<private> glossiness: f32;
+var<private> specularFactor: f32;
+var<private> POISSON: array<vec2<f32>, 8> = array<vec2<f32>, 8>(vec2<f32>(-1f, 0f), vec2<f32>(0f, -1f), vec2<f32>(1f, 0f), vec2<f32>(0f, 1f), vec2<f32>(-0.35355338f, -0.35355338f), vec2<f32>(0.35355338f, -0.35355338f), vec2<f32>(0.35355338f, 0.35355338f), vec2<f32>(-0.35355338f, 0.35355338f));
+
+fn rand(co: vec2<f32>) -> f32 {
+    var co_1: vec2<f32>;
+
+    co_1 = co;
+    let _e19 = co_1;
+    let _e28 = co_1;
+    let _e40 = co_1;
+    let _e49 = co_1;
+    return fract((sin(dot(_e49, vec2<f32>(12.9898f, 78.233f))) * 43758.547f));
+}
+
+fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
+    var co_3: vec2<f32>;
+
+    co_3 = co_2;
+    let _e16 = co_3;
+    let _e17 = rand(_e16);
+    let _e19 = co_3;
+    let _e20 = rand(_e19);
+    let _e22 = co_3;
+    let _e23 = rand(_e22);
+    let _e25 = co_3;
+    let _e26 = rand(_e25);
+    return vec4<f32>(_e17, _e20, _e23, _e26);
+}
+
+fn float2color(value: f32) -> vec3<f32> {
+    var value_1: f32;
+    var color: vec3<f32>;
+
+    value_1 = value;
+    let _e22 = value_1;
+    color.x = ((_e22 - (floor((_e22 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
+    let _e29 = value_1;
+    let _e31 = value_1;
+    let _e34 = value_1;
+    let _e36 = value_1;
+    let _e38 = floor((_e36 / c_precisionp1_));
+    color.z = ((_e38 - (floor((_e38 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
+    let _e45 = value_1;
+    let _e50 = value_1;
+    color.y = (floor((_e50 / 66049f)) / c_precision);
+    let _e57 = color;
+    color = (_e57 - vec3(0.0001f));
+    let _e64 = color;
+    color = max(_e64, vec3(0f));
+    let _e68 = color;
+    return _e68;
+}
+
+fn decodeOctWrap(f: vec2<f32>) -> vec3<f32> {
+    var f_1: vec2<f32>;
+    var n: vec3<f32>;
+    var t: f32;
+    var local: f32;
+    var local_1: f32;
+
+    f_1 = f;
+    let _e19 = f_1;
+    f_1 = ((_e19 * 2f) - vec2(1f));
+    let _e25 = f_1;
+    let _e27 = f_1;
+    let _e30 = f_1;
+    let _e32 = f_1;
+    let _e36 = f_1;
+    let _e38 = f_1;
+    n = vec3<f32>(_e25.x, _e27.y, ((1f - abs(_e32.x)) - abs(_e38.y)));
+    let _e44 = n;
+    let _e48 = n;
+    t = max(-(_e48.z), 0f);
+    let _e55 = n;
+    let _e57 = n;
+    if (_e57.x >= 0f) {
+        let _e61 = t;
+        local = -(_e61);
+    } else {
+        let _e63 = t;
+        local = _e63;
+    }
+    let _e65 = local;
+    n.x = (_e55.x + _e65);
+    let _e68 = n;
+    let _e70 = n;
+    if (_e70.y >= 0f) {
+        let _e74 = t;
+        local_1 = -(_e74);
+    } else {
+        let _e76 = t;
+        local_1 = _e76;
+    }
+    let _e78 = local_1;
+    n.y = (_e68.y + _e78);
+    let _e81 = n;
+    return normalize(_e81);
+}
+
+fn unpackNormal(packedNormal: f32) -> vec3<f32> {
+    var packedNormal_1: f32;
+
+    packedNormal_1 = packedNormal;
+    let _e20 = packedNormal_1;
+    let _e23 = packedNormal_1;
+    let _e27 = packedNormal_1;
+    let _e30 = packedNormal_1;
+    let _e33 = decodeOctWrap(unpack2x16float(bitcast<u32>(_e30)));
+    return _e33;
+}
+
+fn decodeRGBE8_(rgbe: vec4<f32>) -> vec3<f32> {
+    var rgbe_1: vec4<f32>;
+    var vDecoded: vec3<f32>;
+    var fExp: f32;
+
+    rgbe_1 = rgbe;
+    let _e20 = rgbe_1;
+    fExp = ((_e20.w * 255f) - 128f);
+    let _e27 = rgbe_1;
+    let _e30 = fExp;
+    vDecoded = (_e27.xyz * exp2(_e30));
+    let _e33 = vDecoded;
+    return _e33;
+}
+
+fn floatToVec4_(f_2: f32) -> vec4<f32> {
+    var f_3: f32;
+    var value_2: u32;
+    var v: vec4<f32>;
+
+    f_3 = f_2;
+    let _e20 = f_3;
+    value_2 = bitcast<u32>(_e20);
+    let _e25 = value_2;
+    v.x = (f32((_e25 & 255u)) / 255f);
+    let _e32 = value_2;
+    v.y = (f32(((_e32 >> 8u) & 255u)) / 255f);
+    let _e41 = value_2;
+    v.z = (f32(((_e41 >> 16u) & 255u)) / 255f);
+    let _e50 = value_2;
+    v.w = (f32(((_e50 >> 24u) & 255u)) / 255f);
+    let _e58 = v;
+    v = (_e58 - vec4(0.0001f));
+    let _e65 = v;
+    v = max(_e65, vec4(0f));
+    let _e69 = v;
+    return _e69;
+}
+
+fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
+    var uv_1: vec2<f32>;
+    var gBuffer: vec4<f32>;
+    var diffuse: vec4<f32>;
+    var normal: vec3<f32>;
+    var roughnessMetalness: vec3<f32>;
+    var roughness: f32;
+    var metalness: f32;
+    var emissive: vec3<f32>;
+
+    uv_1 = uv;
+    let _e22 = uv_1;
+    let _e24 = textureSampleLevel(gBufferTexture, gBufferSamp, _e22, 0f);
+    gBuffer = _e24;
+    let _e26 = gBuffer;
+    let _e28 = gBuffer;
+    let _e30 = floatToVec4_(_e28.x);
+    diffuse = _e30;
+    let _e32 = gBuffer;
+    let _e34 = gBuffer;
+    let _e36 = unpackNormal(_e34.y);
+    normal = _e36;
+    let _e38 = gBuffer;
+    let _e40 = gBuffer;
+    let _e42 = float2color(_e40.z);
+    roughnessMetalness = _e42;
+    let _e44 = roughnessMetalness;
+    roughness = _e44.x;
+    let _e47 = roughnessMetalness;
+    metalness = _e47.y;
+    let _e50 = gBuffer;
+    let _e52 = gBuffer;
+    let _e54 = floatToVec4_(_e52.w);
+    let _e55 = gBuffer;
+    let _e57 = gBuffer;
+    let _e59 = floatToVec4_(_e57.w);
+    let _e60 = decodeRGBE8_(_e59);
+    emissive = _e60;
+    let _e62 = diffuse;
+    let _e63 = normal;
+    let _e64 = roughness;
+    let _e65 = metalness;
+    let _e66 = emissive;
+    return Material(vec4f(0, 1, 0, 1), vec3f(gBuffer.x, gBuffer.y, gBuffer.z), 0.8f, 0.2f, vec3f(1, 0, 0));
+    // return Material(_e62, _e63, _e64, _e65, _e66);
+}
+
+fn toDenoiseSpace(color_1: ptr<function, vec3<f32>>) {
+    let _e23 = (*color_1);
+    let _e27 = (*color_1);
+    (*color_1) = log((_e27 + vec3(1f)));
+    return;
+}
+
+fn toLinearSpace(color_2: ptr<function, vec3<f32>>) {
+    let _e24 = (*color_2);
+    (*color_2) = (exp(_e24) - vec3(1f));
+    return;
+}
+
+fn getBasicNeighborWeight(neighborUv: ptr<function, vec2<f32>>) -> f32 {
+    var neighborMat: Material;
+    var neighborNormal: vec3<f32>;
+    var neighborDepth: f32;
+    var normalDiff: f32;
+    var depthDiff: f32;
+    var roughnessDiff: f32;
+    var wBasic: f32;
+
+    let _e24 = (*neighborUv);
+    let _e25 = getMaterial(gBufferTexture_1, _e24);
+    neighborMat = _e25;
+    let _e27 = neighborMat;
+    neighborNormal = _e27.normal;
+    let _e32 = (*neighborUv);
+    let _e34 = textureSample(depthTexture, samp, _e32);
+    neighborDepth = _e34;
+    let _e37 = neighborDepth;
+    if (_e37 == 1f) {
+        return 0f;
+    }
+    let _e44 = normal_1;
+    let _e45 = neighborNormal;
+    let _e50 = normal_1;
+    let _e51 = neighborNormal;
+    normalDiff = (1f - max(dot(_e50, _e51), 0f));
+    let _e58 = depth;
+    let _e59 = neighborDepth;
+    let _e61 = depth;
+    let _e62 = neighborDepth;
+    depthDiff = (10000f * abs((_e61 - _e62)));
+    let _e67 = mat_2;
+    let _e69 = neighborMat;
+    let _e72 = mat_2;
+    let _e74 = neighborMat;
+    roughnessDiff = abs((_e72.roughness - _e74.roughness));
+    let _e79 = normalDiff;
+    let _e81 = normalPhi;
+    let _e83 = depthDiff;
+    let _e84 = depthPhi;
+    let _e87 = roughnessDiff;
+    let _e88 = roughnessPhi;
+    let _e91 = normalDiff;
+    let _e93 = normalPhi;
+    let _e95 = depthDiff;
+    let _e96 = depthPhi;
+    let _e99 = roughnessDiff;
+    let _e100 = roughnessPhi;
+    wBasic = exp((((-(_e91) * _e93) - (_e95 * _e96)) - (_e99 * _e100)));
+    let _e105 = wBasic;
+    return _e105;
+}
+
+fn getNormal(mat: Material) -> vec3<f32> {
+    var mat_1: Material;
+
+    mat_1 = mat;
+    let _e24 = mat_1;
+    return _e24.normal;
+}
+
+fn outputTexel(inp: InputTexel) {
+    var inp_1: InputTexel;
+    var local_2: vec3<f32>;
+
+    inp_1 = inp;
+    let _e26 = inp_1;
+    let _e28 = inp_1;
+    inp_1.rgb = (_e26.rgb / vec3(_e28.totalWeight));
+    let _e32 = outputColor;
+    let _e34 = inp_1;
+    outputColor.x = _e34.rgb.x;
+    outputColor.y = _e34.rgb.y;
+    outputColor.z = _e34.rgb.z;
+    let _e42 = outputColor;
+    let _e44 = outputColor;
+    local_2 = _e44.xyz;
+    toLinearSpace((&local_2));
+    let _e53 = local_2.x;
+    outputColor.x = _e53;
+    let _e54 = local_2.y;
+    outputColor.y = _e54;
+    let _e55 = local_2.z;
+    outputColor.z = _e55;
+    let _e57 = inp_1;
+    outputColor.w = _e57.a;
+    return;
+}
+
+fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic_1: f32) {
+    var neighborUv_2: vec2<f32>;
+    var wBasic_2: f32;
+    var w: f32;
+    var t_1: vec4<f32>;
+    var local_3: vec3<f32>;
+    var disocclW: f32;
+    var lumaDiff: f32;
+    var lumaFactor: f32;
+
+    neighborUv_2 = neighborUv_1;
+    wBasic_2 = wBasic_1;
+    let _e28 = wBasic_2;
+    w = _e28;
+    let _e31 = (*inp_2);
+    if _e31.isSpecular {
+        {
+            let _e35 = neighborUv_2;
+            let _e37 = textureSampleLevel(inputTexture, samp, _e35, 0f);
+            t_1 = _e37;
+            let _e38 = w;
+            let _e39 = specularFactor;
+            w = (_e38 * _e39);
+        }
+    } else {
+        {
+            let _e43 = neighborUv_2;
+            let _e45 = textureSampleLevel(inputTexture, samp, _e43, 0f);
+            t_1 = _e45;
+        }
+    }
+    let _e46 = t_1;
+    let _e48 = t_1;
+    local_3 = _e48.xyz;
+    toDenoiseSpace((&local_3));
+    let _e57 = local_3.x;
+    t_1.x = _e57;
+    let _e58 = local_3.y;
+    t_1.y = _e58;
+    let _e59 = local_3.z;
+    t_1.z = _e59;
+    let _e62 = w;
+    disocclW = pow(_e62, 0.1f);
+    let _e66 = (*inp_2);
+    let _e72 = t_1;
+    let _e78 = t_1;
+    let _e86 = t_1;
+    let _e92 = t_1;
+    let _e98 = (*inp_2);
+    let _e104 = t_1;
+    let _e110 = t_1;
+    let _e118 = t_1;
+    let _e124 = t_1;
+    lumaDiff = abs((_e98.luminance - pow(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e124.xyz), 0.125f)));
+    let _e134 = lumaDiff;
+    lumaDiff = min(_e134, 0.5f);
+    let _e137 = lumaDiff;
+    let _e139 = lumaPhi;
+    let _e141 = lumaDiff;
+    let _e143 = lumaPhi;
+    lumaFactor = exp((-(_e141) * _e143));
+    let _e147 = w;
+    let _e148 = lumaFactor;
+    let _e151 = (*inp_2);
+    let _e153 = w;
+    let _e154 = lumaFactor;
+    let _e156 = disocclW;
+    let _e157 = (*inp_2);
+    let _e160 = (*inp_2);
+    w = (mix((_e153 * _e154), _e156, _e157.w) * _e160.w);
+    let _e163 = w;
+    let _e167 = w;
+    w = (_e163 * step(0.0001f, _e167));
+    let _e171 = (*inp_2);
+    let _e173 = w;
+    let _e174 = t_1;
+    (*inp_2).rgb = (_e171.rgb + (_e173 * _e174.xyz));
+    let _e179 = (*inp_2);
+    let _e181 = w;
+    (*inp_2).totalWeight = (_e179.totalWeight + _e181);
+    return;
+}
+
+fn main_1() {
+    var input: InputTexel;
+    var maxAlpha: f32 = 0f;
+    var t_2: vec4<f32>;
+    var age: f32;
+    var local_4: vec3<f32>;
+    var inp_3: InputTexel;
+    var flatness: f32;
+    var random: vec4<f32>;
+    var r: f32;
+    var angle: f32;
+    var s: f32;
+    var c: f32;
+    var rm: mat2x2<f32>;
+    var i: i32 = 0i;
+    var offset: vec2<f32>;
+    var neighborUv_3: vec2<f32>;
+    var wBasic_3: f32;
+
+    let _e25 = vUv_1;
+    let _e27 = textureSample(depthTexture, samp, _e25);
+    depth = _e27;
+    let _e29 = depth;
+    let _e33 = depth;
+    let _e34 = fwidth(_e33);
+    if ((_e29 == 1f) && (_e34 == 0f)) {
+        {
+            discard;
+        }
+    }
+    let _e44 = vUv_1;
+    let _e46 = textureSampleLevel(inputTexture, samp, _e44, 0f);
+    t_2 = _e46;
+    let _e48 = t_2;
+    let _e53 = phi;
+    let _e55 = t_2;
+    let _e60 = phi;
+    age = (1f / pow((_e55.w + 1f), (1.2f * _e60)));
+    let _e65 = t_2;
+    let _e67 = t_2;
+    let _e70 = (_e67.xyz * 1.0003f);
+    t_2.x = _e70.x;
+    t_2.y = _e70.y;
+    t_2.z = _e70.z;
+    let _e77 = t_2;
+    let _e79 = t_2;
+    local_4 = _e79.xyz;
+    toDenoiseSpace((&local_4));
+    let _e88 = local_4.x;
+    t_2.x = _e88;
+    let _e89 = local_4.y;
+    t_2.y = _e89;
+    let _e90 = local_4.z;
+    t_2.z = _e90;
+    let _e91 = t_2;
+    let _e93 = t_2;
+    let _e99 = t_2;
+    let _e105 = t_2;
+    let _e113 = t_2;
+    let _e119 = t_2;
+    let _e124 = age;
+    inp_3 = InputTexel(_e91.xyz, _e93.w, pow(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e119.xyz), 0.125f), _e124, 1f, false);
+    let _e130 = inp_3;
+    let _e132 = maxAlpha;
+    let _e133 = inp_3;
+    maxAlpha = max(_e132, _e133.a);
+    let _e136 = inp_3;
+    input = _e136;
+    let _e138 = vUv_1;
+    let _e139 = getMaterial(gBufferTexture_1, _e138);
+    mat_2 = _e139;
+    let _e141 = mat_2;
+    let _e142 = getNormal(_e141);
+    normal_1 = _e142;
+    let _e146 = mat_2;
+    let _e155 = mat_2;
+    glossiness = max(0f, (4f * (1f - (_e155.roughness / 0.25f))));
+    let _e162 = glossiness;
+    let _e164 = specularPhi;
+    let _e166 = glossiness;
+    let _e168 = specularPhi;
+    specularFactor = exp((-(_e166) * _e168));
+    let _e173 = normal_1;
+    let _e176 = normal_1;
+    let _e177 = fwidth(_e176);
+    let _e181 = normal_1;
+    let _e184 = normal_1;
+    let _e185 = fwidth(_e184);
+    flatness = (1f - min(length(_e185), 1f));
+    let _e193 = flatness;
+    flatness = ((pow(_e193, 2f) * 0.75f) + 0.25f);
+    let _e201 = vUv_1;
+    let _e202 = blueNoise(_e201);
+    random = _e202;
+    let _e204 = radius;
+    r = _e204;
+    let _e206 = random;
+    angle = ((_e206.x * 2f) * 3.1415927f);
+    let _e214 = angle;
+    s = sin(_e214);
+    let _e218 = angle;
+    c = cos(_e218);
+    let _e221 = r;
+    let _e222 = flatness;
+    let _e224 = c;
+    let _e225 = s;
+    let _e227 = s;
+    let _e228 = c;
+    rm = ((_e221 * _e222) * mat2x2<f32>(vec2<f32>(_e224, -(_e225)), vec2<f32>(_e227, _e228)));
+    loop {
+        let _e236 = i;
+        if !((_e236 < 8i)) {
+            break;
+        }
+        {
+            {
+                let _e243 = i;
+                let _e245 = POISSON[_e243];
+                offset = _e245;
+                let _e247 = vUv_1;
+                let _e248 = rm;
+                let _e249 = offset;
+                let _e250 = resolution;
+                neighborUv_3 = (_e247 + (_e248 * (_e249 / _e250)));
+                let _e257 = getBasicNeighborWeight((&neighborUv_3));
+                wBasic_3 = _e257;
+                let _e263 = neighborUv_3;
+                let _e264 = wBasic_3;
+                applyWeight((&input), _e263, _e264);
+            }
+        }
+        continuing {
+            let _e240 = i;
+            i = (_e240 + 1i);
+        }
+    }
+    let _e266 = input;
+    outputTexel(_e266);
+    return;
+}
+
+@fragment
+fn main(@location(0) vUv: vec2<f32>) -> FragmentOutput {
+    vUv_1 = vUv;
+    main_1();
+    let _e96 = outputColor;
+    return FragmentOutput(_e96);
+}
 `;
