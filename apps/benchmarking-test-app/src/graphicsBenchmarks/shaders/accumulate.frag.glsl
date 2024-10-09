@@ -8,7 +8,15 @@ layout(binding = 2) uniform sampler samp;
 
 #define NON_ZERO_OFFSET 0.0001
 
-void unpackTwoVec4(vec4 encoded, out vec4 v1, out vec4 v2) {
+struct TexelLighting {
+  vec4 diffuse;
+  vec4 specular;
+};
+
+TexelLighting unpackTwoVec4(vec4 encoded) {
+  vec4 v1 = vec4(0.0);
+  vec4 v2 = vec4(0.0);
+
   uint r = floatBitsToUint(encoded.r);
   uint g = floatBitsToUint(encoded.g);
   uint b = floatBitsToUint(encoded.b);
@@ -21,14 +29,14 @@ void unpackTwoVec4(vec4 encoded, out vec4 v1, out vec4 v2) {
 
   v1 -= NON_ZERO_OFFSET;
   v2 -= NON_ZERO_OFFSET;
+
+  return TexelLighting(v1, v2);
 }
 
 vec4 accumulate(vec4 inputTexel) {
-  vec4 diffuse, specular;
+  TexelLighting t = unpackTwoVec4(inputTexel);
 
-  unpackTwoVec4(inputTexel, diffuse, specular);
-
-  return mix(diffuse, specular, roughness);
+  return mix(t.diffuse, t.specular, roughness);
 }
 
 void main() {

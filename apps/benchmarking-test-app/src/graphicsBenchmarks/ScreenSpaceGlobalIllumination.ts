@@ -11,12 +11,38 @@ import { screenVertexArray, screenVertexCount } from "./meshes/screen";
 import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
+  accumulateFragWGSL,
   basicVertWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
 } from "./shaders/ssgiShader";
 
 const depthTextureSize = 1024;
+
+const vertexBuffers: GPUVertexBufferLayout[] = [
+  {
+    arrayStride: cubeVertexSize,
+    attributes: [
+      {
+        // position
+        shaderLocation: 0,
+        offset: cubePositionOffset,
+        format: "float32x4",
+      },
+      {
+        // uv
+        shaderLocation: 1,
+        offset: cubeUVOffset,
+        format: "float32x2",
+      },
+    ],
+  },
+];
+
+const primitive: GPUPrimitiveState = {
+  topology: "triangle-list",
+  cullMode: "back",
+};
 
 export const runScreenSpaceGlobalIllumination = async (
   context: CanvasContext,
@@ -44,31 +70,6 @@ export const runScreenSpaceGlobalIllumination = async (
 
   new Float32Array(screenBuffer.getMappedRange()).set(screenVertexArray);
   screenBuffer.unmap();
-
-  const vertexBuffers: GPUVertexBufferLayout[] = [
-    {
-      arrayStride: cubeVertexSize,
-      attributes: [
-        {
-          // position
-          shaderLocation: 0,
-          offset: cubePositionOffset,
-          format: "float32x4",
-        },
-        {
-          // uv
-          shaderLocation: 1,
-          offset: cubeUVOffset,
-          format: "float32x2",
-        },
-      ],
-    },
-  ];
-
-  const primitive: GPUPrimitiveState = {
-    topology: "triangle-list",
-    cullMode: "back",
-  };
 
   const cubePipeline = device.createRenderPipeline({
     layout: "auto",
@@ -105,69 +106,26 @@ export const runScreenSpaceGlobalIllumination = async (
     primitive,
   });
 
-  const pipeline = device.createRenderPipeline({
-    layout: "auto",
-    label: "ssgi",
-    vertex: {
-      module: device.createShaderModule({
-        code: basicVertWGSL,
-      }),
-      entryPoint: "main",
-      buffers: vertexBuffers,
-    },
-    fragment: {
-      module: device.createShaderModule({
-        code: ssgiFragWGSL,
-      }),
-      entryPoint: "main",
-      targets: [
-        {
-          format: presentationFormat,
-        },
-      ],
-    },
-    primitive,
+  const pipeline = createFullscreenPipeline(
+    device,
+    presentationFormat,
+    ssgiFragWGSL,
+    "ssgi"
+  );
 
-    // Enable depth testing so that the fragment closest to the camera
-    // is rendered in front.
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-  });
+  const accumulatedPipeline = createFullscreenPipeline(
+    device,
+    presentationFormat,
+    accumulateFragWGSL,
+    "accumulate"
+  );
 
-  const composePipeline = device.createRenderPipeline({
-    layout: "auto",
-    label: "compose",
-    vertex: {
-      module: device.createShaderModule({
-        code: basicVertWGSL,
-      }),
-      entryPoint: "main",
-      buffers: vertexBuffers,
-    },
-    fragment: {
-      module: device.createShaderModule({
-        code: ssgiComposeFragWGSL,
-      }),
-      entryPoint: "main",
-      targets: [
-        {
-          format: presentationFormat,
-        },
-      ],
-    },
-    primitive,
-
-    // Enable depth testing so that the fragment closest to the camera
-    // is rendered in front.
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-  });
+  const composePipeline = createFullscreenPipeline(
+    device,
+    presentationFormat,
+    ssgiComposeFragWGSL,
+    "compose"
+  );
 
   const depthTexture = device.createTexture({
     size: [canvas.width, canvas.height],
@@ -432,6 +390,42 @@ export const runScreenSpaceGlobalIllumination = async (
     ],
   });
 
+  // Accumulated bind group
+  const accumulatedPassInputTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const accumulatedSampler = device.createSampler({
+    magFilter: "linear",
+    minFilter: "linear",
+  });
+
+  const roughnessBuffer = device.createBuffer({
+    size: floatSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+
+  const accumulatedBindGroup = device.createBindGroup({
+    layout: accumulatedPipeline.getBindGroupLayout(0),
+    entries: [
+      { binding: 0, resource: accumulatedPassInputTexture.createView() },
+      {
+        binding: 1,
+        resource: {
+          buffer: roughnessBuffer,
+          offset: 0,
+          size: floatSize,
+        },
+      },
+      { binding: 2, resource: accumulatedSampler },
+    ],
+  });
+
   // Depth pass bind group
   const depthPassBindGroup = device.createBindGroup({
     layout: depthPipeline.getBindGroupLayout(0),
@@ -541,43 +535,23 @@ export const runScreenSpaceGlobalIllumination = async (
     let frame = 0;
     const animate = () => {
       const textureView = context.getCurrentTexture().createView();
+      const depthTextureview = depthTexture.createView();
 
       // Render Pass Descriptors
-      const renderPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [
-          {
-            view: textureView,
-            clearValue: [0, 0, 0, 1],
-            loadOp: "clear",
-            storeOp: "store",
-          },
-        ],
-        depthStencilAttachment: {
-          view: depthTexture.createView(),
+      const renderPassDescriptor = createDefaultRenderPass(
+        textureView,
+        depthTextureview
+      );
 
-          depthClearValue: 1.0,
-          depthLoadOp: "clear",
-          depthStoreOp: "store",
-        },
-      };
+      const composeRenderPassDescriptor = createDefaultRenderPass(
+        textureView,
+        depthTextureview
+      );
 
-      const composeRenderPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [
-          {
-            view: textureView,
-            clearValue: [0, 0, 0, 1],
-            loadOp: "clear",
-            storeOp: "store",
-          },
-        ],
-        depthStencilAttachment: {
-          view: depthTexture.createView(),
-
-          depthClearValue: 1.0,
-          depthLoadOp: "clear",
-          depthStoreOp: "store",
-        },
-      };
+      const accumulateRenderPassDescriptor = createDefaultRenderPass(
+        textureView,
+        depthTextureview
+      );
 
       const depthPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [],
@@ -711,6 +685,16 @@ export const runScreenSpaceGlobalIllumination = async (
         modeArr.byteLength
       );
 
+      const roughnessArray = new Float32Array(1);
+      roughnessArray.fill(0.5, 0);
+      device.queue.writeBuffer(
+        roughnessBuffer,
+        0,
+        roughnessArray.buffer,
+        roughnessArray.byteOffset,
+        roughnessArray.byteLength
+      );
+
       // Render pass
       const commandEncoder = device.createCommandEncoder();
 
@@ -746,6 +730,8 @@ export const runScreenSpaceGlobalIllumination = async (
       depthPass.draw(cubeVertexCount);
       depthPass.end();
 
+      // TODO: gbuffer pass
+
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);
       passEncoder.setVertexBuffer(0, screenBuffer);
@@ -754,6 +740,28 @@ export const runScreenSpaceGlobalIllumination = async (
       passEncoder.setBindGroup(2, uniformBindGroup2);
       passEncoder.draw(screenVertexCount);
       passEncoder.end();
+
+      // TODO: velocity depth normal pass?
+
+      const accumulatedRenderView = context.getCurrentTexture();
+      commandEncoder.copyTextureToTexture(
+        { texture: accumulatedRenderView },
+        { texture: accumulatedPassInputTexture },
+        [canvas.width, canvas.height]
+      );
+
+      const accumulatedPass = commandEncoder.beginRenderPass(
+        accumulateRenderPassDescriptor
+      );
+      accumulatedPass.setPipeline(accumulatedPipeline);
+      accumulatedPass.setVertexBuffer(0, screenBuffer);
+      accumulatedPass.setBindGroup(0, accumulatedBindGroup);
+      accumulatedPass.draw(screenVertexCount);
+      accumulatedPass.end();
+
+      // TODO: poisson denoise pass
+
+      // TODO: denoiser compose pass
 
       const ssgiRenderView = context.getCurrentTexture();
       commandEncoder.copyTextureToTexture(
@@ -782,5 +790,67 @@ export const runScreenSpaceGlobalIllumination = async (
     };
 
     requestAnimationFrame(animate);
+  });
+};
+
+const createDefaultRenderPass = (
+  textureView: GPUTextureView,
+  depthTextureView: GPUTextureView
+): GPURenderPassDescriptor => {
+  return {
+    colorAttachments: [
+      {
+        view: textureView,
+        clearValue: [0, 0, 0, 1],
+        loadOp: "clear",
+        storeOp: "store",
+      },
+    ],
+    depthStencilAttachment: {
+      view: depthTextureView,
+
+      depthClearValue: 1.0,
+      depthLoadOp: "clear",
+      depthStoreOp: "store",
+    },
+  };
+};
+
+const createFullscreenPipeline = (
+  device: GPUDevice,
+  presentationFormat: GPUTextureFormat,
+  fragmentShader: string,
+  key: string
+) => {
+  return device.createRenderPipeline({
+    layout: "auto",
+    label: key,
+    vertex: {
+      module: device.createShaderModule({
+        code: basicVertWGSL,
+      }),
+      entryPoint: "main",
+      buffers: vertexBuffers,
+    },
+    fragment: {
+      module: device.createShaderModule({
+        code: fragmentShader,
+      }),
+      entryPoint: "main",
+      targets: [
+        {
+          format: presentationFormat,
+        },
+      ],
+    },
+    primitive,
+
+    // Enable depth testing so that the fragment closest to the camera
+    // is rendered in front.
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth24plus",
+    },
   });
 };
