@@ -277,6 +277,7 @@ export const runScreenSpaceGlobalIllumination = async (
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
     format: "depth32float",
   });
+  const depthPassTextureView = depthPassTexture.createView();
 
   const velocityTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
@@ -300,7 +301,7 @@ export const runScreenSpaceGlobalIllumination = async (
     layout: pipeline.getBindGroupLayout(0),
     entries: [
       { binding: 0, resource: accumulatedTexture.createView() },
-      { binding: 1, resource: depthPassTexture.createView() },
+      { binding: 1, resource: depthPassTextureView },
       { binding: 2, resource: velocityTexture.createView() },
       { binding: 3, resource: directLightTexture.createView() },
       { binding: 4, resource: sampler },
@@ -592,7 +593,7 @@ export const runScreenSpaceGlobalIllumination = async (
       },
       {
         binding: 2,
-        resource: depthPassTexture.createView(),
+        resource: depthPassTextureView,
       },
       {
         binding: 3,
@@ -604,10 +605,10 @@ export const runScreenSpaceGlobalIllumination = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
-  const projectionMatrix = mat4.perspective(fov, aspect, 0.01, 2000.0);
+  const projectionMatrix = mat4.perspective(fov, aspect, 20.0, 2000.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
-  const cameraNear = 0.01;
+  const cameraNear = 20.0;
   const cameraFar = 2000.0;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
@@ -684,7 +685,7 @@ export const runScreenSpaceGlobalIllumination = async (
       const cameraPos = vec3.fromValues(
         positionOffset,
         100,
-        -100 + positionOffset
+        -150 + positionOffset
       );
       const targetPos = vec3.fromValues(0, 25, 0);
       const axis = vec3.fromValues(0, 1, 0);

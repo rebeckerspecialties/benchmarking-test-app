@@ -635,7 +635,7 @@ fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
     let _e75 = roughness_2;
     let _e76 = metalness_2;
     let _e77 = emissive_2;
-    return Material(vec4f(0, 1, 0, 1), vec3f(gBuffer_1.x, gBuffer_1.y, gBuffer_1.z), 0.8f, 0.2f, _e77);
+    return Material(vec4f(0, 1, 0, 1), vec3f(gBuffer_1.x, gBuffer_1.y, gBuffer_1.z), 0.8f, 0.2f, vec3f(1, 0, 0));
     // return Material(_e73, _e74, _e75, _e76, _e77);
 }
 
@@ -1106,6 +1106,7 @@ fn getSaturation(c: vec3<f32>) -> f32 {
     }
 }
 
+@diagnostic(off,derivative_uniformity)
 fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>) -> vec2<f32> {
     var rayHitDepthDifference: f32;
     var uv_6: vec2<f32>;
@@ -1128,7 +1129,7 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
             let _e52 = viewSpaceToScreenSpace(_e51);
             uv_6 = _e52;
             let _e55 = uv_6;
-            let _e57 = textureSampleLevel(depthTexture, samp, _e55, 0);
+            let _e57 = textureSample(depthTexture, samp, _e55);
             unpackedDepth = _e57;
             let _e61 = unpackedDepth;
             let _e62 = getViewZ(_e61);
@@ -1165,6 +1166,7 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
     return _e83;
 }
 
+@diagnostic(off,derivative_uniformity)
 fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>, random: vec4<f32>) -> vec2<f32> {
     var random_1: vec4<f32>;
     var rayHitDepthDifference_1: f32;
@@ -1201,7 +1203,7 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
             let _e103 = viewSpaceToScreenSpace(_e102);
             uv_7 = _e103;
             let _e106 = uv_7;
-            let _e108 = textureSampleLevel(depthTexture, samp, _e106, 0);
+            let _e108 = textureSample(depthTexture, samp, _e106);
             unpackedDepth_1 = _e108;
             let _e112 = unpackedDepth_1;
             let _e113 = getViewZ(_e112);
@@ -1430,6 +1432,7 @@ fn calculateAngles(h: ptr<function, vec3<f32>>, l_3: ptr<function, vec3<f32>>, v
     return;
 }
 
+@diagnostic(off,derivative_uniformity)
 fn main_1() {
     var unpackedDepth_2: f32;
     var directLight: vec4<f32>;
@@ -1487,7 +1490,7 @@ fn main_1() {
     var a_5: f32;
 
     let _e33 = vUv_1;
-    let _e35 = textureSampleLevel(depthTexture, samp, _e33, 0);
+    let _e35 = textureSample(depthTexture, samp, _e33);
     unpackedDepth_2 = _e35;
     let _e38 = unpackedDepth_2;
     if (_e38 == 1f) {
@@ -1770,10 +1773,10 @@ fn main_1() {
     directLight_1 = _e578.xyz;
     let _e581 = diffuseGI;
     let _e582 = directLight_1;
-    // diffuseGI = (_e581 + _e582);
+    diffuseGI = (_e581 + _e582);
     let _e584 = specularGI;
     let _e585 = directLight_1;
-    // specularGI = (_e584 + _e585);
+    specularGI = (_e584 + _e585);
     let _e589 = mode;
     if (_e589 == 0i) {
         {
@@ -1835,6 +1838,7 @@ fn main_1() {
 }
 
 @fragment
+@diagnostic(off,derivative_uniformity)
 fn main(@location(0) vUv: vec2<f32>) -> FragmentOutput {
     vUv_1 = vUv;
     main_1();
@@ -1865,7 +1869,7 @@ fn main_1() {
     var ssgiClr: vec3<f32>;
 
     let _e8 = uv_1;
-    let _e10 = textureSampleLevel(depthTexture, samp, _e8, 0);
+    let _e10 = textureSample(depthTexture, samp, _e8);
     depth = _e10;
     let _e14 = depth;
     if (_e14 == 1f) {
