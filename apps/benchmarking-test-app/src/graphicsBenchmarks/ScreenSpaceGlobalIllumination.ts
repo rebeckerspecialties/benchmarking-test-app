@@ -11,7 +11,6 @@ import { screenVertexArray, screenVertexCount } from "./meshes/screen";
 import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
-  accumulateFragWGSL,
   basicVertWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
@@ -111,13 +110,6 @@ export const runScreenSpaceGlobalIllumination = async (
     presentationFormat,
     ssgiFragWGSL,
     "ssgi"
-  );
-
-  const accumulatedPipeline = createFullscreenPipeline(
-    device,
-    presentationFormat,
-    accumulateFragWGSL,
-    "accumulate"
   );
 
   const composePipeline = createFullscreenPipeline(
@@ -390,42 +382,6 @@ export const runScreenSpaceGlobalIllumination = async (
     ],
   });
 
-  // Accumulated bind group
-  const accumulatedPassInputTexture = device.createTexture({
-    size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
-    usage:
-      GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.COPY_DST |
-      GPUTextureUsage.RENDER_ATTACHMENT,
-  });
-
-  const accumulatedSampler = device.createSampler({
-    magFilter: "linear",
-    minFilter: "linear",
-  });
-
-  const roughnessBuffer = device.createBuffer({
-    size: floatSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-  });
-
-  const accumulatedBindGroup = device.createBindGroup({
-    layout: accumulatedPipeline.getBindGroupLayout(0),
-    entries: [
-      { binding: 0, resource: accumulatedPassInputTexture.createView() },
-      {
-        binding: 1,
-        resource: {
-          buffer: roughnessBuffer,
-          offset: 0,
-          size: floatSize,
-        },
-      },
-      { binding: 2, resource: accumulatedSampler },
-    ],
-  });
-
   // Depth pass bind group
   const depthPassBindGroup = device.createBindGroup({
     layout: depthPipeline.getBindGroupLayout(0),
@@ -544,11 +500,6 @@ export const runScreenSpaceGlobalIllumination = async (
       );
 
       const composeRenderPassDescriptor = createDefaultRenderPass(
-        textureView,
-        depthTextureview
-      );
-
-      const accumulateRenderPassDescriptor = createDefaultRenderPass(
         textureView,
         depthTextureview
       );
@@ -685,16 +636,6 @@ export const runScreenSpaceGlobalIllumination = async (
         modeArr.byteLength
       );
 
-      const roughnessArray = new Float32Array(1);
-      roughnessArray.fill(0.5, 0);
-      device.queue.writeBuffer(
-        roughnessBuffer,
-        0,
-        roughnessArray.buffer,
-        roughnessArray.byteOffset,
-        roughnessArray.byteLength
-      );
-
       // Render pass
       const commandEncoder = device.createCommandEncoder();
 
@@ -740,24 +681,6 @@ export const runScreenSpaceGlobalIllumination = async (
       passEncoder.setBindGroup(2, uniformBindGroup2);
       passEncoder.draw(screenVertexCount);
       passEncoder.end();
-
-      // TODO: velocity depth normal pass?
-
-      const accumulatedRenderView = context.getCurrentTexture();
-      commandEncoder.copyTextureToTexture(
-        { texture: accumulatedRenderView },
-        { texture: accumulatedPassInputTexture },
-        [canvas.width, canvas.height]
-      );
-
-      const accumulatedPass = commandEncoder.beginRenderPass(
-        accumulateRenderPassDescriptor
-      );
-      accumulatedPass.setPipeline(accumulatedPipeline);
-      accumulatedPass.setVertexBuffer(0, screenBuffer);
-      accumulatedPass.setBindGroup(0, accumulatedBindGroup);
-      accumulatedPass.draw(screenVertexCount);
-      accumulatedPass.end();
 
       // TODO: poisson denoise pass
 
