@@ -34,13 +34,16 @@ fn main_1() {
     let _e25 = color_1;
     vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
     let _e31 = normal_1;
-    vNormal = _e31;
-    let _e32 = roughness_1;
-    vRoughness = _e32;
-    let _e33 = metalness_1;
-    vMetalness = _e33;
-    let _e34 = vEmissive;
-    vEmissive = _e34;
+    let _e37 = modelViewMatrix;
+    let _e40 = normal_1;
+    let _e46 = modelViewMatrix;
+    vNormal = normalize((vec4<f32>(_e40.x, _e40.y, _e40.z, 1f) * _e46).xyz);
+    let _e50 = roughness_1;
+    vRoughness = _e50;
+    let _e51 = metalness_1;
+    vMetalness = _e51;
+    let _e52 = vEmissive;
+    vEmissive = _e52;
     return;
 }
 
@@ -284,6 +287,7 @@ fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @loca
     vEmissive_1 = vEmissive;
     main_1();
     let _e27 = outColor;
-    return FragmentOutput(_e27);
+    return FragmentOutput(vec4f(vNormal.x, vNormal.y, vNormal.z, 1f));
+    // return FragmentOutput(_e27);
 }
 `;

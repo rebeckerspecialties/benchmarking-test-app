@@ -14,6 +14,7 @@ import {
   ssgiFragWGSL,
 } from "./shaders/ssgiShader";
 import { mesh } from "./meshes/stanfordDragon";
+import { gbufferFragWGSL, gbufferVertWGSL } from "./shaders/gbuffer";
 
 const depthTextureSize = 1024;
 
@@ -145,9 +146,9 @@ export const runScreenSpaceGlobalIllumination = async (
   new Float32Array(screenBuffer.getMappedRange()).set(screenVertexArray);
   screenBuffer.unmap();
 
-  const cubePipeline = device.createRenderPipeline({
+  const modelPipeline = device.createRenderPipeline({
     layout: "auto",
-    label: "cube",
+    label: "model",
     vertex: {
       module: device.createShaderModule({
         code: vertexShadowWGSL,
@@ -161,6 +162,34 @@ export const runScreenSpaceGlobalIllumination = async (
       targets: [{ format: presentationFormat }],
     },
     primitive,
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth24plus",
+    },
+  });
+
+  const gbufferPipeline = device.createRenderPipeline({
+    layout: "auto",
+    label: "gbuffer",
+    vertex: {
+      module: device.createShaderModule({
+        code: gbufferVertWGSL,
+      }),
+      buffers: modelBuffer,
+    },
+    fragment: {
+      module: device.createShaderModule({
+        code: gbufferFragWGSL,
+      }),
+      targets: [{ format: presentationFormat }],
+    },
+    primitive,
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth24plus",
+    },
   });
 
   const depthPipeline = device.createRenderPipeline({
@@ -480,9 +509,32 @@ export const runScreenSpaceGlobalIllumination = async (
     ],
   });
 
-  // Cube rendering bind group
-  const sceneBindGroupForCube = device.createBindGroup({
-    layout: cubePipeline.getBindGroupLayout(0),
+  // gbuffer pass bind group
+  const gbufferPassBindGroup = device.createBindGroup({
+    layout: gbufferPipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: projectionMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: viewMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+    ],
+  });
+
+  // model rendering bind group
+  const sceneBindGroupForModel = device.createBindGroup({
+    layout: modelPipeline.getBindGroupLayout(0),
     entries: [
       {
         binding: 0,
@@ -552,11 +604,11 @@ export const runScreenSpaceGlobalIllumination = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
-  const projectionMatrix = mat4.perspective(fov, aspect, 1, 1000.0);
+  const projectionMatrix = mat4.perspective(fov, aspect, 0.01, 2000.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
-  const cameraNear = 1.0;
-  const cameraFar = 1000.0;
+  const cameraNear = 0.01;
+  const cameraFar = 2000.0;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
 
@@ -566,17 +618,17 @@ export const runScreenSpaceGlobalIllumination = async (
     let frame = 0;
     const animate = () => {
       const textureView = context.getCurrentTexture().createView();
-      const depthTextureview = depthTexture.createView();
+      const depthTextureView = depthTexture.createView();
 
       // Render Pass Descriptors
       const renderPassDescriptor = createDefaultRenderPass(
         textureView,
-        depthTextureview
+        depthTextureView
       );
 
       const composeRenderPassDescriptor = createDefaultRenderPass(
         textureView,
-        depthTextureview
+        depthTextureView
       );
 
       const depthPassDescriptor: GPURenderPassDescriptor = {
@@ -589,7 +641,7 @@ export const runScreenSpaceGlobalIllumination = async (
         },
       };
 
-      const cubePassDescriptor: GPURenderPassDescriptor = {
+      const modelPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
             view: textureView,
@@ -598,6 +650,31 @@ export const runScreenSpaceGlobalIllumination = async (
             storeOp: "store",
           },
         ],
+        depthStencilAttachment: {
+          view: depthTextureView,
+
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
+      };
+
+      const gbufferPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: textureView,
+            clearValue: [0, 0, 0, 1],
+            loadOp: "clear",
+            storeOp: "store",
+          },
+        ],
+        depthStencilAttachment: {
+          view: depthTextureView,
+
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
       };
 
       // Fill buffers
@@ -718,14 +795,14 @@ export const runScreenSpaceGlobalIllumination = async (
       // Render pass
       const commandEncoder = device.createCommandEncoder();
 
-      const cubePass = commandEncoder.beginRenderPass(cubePassDescriptor);
-      cubePass.setPipeline(cubePipeline);
-      cubePass.setBindGroup(0, sceneBindGroupForCube);
-      cubePass.setVertexBuffer(0, verticesBuffer);
-      cubePass.setIndexBuffer(indexBuffer, "uint16");
-      cubePass.drawIndexed(indexCount);
+      const modelPass = commandEncoder.beginRenderPass(modelPassDescriptor);
+      modelPass.setPipeline(modelPipeline);
+      modelPass.setBindGroup(0, sceneBindGroupForModel);
+      modelPass.setVertexBuffer(0, verticesBuffer);
+      modelPass.setIndexBuffer(indexBuffer, "uint16");
+      modelPass.drawIndexed(indexCount);
 
-      cubePass.end();
+      modelPass.end();
 
       const sceneRenderView = context.getCurrentTexture();
       commandEncoder.copyTextureToTexture(
@@ -752,7 +829,19 @@ export const runScreenSpaceGlobalIllumination = async (
       depthPass.drawIndexed(indexCount);
       depthPass.end();
 
-      // TODO: gbuffer pass
+      const gbufferPass = commandEncoder.beginRenderPass(gbufferPassDescriptor);
+      gbufferPass.setPipeline(gbufferPipeline);
+      gbufferPass.setBindGroup(0, gbufferPassBindGroup);
+      gbufferPass.setVertexBuffer(0, verticesBuffer);
+      gbufferPass.setIndexBuffer(indexBuffer, "uint16");
+      gbufferPass.drawIndexed(indexCount);
+      gbufferPass.end();
+
+      commandEncoder.copyTextureToTexture(
+        { texture: context.getCurrentTexture() },
+        { texture: gBufferTexture },
+        [canvas.width, canvas.height]
+      );
 
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
       passEncoder.setPipeline(pipeline);

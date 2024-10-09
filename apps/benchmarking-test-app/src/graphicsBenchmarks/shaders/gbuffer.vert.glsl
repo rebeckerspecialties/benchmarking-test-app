@@ -18,7 +18,7 @@ layout(binding = 1) uniform mat4 modelViewMatrix;
 void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   vDiffuse = vec4(color, 1.0);
-  vNormal = normal;
+  vNormal = normalize((vec4(normal, 1.) * modelViewMatrix).xyz);
   vRoughness = roughness;
   vMetalness = metalness;
   vEmissive = vEmissive;
