@@ -66,9 +66,6 @@ struct FragmentOutput {
     @location(0) fragColor: vec4<f32>,
 }
 
-const c_precision: f32 = 256f;
-const c_precisionp1_: f32 = 257f;
-
 var<private> vUv_1: vec2<f32>;
 var<private> fragColor: vec4<f32>;
 @group(0) @binding(0)
@@ -115,8 +112,12 @@ var<uniform> farMinusNear: f32;
 var<uniform> mode: i32;
 var<private> invTexSize: vec2<f32>;
 @group(2) @binding(0)
-var gBufferTexture_2: texture_2d<f32>;
+var normalTexture: texture_2d<f32>;
 @group(2) @binding(1)
+var diffuseTexture: texture_2d<f32>;
+@group(2) @binding(2)
+var materialTexture: texture_2d<f32>;
+@group(2) @binding(3)
 var gBufferSamp: sampler;
 var<private> worldNormal: vec3<f32>;
 var<private> worldPos_3: vec3<f32>;
@@ -148,515 +149,40 @@ fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
     return vec4<f32>(_e28, _e31, _e34, _e37);
 }
 
-fn color2float(color: vec3<f32>) -> f32 {
-    var color_1: vec3<f32>;
-
-    color_1 = color;
-    let _e30 = color_1;
-    let _e36 = color_1;
-    color_1 = min((_e36 + vec3(0.0001f)), vec3(0.999999f));
-    let _e43 = color_1;
-    let _e48 = color_1;
-    let _e54 = color_1;
-    let _e59 = color_1;
-    let _e67 = color_1;
-    let _e72 = color_1;
-    return ((floor(((_e48.x * c_precision) + 0.5f)) + (floor(((_e59.z * c_precision) + 0.5f)) * c_precisionp1_)) + ((floor(((_e72.y * c_precision) + 0.5f)) * c_precisionp1_) * c_precisionp1_));
-}
-
-fn float2color(value: f32) -> vec3<f32> {
-    var value_1: f32;
-    var color_2: vec3<f32>;
-
-    value_1 = value;
-    let _e33 = value_1;
-    color_2.x = ((_e33 - (floor((_e33 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
-    let _e40 = value_1;
-    let _e42 = value_1;
-    let _e45 = value_1;
-    let _e47 = value_1;
-    let _e49 = floor((_e47 / c_precisionp1_));
-    color_2.z = ((_e49 - (floor((_e49 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
-    let _e56 = value_1;
-    let _e61 = value_1;
-    color_2.y = (floor((_e61 / 66049f)) / c_precision);
-    let _e68 = color_2;
-    color_2 = (_e68 - vec3(0.0001f));
-    let _e75 = color_2;
-    color_2 = max(_e75, vec3(0f));
-    let _e79 = color_2;
-    return _e79;
-}
-
-fn OctWrap(v: vec2<f32>) -> vec2<f32> {
-    var v_1: vec2<f32>;
-    var w: vec2<f32>;
-
-    v_1 = v;
-    let _e31 = v_1;
-    let _e33 = v_1;
-    w = (vec2(1f) - abs(_e33.yx));
-    let _e39 = v_1;
-    if (_e39.x < 0f) {
-        let _e44 = w;
-        w.x = -(_e44.x);
-    }
-    let _e47 = v_1;
-    if (_e47.y < 0f) {
-        let _e52 = w;
-        w.y = -(_e52.y);
-    }
-    let _e55 = w;
-    return _e55;
-}
-
-fn encodeOctWrap(n: vec3<f32>) -> vec2<f32> {
-    var n_1: vec3<f32>;
-    var local: vec2<f32>;
-
-    n_1 = n;
-    let _e30 = n_1;
-    let _e31 = n_1;
-    let _e33 = n_1;
-    let _e36 = n_1;
-    let _e38 = n_1;
-    let _e42 = n_1;
-    let _e44 = n_1;
-    n_1 = (_e30 / vec3(((abs(_e33.x) + abs(_e38.y)) + abs(_e44.z))));
-    let _e50 = n_1;
-    let _e52 = n_1;
-    if (_e52.z > 0f) {
-        let _e56 = n_1;
-        local = _e56.xy;
-    } else {
-        let _e58 = n_1;
-        let _e60 = n_1;
-        let _e62 = OctWrap(_e60.xy);
-        local = _e62;
-    }
-    let _e64 = local;
-    n_1.x = _e64.x;
-    n_1.y = _e64.y;
-    let _e69 = n_1;
-    let _e71 = n_1;
-    let _e77 = ((_e71.xy * 0.5f) + vec2(0.5f));
-    n_1.x = _e77.x;
-    n_1.y = _e77.y;
-    let _e82 = n_1;
-    return _e82.xy;
-}
-
-fn decodeOctWrap(f: vec2<f32>) -> vec3<f32> {
-    var f_1: vec2<f32>;
-    var n_2: vec3<f32>;
-    var t: f32;
-    var local_1: f32;
-    var local_2: f32;
-
-    f_1 = f;
-    let _e30 = f_1;
-    f_1 = ((_e30 * 2f) - vec2(1f));
-    let _e36 = f_1;
-    let _e38 = f_1;
-    let _e41 = f_1;
-    let _e43 = f_1;
-    let _e47 = f_1;
-    let _e49 = f_1;
-    n_2 = vec3<f32>(_e36.x, _e38.y, ((1f - abs(_e43.x)) - abs(_e49.y)));
-    let _e55 = n_2;
-    let _e59 = n_2;
-    t = max(-(_e59.z), 0f);
-    let _e66 = n_2;
-    let _e68 = n_2;
-    if (_e68.x >= 0f) {
-        let _e72 = t;
-        local_1 = -(_e72);
-    } else {
-        let _e74 = t;
-        local_1 = _e74;
-    }
-    let _e76 = local_1;
-    n_2.x = (_e66.x + _e76);
-    let _e79 = n_2;
-    let _e81 = n_2;
-    if (_e81.y >= 0f) {
-        let _e85 = t;
-        local_2 = -(_e85);
-    } else {
-        let _e87 = t;
-        local_2 = _e87;
-    }
-    let _e89 = local_2;
-    n_2.y = (_e79.y + _e89);
-    let _e92 = n_2;
-    return normalize(_e92);
-}
-
-fn packNormal(normal: vec3<f32>) -> f32 {
-    var normal_1: vec3<f32>;
-
-    normal_1 = normal;
-    let _e31 = normal_1;
-    let _e32 = encodeOctWrap(_e31);
-    let _e34 = normal_1;
-    let _e35 = encodeOctWrap(_e34);
-    let _e38 = normal_1;
-    let _e39 = encodeOctWrap(_e38);
-    let _e41 = normal_1;
-    let _e42 = encodeOctWrap(_e41);
-    return bitcast<f32>(pack2x16float(_e42));
-}
-
-fn unpackNormal(packedNormal: f32) -> vec3<f32> {
-    var packedNormal_1: f32;
-
-    packedNormal_1 = packedNormal;
-    let _e31 = packedNormal_1;
-    let _e34 = packedNormal_1;
-    let _e38 = packedNormal_1;
-    let _e41 = packedNormal_1;
-    let _e44 = decodeOctWrap(unpack2x16float(bitcast<u32>(_e41)));
-    return _e44;
-}
-
-fn packTwoVec4_(v1_: vec4<f32>, v2_: vec4<f32>) -> vec4<f32> {
-    var v1_1: vec4<f32>;
-    var v2_1: vec4<f32>;
-    var encoded: vec4<f32> = vec4(0f);
-    var v1r: u32;
-    var v1g: u32;
-    var v2r: u32;
-    var v2g: u32;
-
-    v1_1 = v1_;
-    v2_1 = v2_;
-    let _e35 = v1_1;
-    v1_1 = (_e35 + vec4(0.0001f));
-    let _e39 = v2_1;
-    v2_1 = (_e39 + vec4(0.0001f));
-    let _e43 = v1_1;
-    let _e45 = v1_1;
-    v1r = pack2x16float(_e45.xy);
-    let _e49 = v1_1;
-    let _e51 = v1_1;
-    v1g = pack2x16float(_e51.zw);
-    let _e55 = v2_1;
-    let _e57 = v2_1;
-    v2r = pack2x16float(_e57.xy);
-    let _e61 = v2_1;
-    let _e63 = v2_1;
-    v2g = pack2x16float(_e63.zw);
-    let _e69 = v1r;
-    encoded.x = bitcast<f32>(_e69);
-    let _e73 = v1g;
-    encoded.y = bitcast<f32>(_e73);
-    let _e77 = v2r;
-    encoded.z = bitcast<f32>(_e77);
-    let _e81 = v2g;
-    encoded.w = bitcast<f32>(_e81);
-    let _e83 = encoded;
-    return _e83;
-}
-
-fn unpackTwoVec4_(encoded_1: vec4<f32>, v1_2: ptr<function, vec4<f32>>, v2_2: ptr<function, vec4<f32>>) {
-    var encoded_2: vec4<f32>;
-    var r: u32;
-    var g: u32;
-    var b: u32;
-    var a: u32;
-
-    encoded_2 = encoded_1;
-    let _e32 = encoded_2;
-    let _e34 = encoded_2;
-    r = bitcast<u32>(_e34.x);
-    let _e38 = encoded_2;
-    let _e40 = encoded_2;
-    g = bitcast<u32>(_e40.y);
-    let _e44 = encoded_2;
-    let _e46 = encoded_2;
-    b = bitcast<u32>(_e46.z);
-    let _e50 = encoded_2;
-    let _e52 = encoded_2;
-    a = bitcast<u32>(_e52.w);
-    let _e56 = (*v1_2);
-    let _e59 = r;
-    let _e60 = unpack2x16float(_e59);
-    (*v1_2).x = _e60.x;
-    (*v1_2).y = _e60.y;
-    let _e65 = (*v1_2);
-    let _e68 = g;
-    let _e69 = unpack2x16float(_e68);
-    (*v1_2).z = _e69.x;
-    (*v1_2).w = _e69.y;
-    let _e74 = (*v2_2);
-    let _e77 = b;
-    let _e78 = unpack2x16float(_e77);
-    (*v2_2).x = _e78.x;
-    (*v2_2).y = _e78.y;
-    let _e83 = (*v2_2);
-    let _e86 = a;
-    let _e87 = unpack2x16float(_e86);
-    (*v2_2).z = _e87.x;
-    (*v2_2).w = _e87.y;
-    let _e92 = (*v1_2);
-    (*v1_2) = (_e92 - vec4(0.0001f));
-    let _e96 = (*v2_2);
-    (*v2_2) = (_e96 - vec4(0.0001f));
-    return;
-}
-
-fn unpackTwoVec4_1(encoded_3: vec4<f32>, index: i32) -> vec4<f32> {
-    var encoded_4: vec4<f32>;
-    var local_3: f32;
-    var local_4: f32;
-    var r_1: u32;
-    var local_5: f32;
-    var local_6: f32;
-    var g_1: u32;
-    var v_2: vec4<f32>;
-
-    encoded_4 = encoded_3;
-    if (index == 0i) {
-        let _e33 = encoded_4;
-        local_3 = _e33.x;
-    } else {
-        let _e35 = encoded_4;
-        local_3 = _e35.z;
-    }
-    if (index == 0i) {
-        let _e41 = encoded_4;
-        local_4 = _e41.x;
-    } else {
-        let _e43 = encoded_4;
-        local_4 = _e43.z;
-    }
-    let _e46 = local_4;
-    r_1 = bitcast<u32>(_e46);
-    if (index == 0i) {
-        let _e51 = encoded_4;
-        local_5 = _e51.y;
-    } else {
-        let _e53 = encoded_4;
-        local_5 = _e53.w;
-    }
-    if (index == 0i) {
-        let _e59 = encoded_4;
-        local_6 = _e59.y;
-    } else {
-        let _e61 = encoded_4;
-        local_6 = _e61.w;
-    }
-    let _e64 = local_6;
-    g_1 = bitcast<u32>(_e64);
-    let _e68 = v_2;
-    let _e71 = r_1;
-    let _e72 = unpack2x16float(_e71);
-    v_2.x = _e72.x;
-    v_2.y = _e72.y;
-    let _e77 = v_2;
-    let _e80 = g_1;
-    let _e81 = unpack2x16float(_e80);
-    v_2.z = _e81.x;
-    v_2.w = _e81.y;
-    let _e86 = v_2;
-    v_2 = (_e86 - vec4(0.0001f));
-    let _e90 = v_2;
-    return _e90;
-}
-
-fn encodeRGBE8_(rgb: vec3<f32>) -> vec4<f32> {
-    var rgb_1: vec3<f32>;
-    var vEncoded: vec4<f32>;
-    var maxComponent: f32;
-    var fExp: f32;
-
-    rgb_1 = rgb;
-    let _e31 = rgb_1;
-    let _e33 = rgb_1;
-    let _e35 = rgb_1;
-    let _e37 = rgb_1;
-    let _e40 = rgb_1;
-    let _e42 = rgb_1;
-    let _e44 = rgb_1;
-    let _e46 = rgb_1;
-    let _e48 = rgb_1;
-    let _e51 = rgb_1;
-    maxComponent = max(max(_e46.x, _e48.y), _e51.z);
-    let _e56 = maxComponent;
-    let _e59 = maxComponent;
-    fExp = ceil(log2(_e59));
-    let _e63 = vEncoded;
-    let _e65 = rgb_1;
-    let _e67 = fExp;
-    let _e70 = (_e65 / vec3(exp2(_e67)));
-    vEncoded.x = _e70.x;
-    vEncoded.y = _e70.y;
-    vEncoded.z = _e70.z;
-    let _e78 = fExp;
-    vEncoded.w = ((_e78 + 128f) / 255f);
-    let _e83 = vEncoded;
-    return _e83;
-}
-
-fn decodeRGBE8_(rgbe: vec4<f32>) -> vec3<f32> {
-    var rgbe_1: vec4<f32>;
-    var vDecoded: vec3<f32>;
-    var fExp_1: f32;
-
-    rgbe_1 = rgbe;
-    let _e31 = rgbe_1;
-    fExp_1 = ((_e31.w * 255f) - 128f);
-    let _e38 = rgbe_1;
-    let _e41 = fExp_1;
-    vDecoded = (_e38.xyz * exp2(_e41));
-    let _e44 = vDecoded;
-    return _e44;
-}
-
-fn vec4ToFloat(vec: vec4<f32>) -> f32 {
-    var vec_1: vec4<f32>;
-    var v_3: vec4<u32>;
-    var value_2: u32;
-
-    vec_1 = vec;
-    let _e30 = vec_1;
-    let _e36 = vec_1;
-    vec_1 = min((_e36 + vec4(0.0001f)), vec4(0.999999f));
-    let _e43 = vec_1;
-    v_3 = vec4<u32>((_e43 * 255f));
-    let _e48 = v_3;
-    let _e52 = v_3;
-    let _e57 = v_3;
-    let _e62 = v_3;
-    value_2 = ((((_e48.w << 24u) | (_e52.z << 16u)) | (_e57.y << 8u)) | _e62.x);
-    let _e67 = value_2;
-    return bitcast<f32>(_e67);
-}
-
-fn floatToVec4_(f_2: f32) -> vec4<f32> {
-    var f_3: f32;
-    var value_3: u32;
-    var v_4: vec4<f32>;
-
-    f_3 = f_2;
-    let _e31 = f_3;
-    value_3 = bitcast<u32>(_e31);
-    let _e36 = value_3;
-    v_4.x = (f32((_e36 & 255u)) / 255f);
-    let _e43 = value_3;
-    v_4.y = (f32(((_e43 >> 8u) & 255u)) / 255f);
-    let _e52 = value_3;
-    v_4.z = (f32(((_e52 >> 16u) & 255u)) / 255f);
-    let _e61 = value_3;
-    v_4.w = (f32(((_e61 >> 24u) & 255u)) / 255f);
-    let _e69 = v_4;
-    v_4 = (_e69 - vec4(0.0001f));
-    let _e76 = v_4;
-    v_4 = max(_e76, vec4(0f));
-    let _e80 = v_4;
-    return _e80;
-}
-
-fn packGBuffer(diffuse: vec4<f32>, normal_2: vec3<f32>, roughness: f32, metalness: f32, emissive: vec3<f32>) -> vec4<f32> {
-    var diffuse_1: vec4<f32>;
-    var normal_3: vec3<f32>;
-    var roughness_1: f32;
-    var metalness_1: f32;
-    var emissive_1: vec3<f32>;
-    var gBuffer: vec4<f32>;
-
-    diffuse_1 = diffuse;
-    normal_3 = normal_2;
-    roughness_1 = roughness;
-    metalness_1 = metalness;
-    emissive_1 = emissive;
-    let _e41 = diffuse_1;
-    let _e42 = vec4ToFloat(_e41);
-    gBuffer.x = _e42;
-    let _e45 = normal_3;
-    let _e46 = packNormal(_e45);
-    gBuffer.y = _e46;
-    let _e48 = roughness_1;
-    let _e49 = metalness_1;
-    let _e52 = roughness_1;
-    let _e53 = metalness_1;
-    let _e56 = color2float(vec3<f32>(_e52, _e53, 0f));
-    gBuffer.z = _e56;
-    let _e59 = emissive_1;
-    let _e60 = encodeRGBE8_(_e59);
-    let _e62 = emissive_1;
-    let _e63 = encodeRGBE8_(_e62);
-    let _e64 = vec4ToFloat(_e63);
-    gBuffer.w = _e64;
-    let _e65 = gBuffer;
-    return _e65;
-}
-
-fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
+fn getMaterial(uv: vec2<f32>) -> Material {
     var uv_1: vec2<f32>;
-    var gBuffer_1: vec4<f32>;
-    var diffuse_2: vec4<f32>;
-    var normal_4: vec3<f32>;
-    var roughnessMetalness: vec3<f32>;
-    var roughness_2: f32;
-    var metalness_2: f32;
-    var emissive_2: vec3<f32>;
+    var diffuse: vec4<f32>;
+    var normal: vec4<f32>;
+    var materialProperties: vec4<f32>;
+    var roughness: f32;
+    var metalness: f32;
+    var emissivePower: f32;
+    var emissive: vec3<f32>;
 
     uv_1 = uv;
-    let _e33 = uv_1;
-    let _e35 = textureSampleLevel(gBufferTexture, gBufferSamp, _e33, 0f);
-    gBuffer_1 = _e35;
-    let _e37 = gBuffer_1;
-    let _e39 = gBuffer_1;
-    let _e41 = floatToVec4_(_e39.x);
-    diffuse_2 = _e41;
-    let _e43 = gBuffer_1;
-    let _e45 = gBuffer_1;
-    let _e47 = unpackNormal(_e45.y);
-    normal_4 = _e47;
-    let _e49 = gBuffer_1;
-    let _e51 = gBuffer_1;
-    let _e53 = float2color(_e51.z);
-    roughnessMetalness = _e53;
-    let _e55 = roughnessMetalness;
-    roughness_2 = _e55.x;
-    let _e58 = roughnessMetalness;
-    metalness_2 = _e58.y;
-    let _e61 = gBuffer_1;
-    let _e63 = gBuffer_1;
-    let _e65 = floatToVec4_(_e63.w);
-    let _e66 = gBuffer_1;
-    let _e68 = gBuffer_1;
-    let _e70 = floatToVec4_(_e68.w);
-    let _e71 = decodeRGBE8_(_e70);
-    emissive_2 = _e71;
-    let _e73 = diffuse_2;
-    let _e74 = normal_4;
-    let _e75 = roughness_2;
-    let _e76 = metalness_2;
-    let _e77 = emissive_2;
-    return Material(_e73, _e74, _e75, _e76, _e77);
-}
-
-fn getMaterial_1(uv_2: vec2<f32>) -> Material {
-    var uv_3: vec2<f32>;
-
-    uv_3 = uv_2;
-    let _e31 = uv_3;
-    let _e32 = getMaterial(gBufferTexture_2, _e31);
-    return _e32;
-}
-
-fn getNormal(gBufferTexture_1: texture_2d<f32>, uv_4: vec2<f32>) -> vec3<f32> {
-    var uv_5: vec2<f32>;
-
-    uv_5 = uv_4;
-    let _e33 = uv_5;
-    let _e35 = textureSampleLevel(gBufferTexture_1, samp, _e33, 0f);
-    let _e39 = uv_5;
-    let _e41 = textureSampleLevel(gBufferTexture_1, samp, _e39, 0f);
-    let _e43 = unpackNormal(_e41.y);
-    return _e43;
+    let _e32 = uv_1;
+    let _e34 = textureSampleLevel(diffuseTexture, gBufferSamp, _e32, 0f);
+    diffuse = _e34;
+    let _e38 = uv_1;
+    let _e40 = textureSampleLevel(normalTexture, gBufferSamp, _e38, 0f);
+    normal = _e40;
+    let _e44 = uv_1;
+    let _e46 = textureSampleLevel(materialTexture, gBufferSamp, _e44, 0f);
+    materialProperties = _e46;
+    let _e48 = materialProperties;
+    roughness = _e48.x;
+    let _e51 = materialProperties;
+    metalness = _e51.y;
+    let _e54 = materialProperties;
+    emissivePower = _e54.z;
+    let _e57 = emissivePower;
+    emissive = vec3(_e57);
+    let _e60 = diffuse;
+    let _e61 = normal;
+    let _e63 = roughness;
+    let _e64 = metalness;
+    let _e65 = emissive;
+    return Material(_e60, _e61.xyz, _e63, _e64, _e65);
 }
 
 fn getViewZ(depth: f32) -> f32 {
@@ -726,12 +252,12 @@ fn worldSpaceToViewSpace(worldPosition: vec3<f32>) -> vec3<f32> {
     return (_e39.xyz / vec3(_e41.w));
 }
 
-fn getBasisFromNormal(normal_5: vec3<f32>) -> mat3x3<f32> {
+fn getBasisFromNormal(normal_1: vec3<f32>) -> mat3x3<f32> {
     var other: vec3<f32>;
     var ortho: vec3<f32>;
     var ortho2_: vec3<f32>;
 
-    if (abs(normal_5.x) > 0.5f) {
+    if (abs(normal_1.x) > 0.5f) {
         {
             other = vec3<f32>(0f, 1f, 0f);
         }
@@ -742,13 +268,13 @@ fn getBasisFromNormal(normal_5: vec3<f32>) -> mat3x3<f32> {
     }
     let _e44 = other;
     let _e47 = other;
-    ortho = normalize(cross(normal_5, _e47));
+    ortho = normalize(cross(normal_1, _e47));
     let _e52 = ortho;
     let _e55 = ortho;
-    ortho2_ = normalize(cross(normal_5, _e55));
+    ortho2_ = normalize(cross(normal_1, _e55));
     let _e59 = ortho2_;
     let _e60 = ortho;
-    return mat3x3<f32>(vec3<f32>(_e59.x, _e59.y, _e59.z), vec3<f32>(_e60.x, _e60.y, _e60.z), vec3<f32>(normal_5.x, normal_5.y, normal_5.z));
+    return mat3x3<f32>(vec3<f32>(_e59.x, _e59.y, _e59.z), vec3<f32>(_e60.x, _e60.y, _e60.z), vec3<f32>(normal_1.x, normal_1.y, normal_1.z));
 }
 
 fn F_Schlick(f0_: vec3<f32>, theta: f32) -> vec3<f32> {
@@ -759,10 +285,10 @@ fn F_Schlick_1(f0_1: f32, f90_: f32, theta_1: f32) -> f32 {
     return (f0_1 + ((f90_ - f0_1) * pow((1f - theta_1), 5f)));
 }
 
-fn D_GTR(roughness_3: f32, NoH: f32, k: f32) -> f32 {
+fn D_GTR(roughness_1: f32, NoH: f32, k: f32) -> f32 {
     var a2_: f32;
 
-    a2_ = pow(roughness_3, 2f);
+    a2_ = pow(roughness_1, 2f);
     let _e35 = a2_;
     let _e38 = a2_;
     let _e39 = a2_;
@@ -772,41 +298,41 @@ fn D_GTR(roughness_3: f32, NoH: f32, k: f32) -> f32 {
 }
 
 fn SmithG(NDotV: f32, alphaG: f32) -> f32 {
-    var a_1: f32;
-    var b_1: f32;
+    var a: f32;
+    var b: f32;
 
-    a_1 = (alphaG * alphaG);
-    b_1 = (NDotV * NDotV);
-    let _e36 = a_1;
-    let _e37 = b_1;
-    let _e39 = a_1;
-    let _e40 = b_1;
-    let _e43 = a_1;
-    let _e44 = b_1;
-    let _e46 = a_1;
-    let _e47 = b_1;
+    a = (alphaG * alphaG);
+    b = (NDotV * NDotV);
+    let _e36 = a;
+    let _e37 = b;
+    let _e39 = a;
+    let _e40 = b;
+    let _e43 = a;
+    let _e44 = b;
+    let _e46 = a;
+    let _e47 = b;
     return ((2f * NDotV) / (NDotV + sqrt(((_e43 + _e44) - (_e46 * _e47)))));
 }
 
-fn GGXVNDFPdf(NoH_1: f32, NoV: f32, roughness_4: f32) -> f32 {
+fn GGXVNDFPdf(NoH_1: f32, NoV: f32, roughness_2: f32) -> f32 {
     var D: f32;
     var G1_: f32;
 
-    let _e33 = D_GTR(roughness_4, NoH_1, 2f);
+    let _e33 = D_GTR(roughness_2, NoH_1, 2f);
     D = _e33;
-    let _e37 = SmithG(NoV, (roughness_4 * roughness_4));
+    let _e37 = SmithG(NoV, (roughness_2 * roughness_2));
     G1_ = _e37;
     let _e39 = D;
     let _e40 = G1_;
     return ((_e39 * _e40) / max(0.00001f, (4f * NoV)));
 }
 
-fn GeometryTerm(NoL: f32, NoV_1: f32, roughness_5: f32) -> f32 {
+fn GeometryTerm(NoL: f32, NoV_1: f32, roughness_3: f32) -> f32 {
     var a2_1: f32;
     var G1_1: f32;
     var G2_: f32;
 
-    a2_1 = (roughness_5 * roughness_5);
+    a2_1 = (roughness_3 * roughness_3);
     let _e34 = a2_1;
     let _e35 = SmithG(NoV_1, _e34);
     G1_1 = _e35;
@@ -818,31 +344,31 @@ fn GeometryTerm(NoL: f32, NoV_1: f32, roughness_5: f32) -> f32 {
     return (_e41 * _e42);
 }
 
-fn evalDisneyDiffuse(NoL_1: f32, NoV_2: f32, LoH: f32, roughness_6: f32, metalness_3: f32) -> vec3<f32> {
+fn evalDisneyDiffuse(NoL_1: f32, NoV_2: f32, LoH: f32, roughness_4: f32, metalness_1: f32) -> vec3<f32> {
     var FD90_: f32;
-    var a_2: f32;
-    var b_2: f32;
+    var a_1: f32;
+    var b_1: f32;
 
-    FD90_ = (0.5f + ((2f * roughness_6) * pow(LoH, 2f)));
+    FD90_ = (0.5f + ((2f * roughness_4) * pow(LoH, 2f)));
     let _e45 = FD90_;
     let _e46 = F_Schlick_1(1f, _e45, NoL_1);
-    a_2 = _e46;
+    a_1 = _e46;
     let _e51 = FD90_;
     let _e52 = F_Schlick_1(1f, _e51, NoV_2);
-    b_2 = _e52;
-    let _e54 = a_2;
-    let _e55 = b_2;
-    return vec3((((_e54 * _e55) / 3.1415927f) * (1f - metalness_3)));
+    b_1 = _e52;
+    let _e54 = a_1;
+    let _e55 = b_1;
+    return vec3((((_e54 * _e55) / 3.1415927f) * (1f - metalness_1)));
 }
 
-fn evalDisneySpecular(roughness_7: f32, NoH_2: f32, NoV_3: f32, NoL_2: f32) -> vec3<f32> {
+fn evalDisneySpecular(roughness_5: f32, NoH_2: f32, NoV_3: f32, NoL_2: f32) -> vec3<f32> {
     var D_1: f32;
     var G: f32;
     var spec: vec3<f32>;
 
-    let _e34 = D_GTR(roughness_7, NoH_2, 2f);
+    let _e34 = D_GTR(roughness_5, NoH_2, 2f);
     D_1 = _e34;
-    let _e58 = GeometryTerm(NoL_2, NoV_3, pow((0.5f + (roughness_7 * 0.5f)), 2f));
+    let _e58 = GeometryTerm(NoL_2, NoV_3, pow((0.5f + (roughness_5 * 0.5f)), 2f));
     G = _e58;
     let _e60 = D_1;
     let _e61 = G;
@@ -854,10 +380,10 @@ fn evalDisneySpecular(roughness_7: f32, NoH_2: f32, NoV_3: f32, NoL_2: f32) -> v
 fn SampleGGXVNDF(V: vec3<f32>, ax: f32, ay: f32, r1_: f32, r2_: f32) -> vec3<f32> {
     var Vh: vec3<f32>;
     var lensq: f32;
-    var local_7: vec3<f32>;
+    var local: vec3<f32>;
     var T1_: vec3<f32>;
     var T2_: vec3<f32>;
-    var r_2: f32;
+    var r: f32;
     var phi: f32;
     var t1_: f32;
     var t2_: f32;
@@ -875,21 +401,21 @@ fn SampleGGXVNDF(V: vec3<f32>, ax: f32, ay: f32, r1_: f32, r2_: f32) -> vec3<f32
         let _e62 = Vh;
         let _e65 = Vh;
         let _e70 = lensq;
-        local_7 = (vec3<f32>(-(_e62.y), _e65.x, 0f) * inverseSqrt(_e70));
+        local = (vec3<f32>(-(_e62.y), _e65.x, 0f) * inverseSqrt(_e70));
     } else {
-        local_7 = vec3<f32>(1f, 0f, 0f);
+        local = vec3<f32>(1f, 0f, 0f);
     }
-    let _e78 = local_7;
+    let _e78 = local;
     T1_ = _e78;
     let _e82 = Vh;
     let _e83 = T1_;
     T2_ = cross(_e82, _e83);
-    r_2 = sqrt(r1_);
+    r = sqrt(r1_);
     phi = (6.2831855f * r2_);
-    let _e93 = r_2;
+    let _e93 = r;
     let _e95 = phi;
     t1_ = (_e93 * cos(_e95));
-    let _e99 = r_2;
+    let _e99 = r;
     let _e101 = phi;
     t2_ = (_e99 * sin(_e101));
     let _e107 = Vh;
@@ -936,15 +462,15 @@ fn SampleGGXVNDF(V: vec3<f32>, ax: f32, ay: f32, r1_: f32, r2_: f32) -> vec3<f32
 }
 
 fn Onb(N: vec3<f32>, T: ptr<function, vec3<f32>>, B: ptr<function, vec3<f32>>) {
-    var local_8: vec3<f32>;
+    var local_1: vec3<f32>;
     var up: vec3<f32>;
 
     if (abs(N.z) < 0.9999999f) {
-        local_8 = vec3<f32>(0f, 0f, 1f);
+        local_1 = vec3<f32>(0f, 0f, 1f);
     } else {
-        local_8 = vec3<f32>(1f, 0f, 0f);
+        local_1 = vec3<f32>(1f, 0f, 0f);
     }
-    let _e51 = local_8;
+    let _e51 = local_1;
     up = _e51;
     let _e54 = up;
     let _e57 = up;
@@ -962,45 +488,45 @@ fn ToWorld(X_1: vec3<f32>, Y_1: vec3<f32>, Z_1: vec3<f32>, V_2: vec3<f32>) -> ve
     return (((V_2.x * X_1) + (V_2.y * Y_1)) + (V_2.z * Z_1));
 }
 
-fn cosineSampleHemisphere(n_3: vec3<f32>, u: vec2<f32>) -> vec3<f32> {
-    var r_3: f32;
+fn cosineSampleHemisphere(n: vec3<f32>, u: vec2<f32>) -> vec3<f32> {
+    var r_1: f32;
     var theta_2: f32;
-    var b_3: vec3<f32>;
-    var t_1: vec3<f32>;
+    var b_2: vec3<f32>;
+    var t: vec3<f32>;
 
-    r_3 = sqrt(u.x);
+    r_1 = sqrt(u.x);
     theta_2 = (6.2831855f * u.y);
-    b_3 = normalize(cross(n_3, vec3<f32>(0f, 1f, 1f)));
-    let _e61 = b_3;
-    t_1 = cross(_e61, n_3);
-    let _e64 = r_3;
+    b_2 = normalize(cross(n, vec3<f32>(0f, 1f, 1f)));
+    let _e61 = b_2;
+    t = cross(_e61, n);
+    let _e64 = r_1;
     let _e66 = theta_2;
-    let _e69 = b_3;
-    let _e80 = r_3;
+    let _e69 = b_2;
+    let _e80 = r_1;
     let _e82 = theta_2;
-    let _e85 = t_1;
-    let _e88 = r_3;
+    let _e85 = t;
+    let _e88 = r_1;
     let _e90 = theta_2;
-    let _e93 = b_3;
-    let _e104 = r_3;
+    let _e93 = b_2;
+    let _e104 = r_1;
     let _e106 = theta_2;
-    let _e109 = t_1;
-    return normalize(((((_e88 * sin(_e90)) * _e93) + (sqrt((1f - u.x)) * n_3)) + ((_e104 * cos(_e106)) * _e109)));
+    let _e109 = t;
+    return normalize(((((_e88 * sin(_e90)) * _e93) + (sqrt((1f - u.x)) * n)) + ((_e104 * cos(_e106)) * _e109)));
 }
 
-fn misHeuristic(a_3: f32, b_4: f32) -> f32 {
-    var a_4: f32;
-    var b_5: f32;
+fn misHeuristic(a_2: f32, b_3: f32) -> f32 {
+    var a_3: f32;
+    var b_4: f32;
     var aa: f32;
     var bb: f32;
 
-    a_4 = a_3;
-    b_5 = b_4;
-    let _e32 = a_4;
-    let _e33 = a_4;
+    a_3 = a_2;
+    b_4 = b_3;
+    let _e32 = a_3;
+    let _e33 = a_3;
     aa = (_e32 * _e33);
-    let _e36 = b_5;
-    let _e37 = b_5;
+    let _e36 = b_4;
+    let _e37 = b_4;
     bb = (_e36 * _e37);
     let _e40 = aa;
     let _e41 = aa;
@@ -1008,17 +534,17 @@ fn misHeuristic(a_3: f32, b_4: f32) -> f32 {
     return (_e40 / (_e41 + _e42));
 }
 
-fn alignToNormal(normal_6: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
+fn alignToNormal(normal_2: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
     var tangent: vec3<f32>;
     var bitangent: vec3<f32>;
     var localDir: vec3<f32>;
     var localDirAligned: vec3<f32>;
     var alignedDir: vec3<f32>;
 
-    Onb(normal_6, (&tangent), (&bitangent));
+    Onb(normal_2, (&tangent), (&bitangent));
     let _e38 = tangent;
     let _e39 = bitangent;
-    let _e40 = ToLocal(_e38, _e39, normal_6, direction);
+    let _e40 = ToLocal(_e38, _e39, normal_2, direction);
     localDir = _e40;
     let _e42 = localDir;
     let _e44 = localDir;
@@ -1028,22 +554,22 @@ fn alignToNormal(normal_6: vec3<f32>, direction: vec3<f32>) -> vec3<f32> {
     let _e56 = tangent;
     let _e57 = bitangent;
     let _e58 = localDirAligned;
-    let _e59 = ToWorld(_e56, _e57, normal_6, _e58);
+    let _e59 = ToWorld(_e56, _e57, normal_2, _e58);
     alignedDir = _e59;
     let _e61 = alignedDir;
     return _e61;
 }
 
-fn getFlatness(g_2: vec3<f32>, rp: vec3<f32>) -> f32 {
-    var g_3: vec3<f32>;
+fn getFlatness(g: vec3<f32>, rp: vec3<f32>) -> f32 {
+    var g_1: vec3<f32>;
     var rp_1: vec3<f32>;
     var gw: vec3<f32>;
     var pw: vec3<f32>;
     var wfcurvature: f32;
 
-    g_3 = g_2;
+    g_1 = g;
     rp_1 = rp;
-    let _e33 = g_3;
+    let _e33 = g_1;
     let _e34 = fwidth(_e33);
     gw = _e34;
     let _e37 = rp_1;
@@ -1060,7 +586,7 @@ fn getFlatness(g_2: vec3<f32>, rp: vec3<f32>) -> f32 {
 
 fn getSaturation(c: vec3<f32>) -> f32 {
     var c_1: vec3<f32>;
-    var maxComponent_1: f32;
+    var maxComponent: f32;
     var minComponent: f32;
     var delta: f32;
 
@@ -1075,7 +601,7 @@ fn getSaturation(c: vec3<f32>) -> f32 {
     let _e48 = c_1;
     let _e50 = c_1;
     let _e53 = c_1;
-    maxComponent_1 = max(max(_e48.x, _e50.y), _e53.z);
+    maxComponent = max(max(_e48.x, _e50.y), _e53.z);
     let _e57 = c_1;
     let _e59 = c_1;
     let _e61 = c_1;
@@ -1087,10 +613,10 @@ fn getSaturation(c: vec3<f32>) -> f32 {
     let _e74 = c_1;
     let _e77 = c_1;
     minComponent = min(min(_e72.x, _e74.y), _e77.z);
-    let _e81 = maxComponent_1;
+    let _e81 = maxComponent;
     let _e82 = minComponent;
     delta = (_e81 - _e82);
-    let _e85 = maxComponent_1;
+    let _e85 = maxComponent;
     let _e86 = minComponent;
     if (_e85 == _e86) {
         {
@@ -1099,7 +625,7 @@ fn getSaturation(c: vec3<f32>) -> f32 {
     } else {
         {
             let _e89 = delta;
-            let _e90 = maxComponent_1;
+            let _e90 = maxComponent;
             return (_e89 / _e90);
         }
     }
@@ -1108,7 +634,7 @@ fn getSaturation(c: vec3<f32>) -> f32 {
 @diagnostic(off,derivative_uniformity)
 fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>) -> vec2<f32> {
     var rayHitDepthDifference: f32;
-    var uv_6: vec2<f32>;
+    var uv_2: vec2<f32>;
     var i: i32 = 0i;
     var unpackedDepth: f32;
     var z: f32;
@@ -1126,8 +652,8 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
         {
             let _e51 = (*hitPos);
             let _e52 = viewSpaceToScreenSpace(_e51);
-            uv_6 = _e52;
-            let _e55 = uv_6;
+            uv_2 = _e52;
+            let _e55 = uv_2;
             let _e57 = textureSample(depthTexture, samp, _e55);
             unpackedDepth = _e57;
             let _e61 = unpackedDepth;
@@ -1160,8 +686,8 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
     }
     let _e81 = (*hitPos);
     let _e82 = viewSpaceToScreenSpace(_e81);
-    uv_6 = _e82;
-    let _e83 = uv_6;
+    uv_2 = _e82;
+    let _e83 = uv_2;
     return _e83;
 }
 
@@ -1169,7 +695,7 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
 fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>, random: vec4<f32>) -> vec2<f32> {
     var random_1: vec4<f32>;
     var rayHitDepthDifference_1: f32;
-    var uv_7: vec2<f32>;
+    var uv_3: vec2<f32>;
     var i_1: i32 = 1i;
     var cs: f32;
     var unpackedDepth_1: f32;
@@ -1200,8 +726,8 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
             (*hitPos_1) = (_e96 + (_e97 * _e98));
             let _e102 = (*hitPos_1);
             let _e103 = viewSpaceToScreenSpace(_e102);
-            uv_7 = _e103;
-            let _e106 = uv_7;
+            uv_3 = _e103;
+            let _e106 = uv_3;
             let _e108 = textureSample(depthTexture, samp, _e106);
             unpackedDepth_1 = _e108;
             let _e112 = unpackedDepth_1;
@@ -1217,7 +743,7 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
                 {
                     if false {
                         {
-                            let _e129 = uv_7;
+                            let _e129 = uv_3;
                             return _e129;
                         }
                     } else {
@@ -1238,26 +764,26 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
     (*hitPos_1).x = 10000000000f;
     (*hitPos_1).y = 10000000000f;
     (*hitPos_1).z = 10000000000f;
-    let _e142 = uv_7;
+    let _e142 = uv_3;
     return _e142;
 }
 
-fn getEnvColor(l: vec3<f32>, worldPos: vec3<f32>, roughness_8: f32, isDiffuseSample: bool, isEnvSample: bool) -> vec3<f32> {
+fn getEnvColor(l: vec3<f32>, worldPos: vec3<f32>, roughness_6: f32, isDiffuseSample: bool, isEnvSample: bool) -> vec3<f32> {
     var l_1: vec3<f32>;
     var worldPos_1: vec3<f32>;
-    var roughness_9: f32;
+    var roughness_7: f32;
     var isDiffuseSample_1: bool;
     var isEnvSample_1: bool;
 
     l_1 = l;
     worldPos_1 = worldPos;
-    roughness_9 = roughness_8;
+    roughness_7 = roughness_6;
     isDiffuseSample_1 = isDiffuseSample;
     isEnvSample_1 = isEnvSample;
     return vec3(0f);
 }
 
-fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, worldPos_2: vec3<f32>, metalness_4: f32, roughness_10: f32, isDiffuseSample_2: bool, isEnvSample_2: bool, NoV_4: f32, NoL_3: f32, NoH_3: f32, LoH_1: f32, VoH: f32, random_2: vec4<f32>, l_2: ptr<function, vec3<f32>>, hitPos_2: ptr<function, vec3<f32>>, isMissedRay: ptr<function, bool>, brdf: ptr<function, vec3<f32>>, pdf: ptr<function, f32>) -> vec3<f32> {
+fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, worldPos_2: vec3<f32>, metalness_2: f32, roughness_8: f32, isDiffuseSample_2: bool, isEnvSample_2: bool, NoV_4: f32, NoL_3: f32, NoH_3: f32, LoH_1: f32, VoH: f32, random_2: vec4<f32>, l_2: ptr<function, vec3<f32>>, hitPos_2: ptr<function, vec3<f32>>, isMissedRay: ptr<function, bool>, brdf: ptr<function, vec3<f32>>, pdf: ptr<function, f32>) -> vec3<f32> {
     var cosTheta: f32;
     var diffuseBrdf: vec3<f32>;
     var specularBrdf: vec3<f32>;
@@ -1281,7 +807,7 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
     cosTheta = max(0f, dot(viewNormal, _e56));
     if isDiffuseSample_2 {
         {
-            let _e60 = evalDisneyDiffuse(NoL_3, NoV_4, LoH_1, roughness_10, metalness_4);
+            let _e60 = evalDisneyDiffuse(NoL_3, NoV_4, LoH_1, roughness_8, metalness_2);
             diffuseBrdf = _e60;
             (*pdf) = (NoL_3 / 3.1415927f);
             let _e64 = diffuseBrdf;
@@ -1289,9 +815,9 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
         }
     } else {
         {
-            let _e65 = evalDisneySpecular(roughness_10, NoH_3, NoV_4, NoL_3);
+            let _e65 = evalDisneySpecular(roughness_8, NoH_3, NoV_4, NoL_3);
             specularBrdf = _e65;
-            let _e67 = GGXVNDFPdf(NoH_3, NoV_4, roughness_10);
+            let _e67 = GGXVNDFPdf(NoH_3, NoV_4, roughness_8);
             (*pdf) = _e67;
             let _e68 = specularBrdf;
             (*brdf) = _e68;
@@ -1311,7 +837,7 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
     let _e93 = allowMissedRays;
     if (_e92 && !(_e93)) {
         let _e97 = (*l_2);
-        let _e98 = getEnvColor(_e97, worldPos_2, roughness_10, isDiffuseSample_2, isEnvSample_2);
+        let _e98 = getEnvColor(_e97, worldPos_2, roughness_8, isDiffuseSample_2, isEnvSample_2);
         return _e98;
     }
     let _e99 = coords;
@@ -1322,7 +848,7 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
     let _e109 = velocity;
     reprojectedUv = (_e107.xy - _e109.xy);
     let _e115 = (*l_2);
-    let _e116 = getEnvColor(_e115, worldPos_2, roughness_10, isDiffuseSample_2, isEnvSample_2);
+    let _e116 = getEnvColor(_e115, worldPos_2, roughness_8, isDiffuseSample_2, isEnvSample_2);
     envColor = _e116;
     let _e118 = reprojectedUv;
     let _e122 = reprojectedUv;
@@ -1346,7 +872,7 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
             let _e181 = reprojectedGI;
             let _e187 = reprojectedGI;
             let _e193 = saturation;
-            let _e198 = mix(_e175.xyz, vec3(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e187.xyz)), vec3((((1f - roughness_10) * _e193) * 0.4f)));
+            let _e198 = mix(_e175.xyz, vec3(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e187.xyz)), vec3((((1f - roughness_8) * _e193) * 0.4f)));
             reprojectedGI.x = _e198.x;
             reprojectedGI.y = _e198.y;
             reprojectedGI.z = _e198.z;
@@ -1402,20 +928,20 @@ fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, world
     return _e304;
 }
 
-fn calculateAngles(h: ptr<function, vec3<f32>>, l_3: ptr<function, vec3<f32>>, v_5: ptr<function, vec3<f32>>, n_4: ptr<function, vec3<f32>>, NoL_4: ptr<function, f32>, NoH_4: ptr<function, f32>, LoH_2: ptr<function, f32>, VoH_1: ptr<function, f32>) {
-    let _e39 = (*v_5);
+fn calculateAngles(h: ptr<function, vec3<f32>>, l_3: ptr<function, vec3<f32>>, v: ptr<function, vec3<f32>>, n_1: ptr<function, vec3<f32>>, NoL_4: ptr<function, f32>, NoH_4: ptr<function, f32>, LoH_2: ptr<function, f32>, VoH_1: ptr<function, f32>) {
+    let _e39 = (*v);
     let _e40 = (*l_3);
-    let _e42 = (*v_5);
+    let _e42 = (*v);
     let _e43 = (*l_3);
     (*h) = normalize((_e42 + _e43));
-    let _e48 = (*n_4);
+    let _e48 = (*n_1);
     let _e49 = (*l_3);
-    let _e57 = (*n_4);
+    let _e57 = (*n_1);
     let _e58 = (*l_3);
     (*NoL_4) = clamp(dot(_e57, _e58), 0.00001f, 0.99999f);
-    let _e67 = (*n_4);
+    let _e67 = (*n_1);
     let _e68 = (*h);
-    let _e76 = (*n_4);
+    let _e76 = (*n_1);
     let _e77 = (*h);
     (*NoH_4) = clamp(dot(_e76, _e77), 0.00001f, 0.99999f);
     let _e86 = (*l_3);
@@ -1423,15 +949,14 @@ fn calculateAngles(h: ptr<function, vec3<f32>>, l_3: ptr<function, vec3<f32>>, v
     let _e95 = (*l_3);
     let _e96 = (*h);
     (*LoH_2) = clamp(dot(_e95, _e96), 0.00001f, 0.99999f);
-    let _e105 = (*v_5);
+    let _e105 = (*v);
     let _e106 = (*h);
-    let _e114 = (*v_5);
+    let _e114 = (*v);
     let _e115 = (*h);
     (*VoH_1) = clamp(dot(_e114, _e115), 0.00001f, 0.99999f);
     return;
 }
 
-@diagnostic(off,derivative_uniformity)
 fn main_1() {
     var unpackedDepth_2: f32;
     var directLight: vec4<f32>;
@@ -1440,8 +965,8 @@ fn main_1() {
     var viewPos_1: vec3<f32>;
     var viewDir_1: vec3<f32>;
     var viewNormal_1: vec3<f32>;
-    var n_5: vec3<f32>;
-    var v_6: vec3<f32>;
+    var n_2: vec3<f32>;
+    var v_1: vec3<f32>;
     var NoV_5: f32;
     var V_3: vec3<f32>;
     var N_1: vec3<f32>;
@@ -1475,9 +1000,9 @@ fn main_1() {
     var isEnvSample_3: bool;
     var isMissedRay_1: bool;
     var ems: EnvMisSample;
-    var local_9: vec3<f32>;
+    var local_2: vec3<f32>;
     var diffuseRay: vec3<f32>;
-    var local_10: vec3<f32>;
+    var local_3: vec3<f32>;
     var specularRay: vec3<f32>;
     var directLight_1: vec3<f32>;
     var gDiffuse: vec4<f32>;
@@ -1486,7 +1011,7 @@ fn main_1() {
     var hitPosWS: vec4<f32>;
     var cameraPosWS: vec3<f32>;
     var packedRoughnessRayLength: u32;
-    var a_5: f32;
+    var a_4: f32;
 
     let _e33 = vUv_1;
     let _e35 = textureSample(depthTexture, samp, _e33);
@@ -1497,130 +1022,128 @@ fn main_1() {
             let _e43 = vUv_1;
             let _e45 = textureSampleLevel(directLightTexture, samp, _e43, 0f);
             directLight = _e45;
-            let _e49 = directLight;
-            let _e50 = directLight;
-            let _e51 = packTwoVec4_(_e49, _e50);
-            fragColor = _e51;
+            let _e47 = directLight;
+            fragColor = _e47;
             return;
         }
     }
-    let _e53 = vUv_1;
-    let _e54 = getMaterial(gBufferTexture_2, _e53);
-    mat = _e54;
-    let _e55 = mat;
-    let _e57 = mat;
-    let _e62 = mat;
-    let _e64 = mat;
-    roughnessSq = clamp((_e62.roughness * _e64.roughness), 0.000001f, 1f);
-    let _e72 = resolution;
-    invTexSize = (vec2(1f) / _e72);
-    let _e76 = unpackedDepth_2;
-    let _e77 = getViewZ(_e76);
-    viewZ_2 = _e77;
-    let _e80 = viewZ_2;
-    let _e81 = getViewPosition(_e80);
-    viewPos_1 = _e81;
-    let _e84 = viewPos_1;
-    viewDir_1 = normalize(_e84);
-    let _e87 = mat;
-    worldNormal = _e87.normal;
-    let _e89 = worldNormal;
-    let _e95 = cameraMatrixWorld;
-    let _e98 = worldNormal;
-    let _e104 = cameraMatrixWorld;
-    viewNormal_1 = normalize((vec4<f32>(_e98.x, _e98.y, _e98.z, 0f) * _e104).xyz);
-    let _e109 = cameraMatrixWorld;
-    let _e110 = viewPos_1;
-    worldPos_3 = (_e109 * vec4<f32>(_e110.x, _e110.y, _e110.z, 1f)).xyz;
-    let _e118 = viewNormal_1;
-    n_5 = _e118;
-    let _e120 = viewDir_1;
-    v_6 = -(_e120);
-    let _e126 = n_5;
-    let _e127 = v_6;
-    let _e132 = n_5;
-    let _e133 = v_6;
-    NoV_5 = max(0.00001f, dot(_e132, _e133));
-    let _e137 = v_6;
-    let _e143 = viewMatrix;
-    V_3 = (vec4<f32>(_e137.x, _e137.y, _e137.z, 0f) * _e143).xyz;
-    let _e147 = worldNormal;
-    N_1 = _e147;
-    let _e166 = N_1;
-    Onb(_e166, (&T_1), (&B_1));
-    let _e173 = T_1;
-    let _e174 = B_1;
-    let _e175 = N_1;
-    let _e176 = V_3;
-    let _e177 = ToLocal(_e173, _e174, _e175, _e176);
-    V_3 = _e177;
-    let _e180 = mat;
+    let _e49 = vUv_1;
+    let _e50 = getMaterial(_e49);
+    mat = _e50;
+    let _e51 = mat;
+    let _e53 = mat;
+    let _e58 = mat;
+    let _e60 = mat;
+    roughnessSq = clamp((_e58.roughness * _e60.roughness), 0.000001f, 1f);
+    let _e68 = resolution;
+    invTexSize = (vec2(1f) / _e68);
+    let _e72 = unpackedDepth_2;
+    let _e73 = getViewZ(_e72);
+    viewZ_2 = _e73;
+    let _e76 = viewZ_2;
+    let _e77 = getViewPosition(_e76);
+    viewPos_1 = _e77;
+    let _e80 = viewPos_1;
+    viewDir_1 = normalize(_e80);
+    let _e83 = mat;
+    worldNormal = _e83.normal;
+    let _e85 = worldNormal;
+    let _e91 = cameraMatrixWorld;
+    let _e94 = worldNormal;
+    let _e100 = cameraMatrixWorld;
+    viewNormal_1 = normalize((vec4<f32>(_e94.x, _e94.y, _e94.z, 0f) * _e100).xyz);
+    let _e105 = cameraMatrixWorld;
+    let _e106 = viewPos_1;
+    worldPos_3 = (_e105 * vec4<f32>(_e106.x, _e106.y, _e106.z, 1f)).xyz;
+    let _e114 = viewNormal_1;
+    n_2 = _e114;
+    let _e116 = viewDir_1;
+    v_1 = -(_e116);
+    let _e122 = n_2;
+    let _e123 = v_1;
+    let _e128 = n_2;
+    let _e129 = v_1;
+    NoV_5 = max(0.00001f, dot(_e128, _e129));
+    let _e133 = v_1;
+    let _e139 = viewMatrix;
+    V_3 = (vec4<f32>(_e133.x, _e133.y, _e133.z, 0f) * _e139).xyz;
+    let _e143 = worldNormal;
+    N_1 = _e143;
+    let _e162 = N_1;
+    Onb(_e162, (&T_1), (&B_1));
+    let _e169 = T_1;
+    let _e170 = B_1;
+    let _e171 = N_1;
+    let _e172 = V_3;
+    let _e173 = ToLocal(_e169, _e170, _e171, _e172);
+    V_3 = _e173;
+    let _e176 = mat;
+    let _e179 = mat;
     let _e183 = mat;
-    let _e187 = mat;
-    let _e190 = mat;
-    f0_2 = mix(vec3(0.04f), _e187.diffuse.xyz, vec3(_e190.metalness));
-    let _e210 = vUv_1;
-    let _e211 = blueNoise(_e210);
-    random_3 = _e211;
-    let _e215 = random_3;
-    let _e217 = random_3;
-    let _e219 = V_3;
-    let _e220 = roughnessSq;
-    let _e221 = roughnessSq;
-    let _e222 = random_3;
-    let _e224 = random_3;
-    let _e226 = SampleGGXVNDF(_e219, _e220, _e221, _e222.x, _e224.y);
-    H = _e226;
-    let _e227 = H;
-    if (_e227.z < 0f) {
-        let _e231 = H;
-        H = -(_e231);
+    let _e186 = mat;
+    f0_2 = mix(vec3(0.04f), _e183.diffuse.xyz, vec3(_e186.metalness));
+    let _e206 = vUv_1;
+    let _e207 = blueNoise(_e206);
+    random_3 = _e207;
+    let _e211 = random_3;
+    let _e213 = random_3;
+    let _e215 = V_3;
+    let _e216 = roughnessSq;
+    let _e217 = roughnessSq;
+    let _e218 = random_3;
+    let _e220 = random_3;
+    let _e222 = SampleGGXVNDF(_e215, _e216, _e217, _e218.x, _e220.y);
+    H = _e222;
+    let _e223 = H;
+    if (_e223.z < 0f) {
+        let _e227 = H;
+        H = -(_e227);
     }
-    let _e233 = V_3;
+    let _e229 = V_3;
+    let _e232 = V_3;
+    let _e234 = H;
     let _e236 = V_3;
-    let _e238 = H;
-    let _e240 = V_3;
-    let _e243 = V_3;
-    let _e245 = H;
-    l_4 = normalize(reflect(-(_e243), _e245));
-    let _e252 = T_1;
-    let _e253 = B_1;
-    let _e254 = N_1;
-    let _e255 = l_4;
-    let _e256 = ToWorld(_e252, _e253, _e254, _e255);
-    l_4 = _e256;
-    let _e257 = l_4;
-    let _e263 = cameraMatrixWorld;
-    l_4 = (vec4<f32>(_e257.x, _e257.y, _e257.z, 0f) * _e263).xyz;
-    let _e267 = l_4;
-    l_4 = normalize(_e267);
-    calculateAngles((&h_1), (&l_4), (&v_6), (&n_5), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
-    let _e285 = mode;
-    if (_e285 == 0i) {
+    let _e239 = V_3;
+    let _e241 = H;
+    l_4 = normalize(reflect(-(_e239), _e241));
+    let _e248 = T_1;
+    let _e249 = B_1;
+    let _e250 = N_1;
+    let _e251 = l_4;
+    let _e252 = ToWorld(_e248, _e249, _e250, _e251);
+    l_4 = _e252;
+    let _e253 = l_4;
+    let _e259 = cameraMatrixWorld;
+    l_4 = (vec4<f32>(_e253.x, _e253.y, _e253.z, 0f) * _e259).xyz;
+    let _e263 = l_4;
+    l_4 = normalize(_e263);
+    calculateAngles((&h_1), (&l_4), (&v_1), (&n_2), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
+    let _e281 = mode;
+    if (_e281 == 0i) {
         {
-            let _e290 = f0_2;
-            let _e291 = VoH_2;
-            let _e292 = F_Schlick(_e290, _e291);
-            F = _e292;
-            let _e294 = mat;
-            let _e301 = mat;
-            let _e308 = mat;
-            diffW = ((1f - _e294.metalness) * dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e308.diffuse.xyz));
-            let _e322 = F;
-            specW = dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e322);
-            let _e326 = diffW;
-            diffW = max(_e326, 0.00001f);
-            let _e331 = specW;
-            specW = max(_e331, 0.00001f);
+            let _e286 = f0_2;
+            let _e287 = VoH_2;
+            let _e288 = F_Schlick(_e286, _e287);
+            F = _e288;
+            let _e290 = mat;
+            let _e297 = mat;
+            let _e304 = mat;
+            diffW = ((1f - _e290.metalness) * dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e304.diffuse.xyz));
+            let _e318 = F;
+            specW = dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e318);
+            let _e322 = diffW;
+            diffW = max(_e322, 0.00001f);
+            let _e327 = specW;
+            specW = max(_e327, 0.00001f);
+            let _e331 = diffW;
+            let _e332 = specW;
+            invW = (1f / (_e331 + _e332));
             let _e335 = diffW;
-            let _e336 = specW;
-            invW = (1f / (_e335 + _e336));
-            let _e339 = diffW;
-            let _e340 = invW;
-            diffW = (_e339 * _e340);
-            let _e342 = random_3;
-            let _e344 = diffW;
-            isDiffuseSample_3 = (_e342.z < _e344);
+            let _e336 = invW;
+            diffW = (_e335 * _e336);
+            let _e338 = random_3;
+            let _e340 = diffW;
+            isDiffuseSample_3 = (_e338.z < _e340);
         }
     } else {
         {
@@ -1630,221 +1153,218 @@ fn main_1() {
     ems.pdf = 1f;
     envMisDir = vec3(0f);
     envPdf = 1f;
-    let _e353 = ems;
-    if _e353.isEnvSample {
-        let _e355 = envMisDir;
-        local_9 = _e355;
+    let _e349 = ems;
+    if _e349.isEnvSample {
+        let _e351 = envMisDir;
+        local_2 = _e351;
     } else {
-        let _e357 = random_3;
-        let _e359 = viewNormal_1;
-        let _e360 = random_3;
-        let _e362 = cosineSampleHemisphere(_e359, _e360.xy);
-        local_9 = _e362;
+        let _e353 = random_3;
+        let _e355 = viewNormal_1;
+        let _e356 = random_3;
+        let _e358 = cosineSampleHemisphere(_e355, _e356.xy);
+        local_2 = _e358;
     }
-    let _e364 = local_9;
-    diffuseRay = _e364;
-    let _e366 = ems;
-    if _e366.isEnvSample {
-        let _e368 = envMisDir;
-        local_10 = _e368;
+    let _e360 = local_2;
+    diffuseRay = _e360;
+    let _e362 = ems;
+    if _e362.isEnvSample {
+        let _e364 = envMisDir;
+        local_3 = _e364;
     } else {
-        let _e369 = l_4;
-        local_10 = _e369;
+        let _e365 = l_4;
+        local_3 = _e365;
     }
-    let _e371 = local_10;
-    specularRay = _e371;
-    let _e373 = mode;
-    if (_e373 == 0i) {
+    let _e367 = local_3;
+    specularRay = _e367;
+    let _e369 = mode;
+    if (_e369 == 0i) {
         {
-            let _e376 = isDiffuseSample_3;
-            if _e376 {
+            let _e372 = isDiffuseSample_3;
+            if _e372 {
                 {
-                    let _e377 = diffuseRay;
-                    l_4 = _e377;
-                    calculateAngles((&h_1), (&l_4), (&v_6), (&n_5), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
-                    let _e398 = mat;
-                    let _e402 = ems;
-                    let _e415 = viewPos_1;
-                    let _e416 = viewDir_1;
-                    let _e417 = viewNormal_1;
-                    let _e418 = worldPos_3;
-                    let _e419 = mat;
-                    let _e421 = roughnessSq;
-                    let _e422 = isDiffuseSample_3;
-                    let _e423 = ems;
-                    let _e425 = NoV_5;
-                    let _e426 = NoL_5;
-                    let _e427 = NoH_5;
-                    let _e428 = LoH_3;
-                    let _e429 = VoH_2;
-                    let _e430 = random_3;
-                    let _e436 = doSample(_e415, _e416, _e417, _e418, _e419.metalness, _e421, _e422, _e423.isEnvSample, _e425, _e426, _e427, _e428, _e429, _e430, (&l_4), (&hitPos_3), (&isMissedRay_1), (&brdf_1), (&pdf_1));
-                    gi = _e436;
-                    let _e437 = gi;
-                    let _e438 = brdf_1;
-                    gi = (_e437 * _e438);
-                    let _e440 = ems;
-                    if _e440.isEnvSample {
+                    let _e373 = diffuseRay;
+                    l_4 = _e373;
+                    calculateAngles((&h_1), (&l_4), (&v_1), (&n_2), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
+                    let _e394 = mat;
+                    let _e398 = ems;
+                    let _e411 = viewPos_1;
+                    let _e412 = viewDir_1;
+                    let _e413 = viewNormal_1;
+                    let _e414 = worldPos_3;
+                    let _e415 = mat;
+                    let _e417 = roughnessSq;
+                    let _e418 = isDiffuseSample_3;
+                    let _e419 = ems;
+                    let _e421 = NoV_5;
+                    let _e422 = NoL_5;
+                    let _e423 = NoH_5;
+                    let _e424 = LoH_3;
+                    let _e425 = VoH_2;
+                    let _e426 = random_3;
+                    let _e432 = doSample(_e411, _e412, _e413, _e414, _e415.metalness, _e417, _e418, _e419.isEnvSample, _e421, _e422, _e423, _e424, _e425, _e426, (&l_4), (&hitPos_3), (&isMissedRay_1), (&brdf_1), (&pdf_1));
+                    gi = _e432;
+                    let _e433 = gi;
+                    let _e434 = brdf_1;
+                    gi = (_e433 * _e434);
+                    let _e436 = ems;
+                    if _e436.isEnvSample {
                         {
-                            let _e442 = gi;
-                            let _e443 = ems;
-                            let _e446 = ems;
-                            let _e448 = pdf_1;
-                            let _e449 = misHeuristic(_e446.pdf, _e448);
-                            gi = (_e442 * _e449);
+                            let _e438 = gi;
+                            let _e439 = ems;
+                            let _e442 = ems;
+                            let _e444 = pdf_1;
+                            let _e445 = misHeuristic(_e442.pdf, _e444);
+                            gi = (_e438 * _e445);
                         }
                     } else {
                         {
-                            let _e451 = gi;
-                            let _e452 = pdf_1;
-                            gi = (_e451 / vec3(_e452));
+                            let _e447 = gi;
+                            let _e448 = pdf_1;
+                            gi = (_e447 / vec3(_e448));
                         }
                     }
-                    let _e455 = gi;
-                    let _e456 = ems;
-                    gi = (_e455 / vec3(_e456.pdf));
-                    let _e460 = diffuseSamples;
-                    diffuseSamples = (_e460 + 1f);
-                    let _e466 = diffuseSamples;
-                    let _e468 = diffuseGI;
-                    let _e469 = gi;
-                    let _e471 = diffuseSamples;
-                    diffuseGI = mix(_e468, _e469, vec3((1f / _e471)));
+                    let _e451 = gi;
+                    let _e452 = ems;
+                    gi = (_e451 / vec3(_e452.pdf));
+                    let _e456 = diffuseSamples;
+                    diffuseSamples = (_e456 + 1f);
+                    let _e462 = diffuseSamples;
+                    let _e464 = diffuseGI;
+                    let _e465 = gi;
+                    let _e467 = diffuseSamples;
+                    diffuseGI = mix(_e464, _e465, vec3((1f / _e467)));
                 }
             }
         }
     }
-    let _e475 = specularRay;
-    l_4 = _e475;
-    calculateAngles((&h_1), (&l_4), (&v_6), (&n_5), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
-    let _e496 = mat;
-    let _e500 = ems;
-    let _e513 = viewPos_1;
-    let _e514 = viewDir_1;
-    let _e515 = viewNormal_1;
-    let _e516 = worldPos_3;
-    let _e517 = mat;
-    let _e519 = roughnessSq;
-    let _e520 = isDiffuseSample_3;
-    let _e521 = ems;
-    let _e523 = NoV_5;
-    let _e524 = NoL_5;
-    let _e525 = NoH_5;
-    let _e526 = LoH_3;
-    let _e527 = VoH_2;
-    let _e528 = random_3;
-    let _e534 = doSample(_e513, _e514, _e515, _e516, _e517.metalness, _e519, _e520, _e521.isEnvSample, _e523, _e524, _e525, _e526, _e527, _e528, (&l_4), (&hitPos_3), (&isMissedRay_1), (&brdf_1), (&pdf_1));
-    gi = _e534;
-    let _e535 = gi;
-    let _e536 = brdf_1;
-    gi = (_e535 * _e536);
-    let _e538 = ems;
-    if _e538.isEnvSample {
+    let _e471 = specularRay;
+    l_4 = _e471;
+    calculateAngles((&h_1), (&l_4), (&v_1), (&n_2), (&NoL_5), (&NoH_5), (&LoH_3), (&VoH_2));
+    let _e492 = mat;
+    let _e496 = ems;
+    let _e509 = viewPos_1;
+    let _e510 = viewDir_1;
+    let _e511 = viewNormal_1;
+    let _e512 = worldPos_3;
+    let _e513 = mat;
+    let _e515 = roughnessSq;
+    let _e516 = isDiffuseSample_3;
+    let _e517 = ems;
+    let _e519 = NoV_5;
+    let _e520 = NoL_5;
+    let _e521 = NoH_5;
+    let _e522 = LoH_3;
+    let _e523 = VoH_2;
+    let _e524 = random_3;
+    let _e530 = doSample(_e509, _e510, _e511, _e512, _e513.metalness, _e515, _e516, _e517.isEnvSample, _e519, _e520, _e521, _e522, _e523, _e524, (&l_4), (&hitPos_3), (&isMissedRay_1), (&brdf_1), (&pdf_1));
+    gi = _e530;
+    let _e531 = gi;
+    let _e532 = brdf_1;
+    gi = (_e531 * _e532);
+    let _e534 = ems;
+    if _e534.isEnvSample {
         {
-            let _e540 = gi;
-            let _e541 = ems;
-            let _e544 = ems;
-            let _e546 = pdf_1;
-            let _e547 = misHeuristic(_e544.pdf, _e546);
-            gi = (_e540 * _e547);
+            let _e536 = gi;
+            let _e537 = ems;
+            let _e540 = ems;
+            let _e542 = pdf_1;
+            let _e543 = misHeuristic(_e540.pdf, _e542);
+            gi = (_e536 * _e543);
         }
     } else {
         {
-            let _e549 = gi;
-            let _e550 = pdf_1;
-            gi = (_e549 / vec3(_e550));
+            let _e545 = gi;
+            let _e546 = pdf_1;
+            gi = (_e545 / vec3(_e546));
         }
     }
-    let _e553 = gi;
-    let _e554 = ems;
-    gi = (_e553 / vec3(_e554.pdf));
-    let _e558 = hitPos_3;
-    specularHitPos = _e558;
-    let _e559 = specularSamples;
-    specularSamples = (_e559 + 1f);
-    let _e565 = specularSamples;
-    let _e567 = specularGI;
-    let _e568 = gi;
-    let _e570 = specularSamples;
-    specularGI = mix(_e567, _e568, vec3((1f / _e570)));
-    let _e576 = vUv_1;
-    let _e578 = textureSampleLevel(directLightTexture, samp, _e576, 0f);
-    directLight_1 = _e578.xyz;
-    let _e581 = diffuseGI;
-    let _e582 = directLight_1;
-    diffuseGI = (_e581 + _e582);
-    let _e584 = specularGI;
-    let _e585 = directLight_1;
-    specularGI = (_e584 + _e585);
-    let _e589 = mode;
-    if (_e589 == 0i) {
+    let _e549 = gi;
+    let _e550 = ems;
+    gi = (_e549 / vec3(_e550.pdf));
+    let _e554 = hitPos_3;
+    specularHitPos = _e554;
+    let _e555 = specularSamples;
+    specularSamples = (_e555 + 1f);
+    let _e561 = specularSamples;
+    let _e563 = specularGI;
+    let _e564 = gi;
+    let _e566 = specularSamples;
+    specularGI = mix(_e563, _e564, vec3((1f / _e566)));
+    let _e572 = vUv_1;
+    let _e574 = textureSampleLevel(directLightTexture, samp, _e572, 0f);
+    directLight_1 = _e574.xyz;
+    let _e577 = diffuseGI;
+    let _e578 = directLight_1;
+    diffuseGI = (_e577 + _e578);
+    let _e580 = specularGI;
+    let _e581 = directLight_1;
+    specularGI = (_e580 + _e581);
+    let _e585 = mode;
+    if (_e585 == 0i) {
         {
-            let _e592 = diffuseSamples;
-            if (_e592 == 0f) {
+            let _e588 = diffuseSamples;
+            if (_e588 == 0f) {
                 diffuseGI = vec3(-1f);
             }
-            let _e598 = diffuseGI;
-            let _e599 = mat;
-            gDiffuse = vec4<f32>(_e598.x, _e598.y, _e598.z, _e599.roughness);
+            let _e594 = diffuseGI;
+            let _e595 = mat;
+            gDiffuse = vec4<f32>(_e594.x, _e594.y, _e594.z, _e595.roughness);
         }
     }
-    let _e610 = cameraMatrixWorld[3];
-    cameraPosWS = _e610.xyz;
-    let _e613 = hitPos_3;
-    isMissedRay_1 = (_e613.x > 1000000000f);
-    let _e617 = isMissedRay_1;
-    if !(_e617) {
+    let _e606 = cameraMatrixWorld[3];
+    cameraPosWS = _e606.xyz;
+    let _e609 = hitPos_3;
+    isMissedRay_1 = (_e609.x > 1000000000f);
+    let _e613 = isMissedRay_1;
+    if !(_e613) {
         {
-            let _e619 = cameraMatrixWorld;
-            let _e620 = specularHitPos;
-            hitPosWS = (_e619 * vec4<f32>(_e620.x, _e620.y, _e620.z, 1f));
-            let _e628 = hitPosWS;
-            let _e630 = cameraPosWS;
-            let _e631 = hitPosWS;
-            rayLength = distance(_e630, _e631.xyz);
+            let _e615 = cameraMatrixWorld;
+            let _e616 = specularHitPos;
+            hitPosWS = (_e615 * vec4<f32>(_e616.x, _e616.y, _e616.z, 1f));
+            let _e624 = hitPosWS;
+            let _e626 = cameraPosWS;
+            let _e627 = hitPosWS;
+            rayLength = distance(_e626, _e627.xyz);
         }
     }
+    let _e630 = rayLength;
+    let _e631 = mat;
     let _e634 = rayLength;
     let _e635 = mat;
-    let _e638 = rayLength;
-    let _e639 = mat;
-    packedRoughnessRayLength = pack2x16float(vec2<f32>(_e638, _e639.roughness));
-    let _e645 = packedRoughnessRayLength;
-    a_5 = bitcast<f32>(_e645);
-    let _e648 = mode;
-    if (_e648 == 0i) {
+    packedRoughnessRayLength = pack2x16float(vec2<f32>(_e634, _e635.roughness));
+    let _e641 = packedRoughnessRayLength;
+    a_4 = bitcast<f32>(_e641);
+    let _e644 = mode;
+    if (_e644 == 0i) {
         {
-            let _e651 = specularGI;
-            let _e652 = rayLength;
-            gSpecular = vec4<f32>(_e651.x, _e651.y, _e651.z, _e652);
-            let _e659 = mat;
-            let _e661 = gDiffuse;
-            let _e662 = gSpecular;
-            let _e663 = mat;
-            fragColor = _e661 + _e662 + vec4f(mat.emissive.x, mat.emissive.y, mat.emissive.z, 1f);
+            let _e647 = specularGI;
+            let _e648 = rayLength;
+            gSpecular = vec4<f32>(_e647.x, _e647.y, _e647.z, _e648);
+            let _e653 = gDiffuse;
+            let _e654 = gSpecular;
+            let _e656 = mat;
+            fragColor = ((_e653 + _e654) + vec4<f32>(_e656.emissive.x, _e656.emissive.y, _e656.emissive.z, 1f));
             return;
         }
     } else {
         {
-            let _e667 = specularGI;
-            let _e668 = a_5;
-            gSpecular = vec4<f32>(_e667.x, _e667.y, _e667.z, _e668);
-            let _e673 = gSpecular;
-            fragColor = _e673;
+            let _e664 = specularGI;
+            let _e665 = a_4;
+            gSpecular = vec4<f32>(_e664.x, _e664.y, _e664.z, _e665);
+            let _e670 = gSpecular;
+            fragColor = _e670;
             return;
         }
     }
 }
 
 @fragment
-@diagnostic(off,derivative_uniformity)
 fn main(@location(0) vUv: vec2<f32>) -> FragmentOutput {
     vUv_1 = vUv;
     main_1();
     let _e65 = fragColor;
     return FragmentOutput(_e65);
 }
-
 `;
 
 export const ssgiComposeFragWGSL = `
@@ -1921,9 +1441,6 @@ struct FragmentOutput {
     @location(0) outputColor: vec4<f32>,
 }
 
-const c_precision: f32 = 256f;
-const c_precisionp1_: f32 = 257f;
-
 var<private> vUv_1: vec2<f32>;
 var<private> outputColor: vec4<f32>;
 @group(0) @binding(0)
@@ -1949,8 +1466,12 @@ var<uniform> specularPhi: f32;
 @group(1) @binding(7)
 var<uniform> resolution: vec2<f32>;
 @group(2) @binding(0)
-var gBufferTexture_1: texture_2d<f32>;
+var normalTexture: texture_2d<f32>;
 @group(2) @binding(1)
+var diffuseTexture: texture_2d<f32>;
+@group(2) @binding(2)
+var materialTexture: texture_2d<f32>;
+@group(2) @binding(3)
 var gBufferSamp: sampler;
 var<private> mat_2: Material;
 var<private> normal_1: vec3<f32>;
@@ -1985,183 +1506,52 @@ fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
     return vec4<f32>(_e17, _e20, _e23, _e26);
 }
 
-fn float2color(value: f32) -> vec3<f32> {
-    var value_1: f32;
-    var color: vec3<f32>;
-
-    value_1 = value;
-    let _e22 = value_1;
-    color.x = ((_e22 - (floor((_e22 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
-    let _e29 = value_1;
-    let _e31 = value_1;
-    let _e34 = value_1;
-    let _e36 = value_1;
-    let _e38 = floor((_e36 / c_precisionp1_));
-    color.z = ((_e38 - (floor((_e38 / c_precisionp1_)) * c_precisionp1_)) / c_precision);
-    let _e45 = value_1;
-    let _e50 = value_1;
-    color.y = (floor((_e50 / 66049f)) / c_precision);
-    let _e57 = color;
-    color = (_e57 - vec3(0.0001f));
-    let _e64 = color;
-    color = max(_e64, vec3(0f));
-    let _e68 = color;
-    return _e68;
-}
-
-fn decodeOctWrap(f: vec2<f32>) -> vec3<f32> {
-    var f_1: vec2<f32>;
-    var n: vec3<f32>;
-    var t: f32;
-    var local: f32;
-    var local_1: f32;
-
-    f_1 = f;
-    let _e19 = f_1;
-    f_1 = ((_e19 * 2f) - vec2(1f));
-    let _e25 = f_1;
-    let _e27 = f_1;
-    let _e30 = f_1;
-    let _e32 = f_1;
-    let _e36 = f_1;
-    let _e38 = f_1;
-    n = vec3<f32>(_e25.x, _e27.y, ((1f - abs(_e32.x)) - abs(_e38.y)));
-    let _e44 = n;
-    let _e48 = n;
-    t = max(-(_e48.z), 0f);
-    let _e55 = n;
-    let _e57 = n;
-    if (_e57.x >= 0f) {
-        let _e61 = t;
-        local = -(_e61);
-    } else {
-        let _e63 = t;
-        local = _e63;
-    }
-    let _e65 = local;
-    n.x = (_e55.x + _e65);
-    let _e68 = n;
-    let _e70 = n;
-    if (_e70.y >= 0f) {
-        let _e74 = t;
-        local_1 = -(_e74);
-    } else {
-        let _e76 = t;
-        local_1 = _e76;
-    }
-    let _e78 = local_1;
-    n.y = (_e68.y + _e78);
-    let _e81 = n;
-    return normalize(_e81);
-}
-
-fn unpackNormal(packedNormal: f32) -> vec3<f32> {
-    var packedNormal_1: f32;
-
-    packedNormal_1 = packedNormal;
-    let _e20 = packedNormal_1;
-    let _e23 = packedNormal_1;
-    let _e27 = packedNormal_1;
-    let _e30 = packedNormal_1;
-    let _e33 = decodeOctWrap(unpack2x16float(bitcast<u32>(_e30)));
-    return _e33;
-}
-
-fn decodeRGBE8_(rgbe: vec4<f32>) -> vec3<f32> {
-    var rgbe_1: vec4<f32>;
-    var vDecoded: vec3<f32>;
-    var fExp: f32;
-
-    rgbe_1 = rgbe;
-    let _e20 = rgbe_1;
-    fExp = ((_e20.w * 255f) - 128f);
-    let _e27 = rgbe_1;
-    let _e30 = fExp;
-    vDecoded = (_e27.xyz * exp2(_e30));
-    let _e33 = vDecoded;
-    return _e33;
-}
-
-fn floatToVec4_(f_2: f32) -> vec4<f32> {
-    var f_3: f32;
-    var value_2: u32;
-    var v: vec4<f32>;
-
-    f_3 = f_2;
-    let _e20 = f_3;
-    value_2 = bitcast<u32>(_e20);
-    let _e25 = value_2;
-    v.x = (f32((_e25 & 255u)) / 255f);
-    let _e32 = value_2;
-    v.y = (f32(((_e32 >> 8u) & 255u)) / 255f);
-    let _e41 = value_2;
-    v.z = (f32(((_e41 >> 16u) & 255u)) / 255f);
-    let _e50 = value_2;
-    v.w = (f32(((_e50 >> 24u) & 255u)) / 255f);
-    let _e58 = v;
-    v = (_e58 - vec4(0.0001f));
-    let _e65 = v;
-    v = max(_e65, vec4(0f));
-    let _e69 = v;
-    return _e69;
-}
-
-fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
+fn getMaterial(uv: vec2<f32>) -> Material {
     var uv_1: vec2<f32>;
-    var gBuffer: vec4<f32>;
     var diffuse: vec4<f32>;
-    var normal: vec3<f32>;
-    var roughnessMetalness: vec3<f32>;
+    var normal: vec4<f32>;
+    var materialProperties: vec4<f32>;
     var roughness: f32;
     var metalness: f32;
+    var emissivePower: f32;
     var emissive: vec3<f32>;
 
     uv_1 = uv;
-    let _e22 = uv_1;
-    let _e24 = textureSampleLevel(gBufferTexture, gBufferSamp, _e22, 0f);
-    gBuffer = _e24;
-    let _e26 = gBuffer;
-    let _e28 = gBuffer;
-    let _e30 = floatToVec4_(_e28.x);
-    diffuse = _e30;
-    let _e32 = gBuffer;
-    let _e34 = gBuffer;
-    let _e36 = unpackNormal(_e34.y);
-    normal = _e36;
-    let _e38 = gBuffer;
-    let _e40 = gBuffer;
-    let _e42 = float2color(_e40.z);
-    roughnessMetalness = _e42;
-    let _e44 = roughnessMetalness;
-    roughness = _e44.x;
-    let _e47 = roughnessMetalness;
-    metalness = _e47.y;
-    let _e50 = gBuffer;
-    let _e52 = gBuffer;
-    let _e54 = floatToVec4_(_e52.w);
-    let _e55 = gBuffer;
-    let _e57 = gBuffer;
-    let _e59 = floatToVec4_(_e57.w);
-    let _e60 = decodeRGBE8_(_e59);
-    emissive = _e60;
-    let _e62 = diffuse;
-    let _e63 = normal;
-    let _e64 = roughness;
-    let _e65 = metalness;
-    let _e66 = emissive;
-    return Material(_e62, _e63, _e64, _e65, _e66);
+    let _e21 = uv_1;
+    let _e23 = textureSampleLevel(diffuseTexture, gBufferSamp, _e21, 0f);
+    diffuse = _e23;
+    let _e27 = uv_1;
+    let _e29 = textureSampleLevel(normalTexture, gBufferSamp, _e27, 0f);
+    normal = _e29;
+    let _e33 = uv_1;
+    let _e35 = textureSampleLevel(materialTexture, gBufferSamp, _e33, 0f);
+    materialProperties = _e35;
+    let _e37 = materialProperties;
+    roughness = _e37.x;
+    let _e40 = materialProperties;
+    metalness = _e40.y;
+    let _e43 = materialProperties;
+    emissivePower = _e43.z;
+    let _e46 = emissivePower;
+    emissive = vec3(_e46);
+    let _e49 = diffuse;
+    let _e50 = normal;
+    let _e52 = roughness;
+    let _e53 = metalness;
+    let _e54 = emissive;
+    return Material(_e49, _e50.xyz, _e52, _e53, _e54);
 }
 
-fn toDenoiseSpace(color_1: ptr<function, vec3<f32>>) {
-    let _e23 = (*color_1);
-    let _e27 = (*color_1);
-    (*color_1) = log((_e27 + vec3(1f)));
+fn toDenoiseSpace(color: ptr<function, vec3<f32>>) {
+    let _e23 = (*color);
+    let _e27 = (*color);
+    (*color) = log((_e27 + vec3(1f)));
     return;
 }
 
-fn toLinearSpace(color_2: ptr<function, vec3<f32>>) {
-    let _e24 = (*color_2);
-    (*color_2) = (exp(_e24) - vec3(1f));
+fn toLinearSpace(color_1: ptr<function, vec3<f32>>) {
+    let _e24 = (*color_1);
+    (*color_1) = (exp(_e24) - vec3(1f));
     return;
 }
 
@@ -2175,7 +1565,7 @@ fn getBasicNeighborWeight(neighborUv: ptr<function, vec2<f32>>) -> f32 {
     var wBasic: f32;
 
     let _e24 = (*neighborUv);
-    let _e25 = getMaterial(gBufferTexture_1, _e24);
+    let _e25 = getMaterial(_e24);
     neighborMat = _e25;
     let _e27 = neighborMat;
     neighborNormal = _e27.normal;
@@ -2228,7 +1618,7 @@ fn getNormal(mat: Material) -> vec3<f32> {
 
 fn outputTexel(inp: InputTexel) {
     var inp_1: InputTexel;
-    var local_2: vec3<f32>;
+    var local: vec3<f32>;
 
     inp_1 = inp;
     let _e26 = inp_1;
@@ -2241,13 +1631,13 @@ fn outputTexel(inp: InputTexel) {
     outputColor.z = _e34.rgb.z;
     let _e42 = outputColor;
     let _e44 = outputColor;
-    local_2 = _e44.xyz;
-    toLinearSpace((&local_2));
-    let _e53 = local_2.x;
+    local = _e44.xyz;
+    toLinearSpace((&local));
+    let _e53 = local.x;
     outputColor.x = _e53;
-    let _e54 = local_2.y;
+    let _e54 = local.y;
     outputColor.y = _e54;
-    let _e55 = local_2.z;
+    let _e55 = local.z;
     outputColor.z = _e55;
     let _e57 = inp_1;
     outputColor.w = _e57.a;
@@ -2258,8 +1648,8 @@ fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic
     var neighborUv_2: vec2<f32>;
     var wBasic_2: f32;
     var w: f32;
-    var t_1: vec4<f32>;
-    var local_3: vec3<f32>;
+    var t: vec4<f32>;
+    var local_1: vec3<f32>;
     var disocclW: f32;
     var lumaDiff: f32;
     var lumaFactor: f32;
@@ -2273,7 +1663,7 @@ fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic
         {
             let _e35 = neighborUv_2;
             let _e37 = textureSampleLevel(inputTexture, samp, _e35, 0f);
-            t_1 = _e37;
+            t = _e37;
             let _e38 = w;
             let _e39 = specularFactor;
             w = (_e38 * _e39);
@@ -2282,31 +1672,31 @@ fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic
         {
             let _e43 = neighborUv_2;
             let _e45 = textureSampleLevel(inputTexture, samp, _e43, 0f);
-            t_1 = _e45;
+            t = _e45;
         }
     }
-    let _e46 = t_1;
-    let _e48 = t_1;
-    local_3 = _e48.xyz;
-    toDenoiseSpace((&local_3));
-    let _e57 = local_3.x;
-    t_1.x = _e57;
-    let _e58 = local_3.y;
-    t_1.y = _e58;
-    let _e59 = local_3.z;
-    t_1.z = _e59;
+    let _e46 = t;
+    let _e48 = t;
+    local_1 = _e48.xyz;
+    toDenoiseSpace((&local_1));
+    let _e57 = local_1.x;
+    t.x = _e57;
+    let _e58 = local_1.y;
+    t.y = _e58;
+    let _e59 = local_1.z;
+    t.z = _e59;
     let _e62 = w;
     disocclW = pow(_e62, 0.1f);
     let _e66 = (*inp_2);
-    let _e72 = t_1;
-    let _e78 = t_1;
-    let _e86 = t_1;
-    let _e92 = t_1;
+    let _e72 = t;
+    let _e78 = t;
+    let _e86 = t;
+    let _e92 = t;
     let _e98 = (*inp_2);
-    let _e104 = t_1;
-    let _e110 = t_1;
-    let _e118 = t_1;
-    let _e124 = t_1;
+    let _e104 = t;
+    let _e110 = t;
+    let _e118 = t;
+    let _e124 = t;
     lumaDiff = abs((_e98.luminance - pow(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e124.xyz), 0.125f)));
     let _e134 = lumaDiff;
     lumaDiff = min(_e134, 0.5f);
@@ -2329,7 +1719,7 @@ fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic
     w = (_e163 * step(0.0001f, _e167));
     let _e171 = (*inp_2);
     let _e173 = w;
-    let _e174 = t_1;
+    let _e174 = t;
     (*inp_2).rgb = (_e171.rgb + (_e173 * _e174.xyz));
     let _e179 = (*inp_2);
     let _e181 = w;
@@ -2340,9 +1730,9 @@ fn applyWeight(inp_2: ptr<function, InputTexel>, neighborUv_1: vec2<f32>, wBasic
 fn main_1() {
     var input: InputTexel;
     var maxAlpha: f32 = 0f;
-    var t_2: vec4<f32>;
+    var t_1: vec4<f32>;
     var age: f32;
-    var local_4: vec3<f32>;
+    var local_2: vec3<f32>;
     var inp_3: InputTexel;
     var flatness: f32;
     var random: vec4<f32>;
@@ -2369,34 +1759,34 @@ fn main_1() {
     }
     let _e44 = vUv_1;
     let _e46 = textureSampleLevel(inputTexture, samp, _e44, 0f);
-    t_2 = _e46;
-    let _e48 = t_2;
+    t_1 = _e46;
+    let _e48 = t_1;
     let _e53 = phi;
-    let _e55 = t_2;
+    let _e55 = t_1;
     let _e60 = phi;
     age = (1f / pow((_e55.w + 1f), (1.2f * _e60)));
-    let _e65 = t_2;
-    let _e67 = t_2;
+    let _e65 = t_1;
+    let _e67 = t_1;
     let _e70 = (_e67.xyz * 1.0003f);
-    t_2.x = _e70.x;
-    t_2.y = _e70.y;
-    t_2.z = _e70.z;
-    let _e77 = t_2;
-    let _e79 = t_2;
-    local_4 = _e79.xyz;
-    toDenoiseSpace((&local_4));
-    let _e88 = local_4.x;
-    t_2.x = _e88;
-    let _e89 = local_4.y;
-    t_2.y = _e89;
-    let _e90 = local_4.z;
-    t_2.z = _e90;
-    let _e91 = t_2;
-    let _e93 = t_2;
-    let _e99 = t_2;
-    let _e105 = t_2;
-    let _e113 = t_2;
-    let _e119 = t_2;
+    t_1.x = _e70.x;
+    t_1.y = _e70.y;
+    t_1.z = _e70.z;
+    let _e77 = t_1;
+    let _e79 = t_1;
+    local_2 = _e79.xyz;
+    toDenoiseSpace((&local_2));
+    let _e88 = local_2.x;
+    t_1.x = _e88;
+    let _e89 = local_2.y;
+    t_1.y = _e89;
+    let _e90 = local_2.z;
+    t_1.z = _e90;
+    let _e91 = t_1;
+    let _e93 = t_1;
+    let _e99 = t_1;
+    let _e105 = t_1;
+    let _e113 = t_1;
+    let _e119 = t_1;
     let _e124 = age;
     inp_3 = InputTexel(_e91.xyz, _e93.w, pow(dot(vec3<f32>(0.2125f, 0.7154f, 0.0721f), _e119.xyz), 0.125f), _e124, 1f, false);
     let _e130 = inp_3;
@@ -2406,7 +1796,7 @@ fn main_1() {
     let _e136 = inp_3;
     input = _e136;
     let _e138 = vUv_1;
-    let _e139 = getMaterial(gBufferTexture_1, _e138);
+    let _e139 = getMaterial(_e138);
     mat_2 = _e139;
     let _e141 = mat_2;
     let _e142 = getNormal(_e141);
@@ -2516,5 +1906,144 @@ fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @loca
     main_1();
     let _e23 = outColor;
     return FragmentOutput(_e23);
+}
+`;
+
+export const normalFragWGSL = `
+struct FragmentOutput {
+    @location(0) outColor: vec4<f32>,
+}
+
+var<private> vDiffuse_1: vec4<f32>;
+var<private> vNormal_1: vec3<f32>;
+var<private> vRoughness_1: f32;
+var<private> vMetalness_1: f32;
+var<private> vEmissive_1: vec3<f32>;
+var<private> outColor: vec4<f32>;
+
+fn main_1() {
+    let _e6 = vNormal_1;
+    outColor = vec4<f32>(_e6.x, _e6.y, _e6.z, 0f);
+    return;
+}
+
+@fragment
+fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
+    vDiffuse_1 = vDiffuse;
+    vNormal_1 = vNormal;
+    vRoughness_1 = vRoughness;
+    vMetalness_1 = vMetalness;
+    vEmissive_1 = vEmissive;
+    main_1();
+    let _e23 = outColor;
+    return FragmentOutput(_e23);
+}
+`;
+
+export const materialFragWGSL = `
+struct FragmentOutput {
+    @location(0) outColor: vec4<f32>,
+}
+
+var<private> vDiffuse_1: vec4<f32>;
+var<private> vNormal_1: vec3<f32>;
+var<private> vRoughness_1: f32;
+var<private> vMetalness_1: f32;
+var<private> vEmissive_1: vec3<f32>;
+var<private> outColor: vec4<f32>;
+
+fn main_1() {
+    var emissivePower: f32;
+
+    let _e6 = vEmissive_1;
+    let _e8 = vEmissive_1;
+    let _e11 = vEmissive_1;
+    emissivePower = (((_e6.x + _e8.y) + _e11.z) / 3f);
+    let _e17 = vRoughness_1;
+    let _e18 = vMetalness_1;
+    let _e19 = emissivePower;
+    outColor = vec4<f32>(_e17, _e18, _e19, 0f);
+    return;
+}
+
+@fragment
+fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
+    vDiffuse_1 = vDiffuse;
+    vNormal_1 = vNormal;
+    vRoughness_1 = vRoughness;
+    vMetalness_1 = vMetalness;
+    vEmissive_1 = vEmissive;
+    main_1();
+    let _e23 = outColor;
+    return FragmentOutput(_e23);
+}
+`;
+
+export const modelVertWGSL = `
+struct VertexOutput {
+    @location(0) vDiffuse: vec4<f32>,
+    @location(1) vNormal: vec3<f32>,
+    @location(2) vRoughness: f32,
+    @location(3) vMetalness: f32,
+    @location(4) vEmissive: vec3<f32>,
+    @builtin(position) gl_Position: vec4<f32>,
+}
+
+var<private> position_1: vec3<f32>;
+var<private> normal_1: vec3<f32>;
+var<private> uv_1: vec2<f32>;
+var<private> color_1: vec3<f32>;
+var<private> roughness_1: f32;
+var<private> metalness_1: f32;
+var<private> emissive_1: vec3<f32>;
+var<private> vDiffuse: vec4<f32>;
+var<private> vNormal: vec3<f32>;
+var<private> vRoughness: f32;
+var<private> vMetalness: f32;
+var<private> vEmissive: vec3<f32>;
+@group(0) @binding(0)
+var<uniform> projectionMatrix: mat4x4<f32>;
+@group(0) @binding(1)
+var<uniform> modelViewMatrix: mat4x4<f32>;
+var<private> gl_Position: vec4<f32>;
+
+fn main_1() {
+    let _e15 = projectionMatrix;
+    let _e16 = modelViewMatrix;
+    let _e18 = position_1;
+    gl_Position = ((_e15 * _e16) * vec4<f32>(_e18.x, _e18.y, _e18.z, 1f));
+    let _e25 = color_1;
+    vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
+    let _e31 = normal_1;
+    let _e37 = modelViewMatrix;
+    let _e40 = normal_1;
+    let _e46 = modelViewMatrix;
+    vNormal = normalize((vec4<f32>(_e40.x, _e40.y, _e40.z, 1f) * _e46).xyz);
+    let _e50 = roughness_1;
+    vRoughness = _e50;
+    let _e51 = metalness_1;
+    vMetalness = _e51;
+    let _e52 = vEmissive;
+    vEmissive = _e52;
+    return;
+}
+
+@vertex
+fn main(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>, @location(3) color: vec3<f32>, @location(4) roughness: f32, @location(5) metalness: f32, @location(6) emissive: vec3<f32>) -> VertexOutput {
+    position_1 = position;
+    normal_1 = normal;
+    uv_1 = uv;
+    color_1 = color;
+    roughness_1 = roughness;
+    metalness_1 = metalness;
+    emissive_1 = emissive;
+    main_1();
+    let _e43 = vDiffuse;
+    let _e45 = vNormal;
+    let _e47 = vRoughness;
+    let _e49 = vMetalness;
+    let _e51 = vEmissive;
+    let _e53 = gl_Position;
+    return VertexOutput(_e43, _e45, _e47, _e49, _e51, _e53);
 }
 `;

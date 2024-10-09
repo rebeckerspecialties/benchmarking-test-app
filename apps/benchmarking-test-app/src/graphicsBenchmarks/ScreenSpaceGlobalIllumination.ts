@@ -10,14 +10,15 @@ import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
   basicVertWGSL,
+  materialFragWGSL,
   modelFragWGSL,
+  normalFragWGSL,
   poissonDenoiseFragWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
+  modelVertWGSL,
 } from "./shaders/ssgiShader";
 import { mesh } from "./meshes/stanfordDragon";
-import { gbufferFragWGSL, gbufferVertWGSL } from "./shaders/gbuffer";
-
 const depthTextureSize = 1024;
 
 const arrayStride = 3 + 3 + 2 + 3 + 1 + 1 + 3;
@@ -154,7 +155,7 @@ const runScreenSpaceShader = async (
     label: "model",
     vertex: {
       module: device.createShaderModule({
-        code: gbufferVertWGSL,
+        code: modelVertWGSL,
       }),
       buffers: modelBuffer,
     },
@@ -172,18 +173,41 @@ const runScreenSpaceShader = async (
     },
   });
 
-  const gbufferPipeline = device.createRenderPipeline({
+  const normalPipeline = device.createRenderPipeline({
     layout: "auto",
-    label: "gbuffer",
+    label: "normal",
     vertex: {
       module: device.createShaderModule({
-        code: gbufferVertWGSL,
+        code: modelVertWGSL,
       }),
       buffers: modelBuffer,
     },
     fragment: {
       module: device.createShaderModule({
-        code: gbufferFragWGSL,
+        code: normalFragWGSL,
+      }),
+      targets: [{ format: presentationFormat }],
+    },
+    primitive,
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth24plus",
+    },
+  });
+
+  const materialPipeline = device.createRenderPipeline({
+    layout: "auto",
+    label: "material",
+    vertex: {
+      module: device.createShaderModule({
+        code: modelVertWGSL,
+      }),
+      buffers: modelBuffer,
+    },
+    fragment: {
+      module: device.createShaderModule({
+        code: materialFragWGSL,
       }),
       targets: [{ format: presentationFormat }],
     },
@@ -475,7 +499,7 @@ const runScreenSpaceShader = async (
   });
 
   // Bind group 2
-  const gBufferTexture = device.createTexture({
+  const diffuseTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
     format: presentationFormat,
     usage:
@@ -484,7 +508,25 @@ const runScreenSpaceShader = async (
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const gBufferSampler = device.createSampler({
+  const normalTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const materialTexture = device.createTexture({
+    size: [canvas.width, canvas.height, 1],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+
+  const materialSampler = device.createSampler({
     magFilter: "linear",
     minFilter: "linear",
   });
@@ -492,8 +534,10 @@ const runScreenSpaceShader = async (
   const uniformBindGroup2 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(2),
     entries: [
-      { binding: 0, resource: gBufferTexture.createView() },
-      { binding: 1, resource: gBufferSampler },
+      { binding: 0, resource: diffuseTexture.createView() },
+      { binding: 1, resource: normalTexture.createView() },
+      { binding: 2, resource: materialTexture.createView() },
+      { binding: 3, resource: materialSampler },
     ],
   });
 
@@ -520,9 +564,32 @@ const runScreenSpaceShader = async (
     ],
   });
 
-  // gbuffer pass bind group
-  const gbufferPassBindGroup = device.createBindGroup({
-    layout: gbufferPipeline.getBindGroupLayout(0),
+  // normal pass bind group
+  const normalPassBindGroup = device.createBindGroup({
+    layout: normalPipeline.getBindGroupLayout(0),
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: projectionMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: viewMatrixBuffer,
+          offset: 0,
+          size: matrixSize,
+        },
+      },
+    ],
+  });
+
+  // normal pass bind group
+  const materialPassBindGroup = device.createBindGroup({
+    layout: materialPipeline.getBindGroupLayout(0),
     entries: [
       {
         binding: 0,
@@ -695,8 +762,10 @@ const runScreenSpaceShader = async (
   const denoiseBindGroup2 = device.createBindGroup({
     layout: denoisePipeline.getBindGroupLayout(2),
     entries: [
-      { binding: 0, resource: gBufferTexture.createView() },
-      { binding: 1, resource: gBufferSampler },
+      { binding: 0, resource: diffuseTexture.createView() },
+      { binding: 1, resource: normalTexture.createView() },
+      { binding: 2, resource: materialTexture.createView() },
+      { binding: 3, resource: materialSampler },
     ],
   });
 
@@ -809,7 +878,25 @@ const runScreenSpaceShader = async (
         },
       };
 
-      const gbufferPassDescriptor: GPURenderPassDescriptor = {
+      const normalPassDescriptor: GPURenderPassDescriptor = {
+        colorAttachments: [
+          {
+            view: textureView,
+            clearValue: [0, 0, 0, 1],
+            loadOp: "clear",
+            storeOp: "store",
+          },
+        ],
+        depthStencilAttachment: {
+          view: depthTextureView,
+
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
+      };
+
+      const materialPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
             view: textureView,
@@ -1037,6 +1124,11 @@ const runScreenSpaceShader = async (
         { texture: directLightTexture },
         [canvas.width, canvas.height]
       );
+      commandEncoder.copyTextureToTexture(
+        { texture: sceneRenderView },
+        { texture: diffuseTexture },
+        [canvas.width, canvas.height]
+      );
 
       const depthPass = commandEncoder.beginRenderPass(depthPassDescriptor);
       depthPass.setPipeline(depthPipeline);
@@ -1046,17 +1138,33 @@ const runScreenSpaceShader = async (
       depthPass.drawIndexed(indexCount);
       depthPass.end();
 
-      const gbufferPass = commandEncoder.beginRenderPass(gbufferPassDescriptor);
-      gbufferPass.setPipeline(gbufferPipeline);
-      gbufferPass.setBindGroup(0, gbufferPassBindGroup);
-      gbufferPass.setVertexBuffer(0, verticesBuffer);
-      gbufferPass.setIndexBuffer(indexBuffer, "uint16");
-      gbufferPass.drawIndexed(indexCount);
-      gbufferPass.end();
+      const normalPass = commandEncoder.beginRenderPass(normalPassDescriptor);
+      normalPass.setPipeline(normalPipeline);
+      normalPass.setBindGroup(0, normalPassBindGroup);
+      normalPass.setVertexBuffer(0, verticesBuffer);
+      normalPass.setIndexBuffer(indexBuffer, "uint16");
+      normalPass.drawIndexed(indexCount);
+      normalPass.end();
 
       commandEncoder.copyTextureToTexture(
         { texture: context.getCurrentTexture() },
-        { texture: gBufferTexture },
+        { texture: normalTexture },
+        [canvas.width, canvas.height]
+      );
+
+      const materialPass = commandEncoder.beginRenderPass(
+        materialPassDescriptor
+      );
+      materialPass.setPipeline(materialPipeline);
+      materialPass.setBindGroup(0, materialPassBindGroup);
+      materialPass.setVertexBuffer(0, verticesBuffer);
+      materialPass.setIndexBuffer(indexBuffer, "uint16");
+      materialPass.drawIndexed(indexCount);
+      materialPass.end();
+
+      commandEncoder.copyTextureToTexture(
+        { texture: context.getCurrentTexture() },
+        { texture: materialTexture },
         [canvas.width, canvas.height]
       );
 

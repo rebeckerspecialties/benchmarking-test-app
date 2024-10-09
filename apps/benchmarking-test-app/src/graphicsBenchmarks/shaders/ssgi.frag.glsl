@@ -57,8 +57,11 @@ vec4 blueNoise(vec2 co) {
 
 // start gbuffer_packing
 // https://github.com/0beqz/realism-effects/blob/main/src/gbuffer/shader/gbuffer_packing.glsl
-layout(set = 2, binding = 0) uniform texture2D gBufferTexture;
-layout(set = 2, binding = 1) uniform sampler gBufferSamp;
+layout(set = 2, binding = 0) uniform texture2D normalTexture;
+layout(set = 2, binding = 1) uniform texture2D diffuseTexture;
+// encode roughness, metallic, emissive power floats
+layout(set = 2, binding = 2) uniform texture2D materialTexture;
+layout(set = 2, binding = 3) uniform sampler gBufferSamp;
 
 struct Material {
   vec4 diffuse;
@@ -68,190 +71,16 @@ struct Material {
   vec3 emissive;
 };
 
-#define ONE_SAFE 0.999999
-#define NON_ZERO_OFFSET 0.0001
-
-const float c_precision = 256.0;
-const float c_precisionp1 = c_precision + 1.0;
-
-float color2float(vec3 color) {
-  color = min(color + NON_ZERO_OFFSET, vec3(ONE_SAFE));
-
-  return floor(color.r * c_precision + 0.5) + floor(color.b * c_precision + 0.5) * c_precisionp1 +
-    floor(color.g * c_precision + 0.5) * c_precisionp1 * c_precisionp1;
-}
-
-vec3 float2color(float value) {
-  vec3 color;
-  color.r = mod(value, c_precisionp1) / c_precision;
-  color.b = mod(floor(value / c_precisionp1), c_precisionp1) / c_precision;
-  color.g = floor(value / (c_precisionp1 * c_precisionp1)) / c_precision;
-
-  color -= NON_ZERO_OFFSET;
-  color = max(color, vec3(0.0));
-
-  return color;
-}
-
-vec2 OctWrap(vec2 v) {
-  vec2 w = 1.0 - abs(v.yx);
-  if(v.x < 0.0)
-    w.x = -w.x;
-  if(v.y < 0.0)
-    w.y = -w.y;
-  return w;
-}
-
-vec2 encodeOctWrap(vec3 n) {
-  n /= (abs(n.x) + abs(n.y) + abs(n.z));
-  n.xy = n.z > 0.0 ? n.xy : OctWrap(n.xy);
-  n.xy = n.xy * 0.5 + 0.5;
-  return n.xy;
-}
-
-vec3 decodeOctWrap(vec2 f) {
-  f = f * 2.0 - 1.0;
-  vec3 n = vec3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
-  float t = max(-n.z, 0.0);
-  n.x += n.x >= 0.0 ? -t : t;
-  n.y += n.y >= 0.0 ? -t : t;
-  return normalize(n);
-}
-
-float packNormal(vec3 normal) {
-  return uintBitsToFloat(packHalf2x16(encodeOctWrap(normal)));
-}
-
-vec3 unpackNormal(float packedNormal) {
-  return decodeOctWrap(unpackHalf2x16(floatBitsToUint(packedNormal)));
-}
-
-vec4 packTwoVec4(vec4 v1, vec4 v2) {
-  // note: we get artifacts on some back-ends such as v2 = vec3(1., 0., 0.) being decoded as black (only applies for v2 and red channel)
-  vec4 encoded = vec4(0.0);
-
-  v1 += NON_ZERO_OFFSET;
-  v2 += NON_ZERO_OFFSET;
-
-  uint v1r = packHalf2x16(v1.rg);
-  uint v1g = packHalf2x16(v1.ba);
-  uint v2r = packHalf2x16(v2.rg);
-  uint v2g = packHalf2x16(v2.ba);
-
-  encoded.r = uintBitsToFloat(v1r);
-  encoded.g = uintBitsToFloat(v1g);
-  encoded.b = uintBitsToFloat(v2r);
-  encoded.a = uintBitsToFloat(v2g);
-
-  return encoded;
-}
-
-void unpackTwoVec4(vec4 encoded, out vec4 v1, out vec4 v2) {
-  uint r = floatBitsToUint(encoded.r);
-  uint g = floatBitsToUint(encoded.g);
-  uint b = floatBitsToUint(encoded.b);
-  uint a = floatBitsToUint(encoded.a);
-
-  v1.rg = unpackHalf2x16(r);
-  v1.ba = unpackHalf2x16(g);
-  v2.rg = unpackHalf2x16(b);
-  v2.ba = unpackHalf2x16(a);
-
-  v1 -= NON_ZERO_OFFSET;
-  v2 -= NON_ZERO_OFFSET;
-}
-
-vec4 unpackTwoVec4(vec4 encoded, const int index) {
-  uint r = floatBitsToUint(index == 0 ? encoded.r : encoded.b);
-  uint g = floatBitsToUint(index == 0 ? encoded.g : encoded.a);
-
-  vec4 v;
-
-  v.rg = unpackHalf2x16(r);
-  v.ba = unpackHalf2x16(g);
-
-  v -= NON_ZERO_OFFSET;
-
-  return v;
-}
-
-vec4 encodeRGBE8(vec3 rgb) {
-  vec4 vEncoded;
-  float maxComponent = max(max(rgb.r, rgb.g), rgb.b);
-  float fExp = ceil(log2(maxComponent));
-  vEncoded.rgb = rgb / exp2(fExp);
-  vEncoded.a = (fExp + 128.0) / 255.0;
-  return vEncoded;
-}
-
-vec3 decodeRGBE8(vec4 rgbe) {
-  vec3 vDecoded;
-  float fExp = rgbe.a * 255.0 - 128.0;
-  vDecoded = rgbe.rgb * exp2(fExp);
-  return vDecoded;
-}
-
-float vec4ToFloat(vec4 vec) {
-  vec = min(vec + NON_ZERO_OFFSET, vec4(ONE_SAFE));
-
-  uvec4 v = uvec4(vec * 255.0);
-  uint value = (v.a << 24u) | (v.b << 16u) | (v.g << 8u) | (v.r);
-  return uintBitsToFloat(value);
-}
-
-vec4 floatToVec4(float f) {
-  uint value = floatBitsToUint(f);
-
-  vec4 v;
-  v.r = float(value & 0xFFu) / 255.0;
-  v.g = float((value >> 8u) & 0xFFu) / 255.0;
-  v.b = float((value >> 16u) & 0xFFu) / 255.0;
-  v.a = float((value >> 24u) & 0xFFu) / 255.0;
-
-  v -= NON_ZERO_OFFSET;
-  v = max(v, vec4(0.0));
-
-  return v;
-}
-
-vec4 packGBuffer(vec4 diffuse, vec3 normal, float roughness, float metalness, vec3 emissive) {
-  vec4 gBuffer;
-
-  gBuffer.r = vec4ToFloat(diffuse);
-  gBuffer.g = packNormal(normal);
-
-  // unfortunately packVec2 results in severe precision loss and artifacts for
-  // the first on Metal backends thus we use color2float instead
-  gBuffer.b = color2float(vec3(roughness, metalness, 0.));
-  gBuffer.a = vec4ToFloat(encodeRGBE8(emissive));
-
-  return gBuffer;
-}
-
 // loading a material from a packed g-buffer
-Material getMaterial(texture2D gBufferTexture, vec2 uv) {
-  vec4 gBuffer = textureLod(sampler2D(gBufferTexture, gBufferSamp), uv, 0.0);
-
-  vec4 diffuse = floatToVec4(gBuffer.r);
-  vec3 normal = unpackNormal(gBuffer.g);
-
-  // using float2color instead of unpackVec2 as the latter results in severe
-  // precision loss and artifacts on Metal backends
-  vec3 roughnessMetalness = float2color(gBuffer.b);
-  float roughness = roughnessMetalness.r;
-  float metalness = roughnessMetalness.g;
-
-  vec3 emissive = decodeRGBE8(floatToVec4(gBuffer.a));
-
-  return Material(diffuse, normal, roughness, metalness, emissive);
-}
-
 Material getMaterial(vec2 uv) {
-  return getMaterial(gBufferTexture, uv);
-}
-
-vec3 getNormal(texture2D gBufferTexture, vec2 uv) {
-  return unpackNormal(textureLod(sampler2D(gBufferTexture, samp), uv, 0.0).g);
+  vec4 diffuse = textureLod(sampler2D(diffuseTexture, gBufferSamp), uv, 0.0);
+  vec4 normal = textureLod(sampler2D(normalTexture, gBufferSamp), uv, 0.0);
+  vec4 materialProperties = textureLod(sampler2D(materialTexture, gBufferSamp), uv, 0.0);
+  float roughness = materialProperties.x;
+  float metalness = materialProperties.y;
+  float emissivePower = materialProperties.z;
+  vec3 emissive = vec3(emissivePower);
+  return Material(diffuse, normal.xyz, roughness, metalness, emissive);
 }
 // end gbuffer_packing
 
@@ -665,11 +494,11 @@ void main() {
   // filter out background
   if(unpackedDepth == 1.0) {
     vec4 directLight = textureLod(sampler2D(directLightTexture, samp), vUv, 0.0);
-    fragColor = packTwoVec4(directLight, directLight);
+    fragColor = directLight;
     return;
   }
 
-  mat = getMaterial(gBufferTexture, vUv);
+  mat = getMaterial(vUv);
   float roughnessSq = clamp(mat.roughness * mat.roughness, 0.000001, 1.0);
 
   invTexSize = 1. / resolution;

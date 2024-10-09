@@ -28,8 +28,11 @@ vec4 blueNoise(vec2 co) {
 // #include <common>
 // start gbuffer_packing
 // https://github.com/0beqz/realism-effects/blob/main/src/gbuffer/shader/gbuffer_packing.glsl
-layout(set = 2, binding = 0) uniform texture2D gBufferTexture;
-layout(set = 2, binding = 1) uniform sampler gBufferSamp;
+layout(set = 2, binding = 0) uniform texture2D normalTexture;
+layout(set = 2, binding = 1) uniform texture2D diffuseTexture;
+// encode roughness, metallic, emissive power floats
+layout(set = 2, binding = 2) uniform texture2D materialTexture;
+layout(set = 2, binding = 3) uniform sampler gBufferSamp;
 
 struct Material {
   vec4 diffuse;
@@ -39,75 +42,16 @@ struct Material {
   vec3 emissive;
 };
 
-#define ONE_SAFE 0.999999
-#define NON_ZERO_OFFSET 0.0001
-
-const float c_precision = 256.0;
-const float c_precisionp1 = c_precision + 1.0;
-
-vec3 float2color(float value) {
-  vec3 color;
-  color.r = mod(value, c_precisionp1) / c_precision;
-  color.b = mod(floor(value / c_precisionp1), c_precisionp1) / c_precision;
-  color.g = floor(value / (c_precisionp1 * c_precisionp1)) / c_precision;
-
-  color -= NON_ZERO_OFFSET;
-  color = max(color, vec3(0.0));
-
-  return color;
-}
-
-vec3 decodeOctWrap(vec2 f) {
-  f = f * 2.0 - 1.0;
-  vec3 n = vec3(f.x, f.y, 1.0 - abs(f.x) - abs(f.y));
-  float t = max(-n.z, 0.0);
-  n.x += n.x >= 0.0 ? -t : t;
-  n.y += n.y >= 0.0 ? -t : t;
-  return normalize(n);
-}
-
-vec3 unpackNormal(float packedNormal) {
-  return decodeOctWrap(unpackHalf2x16(floatBitsToUint(packedNormal)));
-}
-
-vec3 decodeRGBE8(vec4 rgbe) {
-  vec3 vDecoded;
-  float fExp = rgbe.a * 255.0 - 128.0;
-  vDecoded = rgbe.rgb * exp2(fExp);
-  return vDecoded;
-}
-
-vec4 floatToVec4(float f) {
-  uint value = floatBitsToUint(f);
-
-  vec4 v;
-  v.r = float(value & 0xFFu) / 255.0;
-  v.g = float((value >> 8u) & 0xFFu) / 255.0;
-  v.b = float((value >> 16u) & 0xFFu) / 255.0;
-  v.a = float((value >> 24u) & 0xFFu) / 255.0;
-
-  v -= NON_ZERO_OFFSET;
-  v = max(v, vec4(0.0));
-
-  return v;
-}
-
 // loading a material from a packed g-buffer
-Material getMaterial(texture2D gBufferTexture, vec2 uv) {
-  vec4 gBuffer = textureLod(sampler2D(gBufferTexture, gBufferSamp), uv, 0.0);
-
-  vec4 diffuse = floatToVec4(gBuffer.r);
-  vec3 normal = unpackNormal(gBuffer.g);
-
-  // using float2color instead of unpackVec2 as the latter results in severe
-  // precision loss and artifacts on Metal backends
-  vec3 roughnessMetalness = float2color(gBuffer.b);
-  float roughness = roughnessMetalness.r;
-  float metalness = roughnessMetalness.g;
-
-  vec3 emissive = decodeRGBE8(floatToVec4(gBuffer.a));
-
-  return Material(diffuse, normal, roughness, metalness, emissive);
+Material getMaterial(vec2 uv) {
+  vec4 diffuse = textureLod(sampler2D(diffuseTexture, gBufferSamp), uv, 0.0);
+  vec4 normal = textureLod(sampler2D(normalTexture, gBufferSamp), uv, 0.0);
+  vec4 materialProperties = textureLod(sampler2D(materialTexture, gBufferSamp), uv, 0.0);
+  float roughness = materialProperties.x;
+  float metalness = materialProperties.y;
+  float emissivePower = materialProperties.z;
+  vec3 emissive = vec3(emissivePower);
+  return Material(diffuse, normal.xyz, roughness, metalness, emissive);
 }
 // end gbuffer_packing
 
@@ -137,7 +81,7 @@ void toLinearSpace(inout vec3 color) {
 }
 
 float getBasicNeighborWeight(inout vec2 neighborUv) {
-  Material neighborMat = getMaterial(gBufferTexture, neighborUv);
+  Material neighborMat = getMaterial(neighborUv);
   vec3 neighborNormal = neighborMat.normal;
   float neighborDepth = textureLod(sampler2D(depthTexture, samp), neighborUv, 0.0).r;
 
@@ -222,7 +166,7 @@ void main() {
 
   input = inp;
 
-  mat = getMaterial(gBufferTexture, vUv);
+  mat = getMaterial(vUv);
   normal = getNormal(mat);
   glossiness = max(0., 4. * (1. - mat.roughness / 0.25));
   specularFactor = exp(-glossiness * specularPhi);
