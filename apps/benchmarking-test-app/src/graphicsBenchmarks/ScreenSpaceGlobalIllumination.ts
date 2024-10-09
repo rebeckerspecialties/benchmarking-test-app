@@ -988,6 +988,26 @@ export const runScreenSpaceGlobalIllumination = async (
         normalPhiArray.byteLength
       );
 
+      const roughnessPhiArray = new Float32Array(1);
+      roughnessPhiArray.fill(0.25, 0);
+      device.queue.writeBuffer(
+        roughnessPhiBuffer,
+        0,
+        roughnessPhiArray.buffer,
+        roughnessPhiArray.byteOffset,
+        roughnessPhiArray.byteLength
+      );
+
+      const specularPhiArray = new Float32Array(1);
+      specularPhiArray.fill(1, 0);
+      device.queue.writeBuffer(
+        specularPhiBuffer,
+        0,
+        specularPhiArray.buffer,
+        specularPhiArray.byteOffset,
+        specularPhiArray.byteLength
+      );
+
       // Render pass
       const commandEncoder = device.createCommandEncoder();
 
