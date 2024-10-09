@@ -1,4 +1,4 @@
-import { redFragWGSL, vertexShadowWGSL } from "./shaders/SDFShader";
+import { vertexShadowWGSL } from "./shaders/SDFShader";
 import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
@@ -10,6 +10,7 @@ import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
   basicVertWGSL,
+  modelFragWGSL,
   poissonDenoiseFragWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
@@ -152,13 +153,13 @@ export const runScreenSpaceGlobalIllumination = async (
     label: "model",
     vertex: {
       module: device.createShaderModule({
-        code: vertexShadowWGSL,
+        code: gbufferVertWGSL,
       }),
       buffers: modelBuffer,
     },
     fragment: {
       module: device.createShaderModule({
-        code: redFragWGSL,
+        code: modelFragWGSL,
       }),
       targets: [{ format: presentationFormat }],
     },
@@ -873,7 +874,7 @@ export const runScreenSpaceGlobalIllumination = async (
       );
 
       const rayDistanceArray = new Float32Array(1);
-      rayDistanceArray.fill(100.0, 0);
+      rayDistanceArray.fill(150, 0);
       device.queue.writeBuffer(
         rayDistanceBuffer,
         0,
@@ -883,7 +884,7 @@ export const runScreenSpaceGlobalIllumination = async (
       );
 
       const thicknessArray = new Float32Array(1);
-      thicknessArray.fill(1, 0);
+      thicknessArray.fill(25, 0);
       device.queue.writeBuffer(
         thicknessBuffer,
         0,

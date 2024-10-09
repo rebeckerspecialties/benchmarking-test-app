@@ -835,7 +835,7 @@ void main() {
 
   if(mode == MODE_SSGI) {
     gSpecular = vec4(specularGI, rayLength);
-    fragColor = mix(gDiffuse, gSpecular, mat.roughness);
+    fragColor = gDiffuse + gSpecular + vec4(mat.emissive, 1.0);
   } else {
     gSpecular = vec4(specularGI, a);
     fragColor = gSpecular;

@@ -635,8 +635,7 @@ fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
     let _e75 = roughness_2;
     let _e76 = metalness_2;
     let _e77 = emissive_2;
-    return Material(vec4f(0, 1, 0, 1), vec3f(gBuffer_1.x, gBuffer_1.y, gBuffer_1.z), 0.8f, 0.2f, vec3f(1, 0, 0));
-    // return Material(_e73, _e74, _e75, _e76, _e77);
+    return Material(_e73, _e74, _e75, _e76, _e77);
 }
 
 fn getMaterial_1(uv_2: vec2<f32>) -> Material {
@@ -1773,10 +1772,10 @@ fn main_1() {
     directLight_1 = _e578.xyz;
     let _e581 = diffuseGI;
     let _e582 = directLight_1;
-    // diffuseGI = (_e581 + _e582);
+    diffuseGI = (_e581 + _e582);
     let _e584 = specularGI;
     let _e585 = directLight_1;
-    // specularGI = (_e584 + _e585);
+    specularGI = (_e584 + _e585);
     let _e589 = mode;
     if (_e589 == 0i) {
         {
@@ -1822,7 +1821,7 @@ fn main_1() {
             let _e661 = gDiffuse;
             let _e662 = gSpecular;
             let _e663 = mat;
-            fragColor = mix(_e661, _e662, vec4(_e663.roughness));
+            fragColor = _e661 + _e662 + vec4f(mat.emissive.x, mat.emissive.y, mat.emissive.z, 1f);
             return;
         }
     } else {
@@ -2150,8 +2149,7 @@ fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
     let _e64 = roughness;
     let _e65 = metalness;
     let _e66 = emissive;
-    return Material(vec4f(0, 1, 0, 1), vec3f(gBuffer.x, gBuffer.y, gBuffer.z), 0.8f, 0.2f, vec3f(1, 0, 0));
-    // return Material(_e62, _e63, _e64, _e65, _e66);
+    return Material(_e62, _e63, _e64, _e65, _e66);
 }
 
 fn toDenoiseSpace(color_1: ptr<function, vec3<f32>>) {
@@ -2486,5 +2484,37 @@ fn main(@location(0) vUv: vec2<f32>) -> FragmentOutput {
     main_1();
     let _e96 = outputColor;
     return FragmentOutput(_e96);
+}
+`;
+
+export const modelFragWGSL = `
+struct FragmentOutput {
+    @location(0) outColor: vec4<f32>,
+}
+
+var<private> vDiffuse_1: vec4<f32>;
+var<private> vNormal_1: vec3<f32>;
+var<private> vRoughness_1: f32;
+var<private> vMetalness_1: f32;
+var<private> vEmissive_1: vec3<f32>;
+var<private> outColor: vec4<f32>;
+
+fn main_1() {
+    let _e6 = vDiffuse_1;
+    let _e7 = vEmissive_1;
+    outColor = (_e6 + vec4<f32>(_e7.x, _e7.y, _e7.z, 1f));
+    return;
+}
+
+@fragment
+fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
+    vDiffuse_1 = vDiffuse;
+    vNormal_1 = vNormal;
+    vRoughness_1 = vRoughness;
+    vMetalness_1 = vMetalness;
+    vEmissive_1 = vEmissive;
+    main_1();
+    let _e23 = outColor;
+    return FragmentOutput(_e23);
 }
 `;
