@@ -635,7 +635,7 @@ fn getMaterial(gBufferTexture: texture_2d<f32>, uv: vec2<f32>) -> Material {
     let _e75 = roughness_2;
     let _e76 = metalness_2;
     let _e77 = emissive_2;
-    return Material(vec4f(0, 1, 0, 1), vec3f(0, 1, 0), 1f, 0f, _e77);
+    return Material(vec4f(0, 1, 0, 1), vec3f(0, 0, 1), 0.8f, 0.2f, _e77);
     // return Material(_e73, _e74, _e75, _e76, _e77);
 }
 

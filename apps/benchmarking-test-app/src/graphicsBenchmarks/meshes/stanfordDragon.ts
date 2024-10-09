@@ -16,6 +16,11 @@ triangles.push(
   [positions.length, positions.length + 1, positions.length + 3]
 );
 
+const colors: [number, number, number][] = triangles.map(() => [0.5, 0.1, 0.7]);
+const roughness: [number][] = triangles.map(() => [0.8]);
+const metalness: [number][] = triangles.map(() => [0.2]);
+const emissives: [number, number, number][] = triangles.map(() => [0, 0, 0]);
+
 // Push vertex attributes for an additional ground plane
 // prettier-ignore
 positions.push(
@@ -36,10 +41,18 @@ uvs.push(
   [0, 1], //
   [1, 0]
 );
+colors.push([1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]);
+roughness.push([0], [0], [0], [0]);
+metalness.push([1], [1], [1], [1]);
+emissives.push([1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]);
 
 export const mesh = {
   positions,
   triangles,
   normals,
   uvs,
+  colors,
+  roughness,
+  metalness,
+  emissives,
 };

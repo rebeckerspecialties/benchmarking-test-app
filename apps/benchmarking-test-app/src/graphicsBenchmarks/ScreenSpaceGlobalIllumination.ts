@@ -3,8 +3,6 @@ import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
   cubeUVOffset,
-  cubeVertexArray,
-  cubeVertexCount,
   cubeVertexSize,
 } from "./meshes/cube";
 import { screenVertexArray, screenVertexCount } from "./meshes/screen";
@@ -15,8 +13,11 @@ import {
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
 } from "./shaders/ssgiShader";
+import { mesh } from "./meshes/stanfordDragon";
 
 const depthTextureSize = 1024;
+
+const arrayStride = 3 + 3 + 2 + 3 + 1 + 1 + 3;
 
 const vertexBuffers: GPUVertexBufferLayout[] = [
   {
@@ -38,6 +39,56 @@ const vertexBuffers: GPUVertexBufferLayout[] = [
   },
 ];
 
+const modelBuffer: GPUVertexBufferLayout[] = [
+  {
+    arrayStride: Float32Array.BYTES_PER_ELEMENT * arrayStride,
+    attributes: [
+      {
+        // position
+        shaderLocation: 0,
+        offset: 0,
+        format: "float32x3",
+      },
+      {
+        // normal
+        shaderLocation: 1,
+        offset: Float32Array.BYTES_PER_ELEMENT * 3,
+        format: "float32x3",
+      },
+      {
+        // uv
+        shaderLocation: 2,
+        offset: Float32Array.BYTES_PER_ELEMENT * (3 + 3),
+        format: "float32x2",
+      },
+      {
+        // color
+        shaderLocation: 3,
+        offset: Float32Array.BYTES_PER_ELEMENT * (3 + 3 + 2),
+        format: "float32x3",
+      },
+      {
+        // roughness
+        shaderLocation: 4,
+        offset: Float32Array.BYTES_PER_ELEMENT * (3 + 3 + 2 + 3),
+        format: "float32",
+      },
+      {
+        // metallic
+        shaderLocation: 5,
+        offset: Float32Array.BYTES_PER_ELEMENT * (3 + 3 + 2 + 3 + 1),
+        format: "float32",
+      },
+      {
+        // emissive
+        shaderLocation: 6,
+        offset: Float32Array.BYTES_PER_ELEMENT * (3 + 3 + 2 + 3 + 1 + 1),
+        format: "float32x3",
+      },
+    ],
+  },
+];
+
 const primitive: GPUPrimitiveState = {
   topology: "triangle-list",
   cullMode: "back",
@@ -53,14 +104,38 @@ export const runScreenSpaceGlobalIllumination = async (
   const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
 
   const verticesBuffer = device.createBuffer({
-    size: cubeVertexArray.byteLength,
+    size: mesh.positions.length * arrayStride * Float32Array.BYTES_PER_ELEMENT,
     usage: GPUBufferUsage.VERTEX,
     mappedAtCreation: true,
   });
+  {
+    const mapping = new Float32Array(verticesBuffer.getMappedRange());
+    for (let i = 0; i < mesh.positions.length; ++i) {
+      mapping.set(mesh.positions[i], arrayStride * i);
+      mapping.set(mesh.normals[i], arrayStride * i + 3);
+      mapping.set(mesh.uvs[i], arrayStride * i + (3 + 3));
+      mapping.set(mesh.colors[i], arrayStride * i + (3 + 3 + 2));
+      mapping.set(mesh.roughness[i], arrayStride * i + (3 + 3 + 2 + 3));
+      mapping.set(mesh.metalness[i], arrayStride * i + (3 + 3 + 2 + 3 + 1));
+      mapping.set(mesh.emissives[i], arrayStride * i + (3 + 3 + 2 + 3 + 1 + 1));
+    }
+    verticesBuffer.unmap();
+  }
 
-  new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray);
-  verticesBuffer.unmap();
-
+  // Create the model index buffer.
+  const indexCount = mesh.triangles.length * 3;
+  const indexBuffer = device.createBuffer({
+    size: indexCount * Uint16Array.BYTES_PER_ELEMENT,
+    usage: GPUBufferUsage.INDEX,
+    mappedAtCreation: true,
+  });
+  {
+    const mapping = new Uint16Array(indexBuffer.getMappedRange());
+    for (let i = 0; i < mesh.triangles.length; ++i) {
+      mapping.set(mesh.triangles[i], 3 * i);
+    }
+    indexBuffer.unmap();
+  }
   const screenBuffer = device.createBuffer({
     size: screenVertexArray.byteLength,
     usage: GPUBufferUsage.VERTEX,
@@ -77,7 +152,7 @@ export const runScreenSpaceGlobalIllumination = async (
       module: device.createShaderModule({
         code: vertexShadowWGSL,
       }),
-      buffers: vertexBuffers,
+      buffers: modelBuffer,
     },
     fragment: {
       module: device.createShaderModule({
@@ -95,7 +170,7 @@ export const runScreenSpaceGlobalIllumination = async (
       module: device.createShaderModule({
         code: vertexShadowWGSL,
       }),
-      buffers: vertexBuffers,
+      buffers: modelBuffer,
     },
     depthStencil: {
       depthWriteEnabled: true,
@@ -477,11 +552,11 @@ export const runScreenSpaceGlobalIllumination = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
-  const projectionMatrix = mat4.perspective(fov, aspect, 1, 100.0);
+  const projectionMatrix = mat4.perspective(fov, aspect, 1, 1000.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
   const cameraNear = 1.0;
-  const cameraFar = 100.0;
+  const cameraFar = 1000.0;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
 
@@ -526,11 +601,15 @@ export const runScreenSpaceGlobalIllumination = async (
       };
 
       // Fill buffers
-      const positionOffset = 2 * Math.sin(Math.PI * (frame / 250));
+      const positionOffset = 20 * Math.sin(Math.PI * (frame / 250));
       frame++;
 
-      const cameraPos = vec3.fromValues(positionOffset, 0, -4 + positionOffset);
-      const targetPos = vec3.fromValues(0, 0, 0);
+      const cameraPos = vec3.fromValues(
+        positionOffset,
+        100,
+        -100 + positionOffset
+      );
+      const targetPos = vec3.fromValues(0, 25, 0);
       const axis = vec3.fromValues(0, 1, 0);
 
       const viewMatrix = mat4.lookAt(cameraPos, targetPos, axis);
@@ -643,7 +722,8 @@ export const runScreenSpaceGlobalIllumination = async (
       cubePass.setPipeline(cubePipeline);
       cubePass.setBindGroup(0, sceneBindGroupForCube);
       cubePass.setVertexBuffer(0, verticesBuffer);
-      cubePass.draw(cubeVertexCount);
+      cubePass.setIndexBuffer(indexBuffer, "uint16");
+      cubePass.drawIndexed(indexCount);
 
       cubePass.end();
 
@@ -668,7 +748,8 @@ export const runScreenSpaceGlobalIllumination = async (
       depthPass.setPipeline(depthPipeline);
       depthPass.setBindGroup(0, depthPassBindGroup);
       depthPass.setVertexBuffer(0, verticesBuffer);
-      depthPass.draw(cubeVertexCount);
+      depthPass.setIndexBuffer(indexBuffer, "uint16");
+      depthPass.drawIndexed(indexCount);
       depthPass.end();
 
       // TODO: gbuffer pass
