@@ -21,7 +21,10 @@ import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
 import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
-import { runScreenSpaceGlobalIllumination } from "./src/graphicsBenchmarks/ScreenSpaceGlobalIllumination";
+import {
+  runScreenSpaceGlobalIllumination,
+  runScreenSpaceReflection,
+} from "./src/graphicsBenchmarks/ScreenSpaceGlobalIllumination";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -85,6 +88,7 @@ const App = () => {
           run={runScreenSpaceGlobalIllumination}
           name="ssgiBenchmark"
         />
+        <GraphicsBenchmark run={runScreenSpaceReflection} name="ssrBenchmark" />
       </SafeAreaView>
     </>
   );

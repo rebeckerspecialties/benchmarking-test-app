@@ -97,7 +97,8 @@ const primitive: GPUPrimitiveState = {
   cullMode: "back",
 };
 
-export const runScreenSpaceGlobalIllumination = async (
+const runScreenSpaceShader = async (
+  ssgiMode: 0 | 1,
   context: CanvasContext,
   device: GPUDevice,
   canvas: HTMLCanvasElement,
@@ -929,7 +930,7 @@ export const runScreenSpaceGlobalIllumination = async (
       );
 
       const modeArr = new Uint32Array(1);
-      modeArr.fill(0, 0);
+      modeArr.fill(ssgiMode, 0);
       device.queue.writeBuffer(
         modeBuffer,
         0,
@@ -1176,3 +1177,10 @@ const createFullscreenPipeline = (
     },
   });
 };
+
+export const runScreenSpaceGlobalIllumination = runScreenSpaceShader.bind(
+  null,
+  0
+);
+
+export const runScreenSpaceReflection = runScreenSpaceShader.bind(null, 1);
