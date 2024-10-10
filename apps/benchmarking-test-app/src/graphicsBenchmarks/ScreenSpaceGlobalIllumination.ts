@@ -1,4 +1,3 @@
-import { vertexShadowWGSL } from "./shaders/SDFShader";
 import { CanvasContext } from "./types";
 import {
   cubePositionOffset,
@@ -10,16 +9,13 @@ import { mat4, vec2, vec3 } from "wgpu-matrix";
 import { generateNoiseData } from "./textures/perlin";
 import {
   basicVertWGSL,
-  materialFragWGSL,
   modelFragWGSL,
-  normalFragWGSL,
   poissonDenoiseFragWGSL,
   ssgiComposeFragWGSL,
   ssgiFragWGSL,
   modelVertWGSL,
 } from "./shaders/ssgiShader";
 import { mesh } from "./meshes/stanfordDragon";
-const depthTextureSize = 1024;
 
 const arrayStride = 3 + 3 + 2 + 3 + 1 + 1 + 3;
 
@@ -163,7 +159,20 @@ const runScreenSpaceShader = async (
       module: device.createShaderModule({
         code: modelFragWGSL,
       }),
-      targets: [{ format: presentationFormat }],
+      targets: [
+        {
+          // diffuse
+          format: "rgba16float",
+        },
+        {
+          // normal
+          format: "rgba16float",
+        },
+        {
+          // material
+          format: "rgba16float",
+        },
+      ],
     },
     primitive,
     depthStencil: {
@@ -171,69 +180,6 @@ const runScreenSpaceShader = async (
       depthCompare: "less",
       format: "depth24plus",
     },
-  });
-
-  const normalPipeline = device.createRenderPipeline({
-    layout: "auto",
-    label: "normal",
-    vertex: {
-      module: device.createShaderModule({
-        code: modelVertWGSL,
-      }),
-      buffers: modelBuffer,
-    },
-    fragment: {
-      module: device.createShaderModule({
-        code: normalFragWGSL,
-      }),
-      targets: [{ format: "rgba16float" }],
-    },
-    primitive,
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-  });
-
-  const materialPipeline = device.createRenderPipeline({
-    layout: "auto",
-    label: "material",
-    vertex: {
-      module: device.createShaderModule({
-        code: modelVertWGSL,
-      }),
-      buffers: modelBuffer,
-    },
-    fragment: {
-      module: device.createShaderModule({
-        code: materialFragWGSL,
-      }),
-      targets: [{ format: presentationFormat }],
-    },
-    primitive,
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
-  });
-
-  const depthPipeline = device.createRenderPipeline({
-    layout: "auto",
-    label: "depth",
-    vertex: {
-      module: device.createShaderModule({
-        code: vertexShadowWGSL,
-      }),
-      buffers: modelBuffer,
-    },
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth32float",
-    },
-    primitive,
   });
 
   const pipeline = createFullscreenPipeline(
@@ -260,7 +206,7 @@ const runScreenSpaceShader = async (
   const depthTexture = device.createTexture({
     size: [canvas.width, canvas.height],
     format: "depth24plus",
-    usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
   // Bind group 0 (textures and samplers)
@@ -299,19 +245,12 @@ const runScreenSpaceShader = async (
   // Create the depth texture for rendering/sampling the depth pass.
   const accumulatedTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
+    format: "rgba16float",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
-
-  const depthPassTexture = device.createTexture({
-    size: [depthTextureSize, depthTextureSize, 1],
-    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-    format: "depth32float",
-  });
-  const depthPassTextureView = depthPassTexture.createView();
 
   const velocityTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
@@ -324,7 +263,7 @@ const runScreenSpaceShader = async (
 
   const directLightTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
+    format: "rgba16float",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
@@ -335,7 +274,7 @@ const runScreenSpaceShader = async (
     layout: pipeline.getBindGroupLayout(0),
     entries: [
       { binding: 0, resource: accumulatedTexture.createView() },
-      { binding: 1, resource: depthPassTextureView },
+      { binding: 1, resource: depthTexture.createView() },
       { binding: 2, resource: velocityTexture.createView() },
       { binding: 3, resource: directLightTexture.createView() },
       { binding: 4, resource: sampler },
@@ -501,10 +440,11 @@ const runScreenSpaceShader = async (
   // Bind group 2
   const diffuseTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
+    format: "rgba16float",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.COPY_SRC |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
@@ -516,7 +456,7 @@ const runScreenSpaceShader = async (
 
   const materialTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
+    format: "rgba16float",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
@@ -535,75 +475,6 @@ const runScreenSpaceShader = async (
       { binding: 1, resource: diffuseTexture.createView() },
       { binding: 2, resource: materialTexture.createView() },
       { binding: 3, resource: materialSampler },
-    ],
-  });
-
-  // Depth pass bind group
-  const depthPassBindGroup = device.createBindGroup({
-    layout: depthPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: projectionMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
-      {
-        binding: 1,
-        resource: {
-          buffer: viewMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
-    ],
-  });
-
-  // normal pass bind group
-  const normalPassBindGroup = device.createBindGroup({
-    layout: normalPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: projectionMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
-      {
-        binding: 1,
-        resource: {
-          buffer: viewMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
-    ],
-  });
-
-  // normal pass bind group
-  const materialPassBindGroup = device.createBindGroup({
-    layout: materialPipeline.getBindGroupLayout(0),
-    entries: [
-      {
-        binding: 0,
-        resource: {
-          buffer: projectionMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
-      {
-        binding: 1,
-        resource: {
-          buffer: viewMatrixBuffer,
-          offset: 0,
-          size: matrixSize,
-        },
-      },
     ],
   });
 
@@ -649,7 +520,7 @@ const runScreenSpaceShader = async (
       },
       {
         binding: 1,
-        resource: depthPassTexture.createView(),
+        resource: depthTexture.createView(),
       },
       {
         binding: 2,
@@ -778,7 +649,7 @@ const runScreenSpaceShader = async (
 
   const sceneTexture = device.createTexture({
     size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
+    format: "rgba16float",
     usage:
       GPUTextureUsage.TEXTURE_BINDING |
       GPUTextureUsage.COPY_DST |
@@ -803,7 +674,7 @@ const runScreenSpaceShader = async (
       },
       {
         binding: 2,
-        resource: depthPassTextureView,
+        resource: depthTexture.createView(),
       },
       {
         binding: 3,
@@ -832,71 +703,28 @@ const runScreenSpaceShader = async (
       const depthTextureView = depthTexture.createView();
 
       // Render Pass Descriptors
-      const renderPassDescriptor = createDefaultRenderPass(
-        textureView,
-        depthTextureView
-      );
+      const renderPassDescriptor = createDefaultRenderPass(textureView);
 
-      const denoisePassRenderDescriptor = createDefaultRenderPass(
-        textureView,
-        depthTextureView
-      );
+      const denoisePassRenderDescriptor = createDefaultRenderPass(textureView);
 
-      const composeRenderPassDescriptor = createDefaultRenderPass(
-        textureView,
-        depthTextureView
-      );
-
-      const depthPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [],
-        depthStencilAttachment: {
-          view: depthPassTexture.createView(),
-          depthClearValue: 1.0,
-          depthLoadOp: "clear",
-          depthStoreOp: "store",
-        },
-      };
+      const composeRenderPassDescriptor = createDefaultRenderPass(textureView);
 
       const modelPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
-            view: textureView,
+            view: diffuseTexture.createView(),
             clearValue: [0, 0, 0, 1],
             loadOp: "clear",
             storeOp: "store",
           },
-        ],
-        depthStencilAttachment: {
-          view: depthTextureView,
-
-          depthClearValue: 1.0,
-          depthLoadOp: "clear",
-          depthStoreOp: "store",
-        },
-      };
-
-      const normalPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [
           {
             view: normalTexture.createView(),
-            clearValue: [0, 0, 1.0, 1.0],
+            clearValue: [0, 0, 1, 1],
             loadOp: "clear",
             storeOp: "store",
           },
-        ],
-        depthStencilAttachment: {
-          view: depthTextureView,
-
-          depthClearValue: 1.0,
-          depthLoadOp: "clear",
-          depthStoreOp: "store",
-        },
-      };
-
-      const materialPassDescriptor: GPURenderPassDescriptor = {
-        colorAttachments: [
           {
-            view: textureView,
+            view: materialTexture.createView(),
             clearValue: [0, 0, 0, 1],
             loadOp: "clear",
             storeOp: "store",
@@ -916,7 +744,7 @@ const runScreenSpaceShader = async (
       const zPostion = Math.sin(Math.PI * (frame / 250));
       frame++;
 
-      const cameraPos = vec3.fromValues(100 * xPosition, 50, 100 * zPostion);
+      const cameraPos = vec3.fromValues(150 * xPosition, 100, 150 * zPostion);
       const targetPos = vec3.fromValues(0, 25, 0);
       const axis = vec3.fromValues(0, 1, 0);
 
@@ -1105,57 +933,19 @@ const runScreenSpaceShader = async (
 
       modelPass.end();
 
-      const sceneRenderView = context.getCurrentTexture();
       commandEncoder.copyTextureToTexture(
-        { texture: sceneRenderView },
+        { texture: diffuseTexture },
         { texture: sceneTexture },
         [canvas.width, canvas.height]
       );
       commandEncoder.copyTextureToTexture(
-        { texture: sceneRenderView },
+        { texture: diffuseTexture },
         { texture: accumulatedTexture },
         [canvas.width, canvas.height]
       );
       commandEncoder.copyTextureToTexture(
-        { texture: sceneRenderView },
-        { texture: directLightTexture },
-        [canvas.width, canvas.height]
-      );
-      commandEncoder.copyTextureToTexture(
-        { texture: sceneRenderView },
         { texture: diffuseTexture },
-        [canvas.width, canvas.height]
-      );
-
-      const depthPass = commandEncoder.beginRenderPass(depthPassDescriptor);
-      depthPass.setPipeline(depthPipeline);
-      depthPass.setBindGroup(0, depthPassBindGroup);
-      depthPass.setVertexBuffer(0, verticesBuffer);
-      depthPass.setIndexBuffer(indexBuffer, "uint16");
-      depthPass.drawIndexed(indexCount);
-      depthPass.end();
-
-      const normalPass = commandEncoder.beginRenderPass(normalPassDescriptor);
-      normalPass.setPipeline(normalPipeline);
-      normalPass.setBindGroup(0, normalPassBindGroup);
-      normalPass.setVertexBuffer(0, verticesBuffer);
-      normalPass.setIndexBuffer(indexBuffer, "uint16");
-      normalPass.drawIndexed(indexCount);
-      normalPass.end();
-
-      const materialPass = commandEncoder.beginRenderPass(
-        materialPassDescriptor
-      );
-      materialPass.setPipeline(materialPipeline);
-      materialPass.setBindGroup(0, materialPassBindGroup);
-      materialPass.setVertexBuffer(0, verticesBuffer);
-      materialPass.setIndexBuffer(indexBuffer, "uint16");
-      materialPass.drawIndexed(indexCount);
-      materialPass.end();
-
-      commandEncoder.copyTextureToTexture(
-        { texture: context.getCurrentTexture() },
-        { texture: materialTexture },
+        { texture: directLightTexture },
         [canvas.width, canvas.height]
       );
 
@@ -1203,7 +993,7 @@ const runScreenSpaceShader = async (
       device.queue.submit([commandEncoder.finish()]);
       context.present();
 
-      if (frame >= 100000) {
+      if (frame >= 500) {
         resolve();
       } else {
         requestAnimationFrame(animate);
@@ -1215,8 +1005,7 @@ const runScreenSpaceShader = async (
 };
 
 const createDefaultRenderPass = (
-  textureView: GPUTextureView,
-  depthTextureView: GPUTextureView
+  textureView: GPUTextureView
 ): GPURenderPassDescriptor => {
   return {
     colorAttachments: [
@@ -1227,13 +1016,6 @@ const createDefaultRenderPass = (
         storeOp: "store",
       },
     ],
-    depthStencilAttachment: {
-      view: depthTextureView,
-
-      depthClearValue: 1.0,
-      depthLoadOp: "clear",
-      depthStoreOp: "store",
-    },
   };
 };
 
@@ -1265,14 +1047,6 @@ const createFullscreenPipeline = (
       ],
     },
     primitive,
-
-    // Enable depth testing so that the fragment closest to the camera
-    // is rendered in front.
-    depthStencil: {
-      depthWriteEnabled: true,
-      depthCompare: "less",
-      format: "depth24plus",
-    },
   });
 };
 

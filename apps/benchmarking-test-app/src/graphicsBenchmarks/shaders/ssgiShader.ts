@@ -1344,7 +1344,6 @@ fn main_1() {
             let _e654 = gSpecular;
             let _e656 = mat;
             fragColor = ((_e653 + _e654) + vec4<f32>(_e656.emissive.x, _e656.emissive.y, _e656.emissive.z, 1f));
-            // fragColor = vec4<f32>(viewNormal_1.x, viewNormal_1.y, viewNormal_1.z, 1f);
             return;
         }
     } else {
@@ -1881,6 +1880,8 @@ fn main(@location(0) vUv: vec2<f32>) -> FragmentOutput {
 export const modelFragWGSL = `
 struct FragmentOutput {
     @location(0) outColor: vec4<f32>,
+    @location(1) normal: vec4<f32>,
+    @location(2) material: vec4<f32>,
 }
 
 var<private> vDiffuse_1: vec4<f32>;
@@ -1906,77 +1907,10 @@ fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @loca
     vEmissive_1 = vEmissive;
     main_1();
     let _e23 = outColor;
-    return FragmentOutput(_e23);
-}
-`;
-
-export const normalFragWGSL = `
-struct FragmentOutput {
-    @location(0) outColor: vec4<f32>,
-}
-
-var<private> vDiffuse_1: vec4<f32>;
-var<private> vNormal_1: vec3<f32>;
-var<private> vRoughness_1: f32;
-var<private> vMetalness_1: f32;
-var<private> vEmissive_1: vec3<f32>;
-var<private> outColor: vec4<f32>;
-
-fn main_1() {
-    let _e6 = vNormal_1;
-    outColor = vec4<f32>(_e6.x, _e6.y, _e6.z, 0f);
-    return;
-}
-
-@fragment
-fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
-    vDiffuse_1 = vDiffuse;
-    vNormal_1 = vNormal;
-    vRoughness_1 = vRoughness;
-    vMetalness_1 = vMetalness;
-    vEmissive_1 = vEmissive;
-    main_1();
-    let _e23 = outColor;
-    return FragmentOutput(_e23);
-}
-`;
-
-export const materialFragWGSL = `
-struct FragmentOutput {
-    @location(0) outColor: vec4<f32>,
-}
-
-var<private> vDiffuse_1: vec4<f32>;
-var<private> vNormal_1: vec3<f32>;
-var<private> vRoughness_1: f32;
-var<private> vMetalness_1: f32;
-var<private> vEmissive_1: vec3<f32>;
-var<private> outColor: vec4<f32>;
-
-fn main_1() {
-    var emissivePower: f32;
-
-    let _e6 = vEmissive_1;
-    let _e8 = vEmissive_1;
-    let _e11 = vEmissive_1;
-    emissivePower = (((_e6.x + _e8.y) + _e11.z) / 3f);
-    let _e17 = vRoughness_1;
-    let _e18 = vMetalness_1;
-    let _e19 = emissivePower;
-    outColor = vec4<f32>(_e17, _e18, _e19, 0f);
-    return;
-}
-
-@fragment
-fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
-    vDiffuse_1 = vDiffuse;
-    vNormal_1 = vNormal;
-    vRoughness_1 = vRoughness;
-    vMetalness_1 = vMetalness;
-    vEmissive_1 = vEmissive;
-    main_1();
-    let _e23 = outColor;
-    return FragmentOutput(_e23);
+    let normalOut = vec4f(vNormal.x, vNormal.y, vNormal.z, 0f);
+    let emissivePower = vEmissive.x;
+    let materialOut = vec4f(vRoughness, vMetalness, emissivePower, 0f);
+    return FragmentOutput(_e23, normalOut, materialOut);
 }
 `;
 
@@ -2015,11 +1949,7 @@ fn main_1() {
     gl_Position = ((_e15 * _e16) * vec4<f32>(_e18.x, _e18.y, _e18.z, 1f));
     let _e25 = color_1;
     vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
-    let _e31 = normal_1;
-    let _e37 = modelViewMatrix;
-    let _e40 = normal_1;
-    let _e46 = modelViewMatrix;
-    vNormal = normalize((vec4<f32>(_e40.x, _e40.y, _e40.z, 1f) * _e46 * projectionMatrix).xyz);
+    vNormal = normal_1;
     let _e50 = roughness_1;
     vRoughness = _e50;
     let _e51 = metalness_1;
