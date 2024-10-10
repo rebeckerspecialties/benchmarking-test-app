@@ -6,6 +6,8 @@ import {
 } from "./runTest";
 
 const runBenchmarkSuite = async () => {
+  await benchmarkWithWallClockTime("rayTracerBenchmark", true);
+
   console.log("Running benchmarks with wall clock time");
   await benchmarkWithWallClockTime("simpleBenchmark");
   await benchmarkWithWallClockTime("bitEcsBenchmark");
@@ -19,7 +21,7 @@ const runBenchmarkSuite = async () => {
   await benchmarkWithWallClockTime("dragonFxaaBenchmark", true);
   await benchmarkWithWallClockTime("ssgiBenchmark", true);
   await benchmarkWithWallClockTime("ssrBenchmark", true);
-  await benchmarkWithWallClockTime("rayTracerBenchmark", true);
+
   await benchmarkWithMemoryProfiler("sdfWebGpuBenchmark", true);
 
   console.log("Running benchmarks with flamegraph");
