@@ -97,7 +97,19 @@ export const runDragonFxaa = async (
       topology: "triangle-list",
       cullMode: "back",
     },
+    depthStencil: {
+      depthWriteEnabled: true,
+      depthCompare: "less",
+      format: "depth24plus",
+    },
   });
+
+  const depthTexture = device.createTexture({
+    size: [canvas.width, canvas.height],
+    format: "depth24plus",
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+  const depthTextureView = depthTexture.createView();
 
   const vertexBuffers: GPUVertexBufferLayout[] = [
     {
@@ -224,6 +236,12 @@ export const runDragonFxaa = async (
             storeOp: "store",
           },
         ],
+        depthStencilAttachment: {
+          view: depthTextureView,
+          depthClearValue: 1.0,
+          depthLoadOp: "clear",
+          depthStoreOp: "store",
+        },
       };
 
       const effectRenderPassDescriptor: GPURenderPassDescriptor = {

@@ -10,6 +10,15 @@ const { positions, normals, triangles } = generateNormals(
 
 const uvs = computeProjectedPlaneUVs(positions, "xy");
 
+const colors: [number, number, number][] = positions.map(() => [
+  0.2 + Math.random() / 10,
+  0.1 + Math.random() / 10,
+  0.4 + Math.random() / 10,
+]);
+const roughness: [number][] = positions.map(() => [1]);
+const metalness: [number][] = positions.map(() => [0.1]);
+const emissives: [number, number, number][] = positions.map(() => [0, 0, 0]);
+
 // Push indices for an additional ground plane
 triangles.push(
   [positions.length, positions.length + 2, positions.length + 1],
@@ -36,10 +45,23 @@ uvs.push(
   [0, 1], //
   [1, 0]
 );
+colors.push([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]);
+roughness.push([0.7], [0.7], [0.7], [0.7]);
+metalness.push([1], [1], [1], [1]);
+emissives.push(
+  [0.2, 0.2, 0.2],
+  [0.2, 0.2, 0.2],
+  [0.2, 0.2, 0.2],
+  [0.2, 0.2, 0.2]
+);
 
 export const mesh = {
   positions,
   triangles,
   normals,
   uvs,
+  colors,
+  roughness,
+  metalness,
+  emissives,
 };
