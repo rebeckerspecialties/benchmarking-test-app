@@ -430,3 +430,27 @@ fn reinhard_tonemap(linearColor: vec3f) -> vec3f {
   return pow(mapped, vec3f(1 / Gamma));
 }
 `;
+
+export const basicVertWGSL = `
+struct VertexOutput {
+    @location(0) vUv: vec2<f32>,
+    @builtin(position) gl_Position: vec4<f32>,
+}
+@vertex
+fn main(@location(0) position: vec4<f32>, @location(1) uv: vec2<f32>) -> VertexOutput {
+    return VertexOutput(uv, position);
+}
+`;
+
+export const basicFragWGSL = `
+@group(0) @binding(0)
+var inputBuffer: texture_2d<f32>;
+@group(0) @binding(1)
+var samp: sampler;
+
+@fragment
+fn main(@location(0) uv: vec2<f32>) -> @location(0) vec4f {
+  let outputColor = textureSample(inputBuffer, samp, uv);
+  return outputColor;
+}
+`;

@@ -4,6 +4,7 @@ import Radiosity from "./cornell/radiosity";
 import Tonemapper from "./cornell/tonemapper";
 import Raytracer from "./cornell/raytracer";
 import { CanvasContext } from "./types";
+import TextureRenderer from "./cornell/render";
 
 const params = {
   renderer: "raytracer",
@@ -30,13 +31,30 @@ export const runRayTracer = async (
   const common = new Common(device, scene.quadBuffer);
   const radiosity = new Radiosity(device, common, scene);
   const raytracer = new Raytracer(device, common, radiosity, framebuffer);
+  const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+
+  const outputBuffer = device.createTexture({
+    label: "framebuffer",
+    size: [canvas.width, canvas.height],
+    format: presentationFormat,
+    usage:
+      GPUTextureUsage.STORAGE_BINDING |
+      GPUTextureUsage.RENDER_ATTACHMENT |
+      GPUTextureUsage.TEXTURE_BINDING,
+  });
+
+  const renderer = new TextureRenderer(
+    device,
+    presentationFormat,
+    outputBuffer,
+    context
+  );
 
   let frame = 0;
 
   return new Promise<void>((resolve) => {
     const animate = () => {
       frame++;
-      const canvasTexture = context.getCurrentTexture();
       const commandEncoder = device.createCommandEncoder();
 
       common.update({
@@ -51,11 +69,13 @@ export const runRayTracer = async (
         device,
         common,
         framebuffer,
-        canvasTexture
+        outputBuffer
       );
       tonemapper.run(commandEncoder);
 
+      renderer.run(commandEncoder);
       device.queue.submit([commandEncoder.finish()]);
+      context.present();
 
       if (frame >= 500) {
         resolve();
