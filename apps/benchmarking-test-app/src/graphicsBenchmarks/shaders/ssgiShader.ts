@@ -1046,12 +1046,8 @@ fn main_1() {
     let _e80 = viewPos_1;
     viewDir_1 = normalize(_e80);
     let _e83 = mat;
-    worldNormal = _e83.normal;
-    let _e85 = worldNormal;
-    let _e91 = cameraMatrixWorld;
-    let _e94 = worldNormal;
-    let _e100 = cameraMatrixWorld;
-    viewNormal_1 = normalize((vec4<f32>(_e94.x, _e94.y, _e94.z, 0f) * _e100).xyz);
+    worldNormal = normalize((vec4<f32>(_e83.normal.x, _e83.normal.y, _e83.normal.z, 1f) * viewMatrix).xyz);
+    viewNormal_1 = _e83.normal;
     let _e105 = cameraMatrixWorld;
     let _e106 = viewPos_1;
     worldPos_3 = (_e105 * vec4<f32>(_e106.x, _e106.y, _e106.z, 1f)).xyz;
@@ -1295,10 +1291,10 @@ fn main_1() {
     directLight_1 = _e574.xyz;
     let _e577 = diffuseGI;
     let _e578 = directLight_1;
-    diffuseGI = (_e577 + _e578);
+    // diffuseGI = (_e577 + _e578);
     let _e580 = specularGI;
     let _e581 = directLight_1;
-    specularGI = (_e580 + _e581);
+    // specularGI = (_e580 + _e581);
     let _e585 = mode;
     if (_e585 == 0i) {
         {
@@ -2014,11 +2010,7 @@ fn main_1() {
     gl_Position = ((_e15 * _e16) * vec4<f32>(_e18.x, _e18.y, _e18.z, 1f));
     let _e25 = color_1;
     vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
-    let _e31 = normal_1;
-    let _e37 = modelViewMatrix;
-    let _e40 = normal_1;
-    let _e46 = modelViewMatrix;
-    vNormal = normalize((vec4<f32>(_e40.x, _e40.y, _e40.z, 1f) * _e46).xyz);
+    vNormal = normal_1;
     let _e50 = roughness_1;
     vRoughness = _e50;
     let _e51 = metalness_1;

@@ -16,7 +16,7 @@ const colors: [number, number, number][] = positions.map(() => [
   0.4 + Math.random() / 10,
 ]);
 const roughness: [number][] = positions.map(() => [0.8]);
-const metalness: [number][] = positions.map(() => [0.2]);
+const metalness: [number][] = positions.map(() => [0.1]);
 const emissives: [number, number, number][] = positions.map(() => [0, 0, 0]);
 
 // Push indices for an additional ground plane
@@ -45,7 +45,7 @@ uvs.push(
   [0, 1], //
   [1, 0]
 );
-colors.push([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]);
+colors.push([0.3, 0.3, 0.3], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3], [0.3, 0.3, 0.3]);
 roughness.push([0.2], [0.2], [0.2], [0.2]);
 metalness.push([0.8], [0.8], [0.8], [0.8]);
 emissives.push([0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]);
