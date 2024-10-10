@@ -33,6 +33,7 @@ const runBenchmarkSuite = async () => {
   await benchmarkWithWallClockTime("dragonFxaaBenchmark", true);
   await benchmarkWithWallClockTime("ssgiBenchmark", true);
   await benchmarkWithWallClockTime("ssrBenchmark", true);
+  await benchmarkWithWallClockTime("rayTracerBenchmark", true);
   await benchmarkWithMemoryProfiler("sdfWebGpuBenchmark", true);
 };
 
