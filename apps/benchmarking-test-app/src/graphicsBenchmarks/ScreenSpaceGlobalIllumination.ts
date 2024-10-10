@@ -794,7 +794,7 @@ const runScreenSpaceShader = async (
       );
 
       const thicknessArray = new Float32Array(1);
-      thicknessArray.fill(1000, 0);
+      thicknessArray.fill(3, 0);
       device.queue.writeBuffer(
         thicknessBuffer,
         0,
