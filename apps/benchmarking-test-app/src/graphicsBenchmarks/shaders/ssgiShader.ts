@@ -762,7 +762,7 @@ fn getEnvColor(l: vec3<f32>, worldPos: vec3<f32>, roughness_6: f32, isDiffuseSam
     roughness_7 = roughness_6;
     isDiffuseSample_1 = isDiffuseSample;
     isEnvSample_1 = isEnvSample;
-    return vec3(0f);
+    return vec3(worldPos.x / 150, worldPos.y / 150, worldPos.z / 150);
 }
 
 fn doSample(viewPos: vec3<f32>, viewDir: vec3<f32>, viewNormal: vec3<f32>, worldPos_2: vec3<f32>, metalness_2: f32, roughness_8: f32, isDiffuseSample_2: bool, isEnvSample_2: bool, NoV_4: f32, NoL_3: f32, NoH_3: f32, LoH_1: f32, VoH: f32, random_2: vec4<f32>, l_2: ptr<function, vec3<f32>>, hitPos_2: ptr<function, vec3<f32>>, isMissedRay: ptr<function, bool>, brdf: ptr<function, vec3<f32>>, pdf: ptr<function, f32>) -> vec3<f32> {
@@ -1277,10 +1277,10 @@ fn main_1() {
     directLight_1 = _e574.xyz;
     let _e577 = diffuseGI;
     let _e578 = directLight_1;
-    // diffuseGI = (_e577 + _e578);
+    diffuseGI = (_e577 + _e578);
     let _e580 = specularGI;
     let _e581 = directLight_1;
-    // specularGI = (_e580 + _e581);
+    specularGI = (_e580 + _e581);
     let _e585 = mode;
     if (_e585 == 0i) {
         {
