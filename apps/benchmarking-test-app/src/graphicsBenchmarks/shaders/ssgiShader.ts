@@ -1277,10 +1277,14 @@ fn main_1() {
     directLight_1 = _e574.xyz;
     let _e577 = diffuseGI;
     let _e578 = directLight_1;
-    diffuseGI = (_e577 + _e578);
+    if (mode == 1i) {
+        diffuseGI = (_e577 + _e578);
+    }
     let _e580 = specularGI;
     let _e581 = directLight_1;
-    specularGI = (_e580 + _e581);
+    if (mode == 1i) {
+        specularGI = (_e580 + _e581);
+    }
     let _e585 = mode;
     if (_e585 == 0i) {
         {
