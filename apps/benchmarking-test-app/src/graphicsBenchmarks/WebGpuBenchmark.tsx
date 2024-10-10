@@ -17,7 +17,9 @@ export const WebGpuBenchmark: React.FC<{
     if (!adapter) {
       throw new Error("No adapter");
     }
-    const device = await adapter.requestDevice();
+    const device = await adapter.requestDevice({
+      requiredFeatures: ["bgra8unorm-storage"],
+    });
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
 
     const context = ref.current!.getContext("webgpu")!;

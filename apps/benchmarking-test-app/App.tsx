@@ -21,6 +21,7 @@ import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
 import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
+import { runRayTracer } from "./src/graphicsBenchmarks/RayTracer";
 import {
   runScreenSpaceGlobalIllumination,
   runScreenSpaceReflection,
@@ -89,6 +90,7 @@ const App = () => {
           name="ssgiBenchmark"
         />
         <GraphicsBenchmark run={runScreenSpaceReflection} name="ssrBenchmark" />
+        <GraphicsBenchmark run={runRayTracer} name="rayTracerBenchmark" />
       </SafeAreaView>
     </>
   );
