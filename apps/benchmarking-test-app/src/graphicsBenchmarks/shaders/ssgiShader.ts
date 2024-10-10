@@ -1046,8 +1046,12 @@ fn main_1() {
     let _e80 = viewPos_1;
     viewDir_1 = normalize(_e80);
     let _e83 = mat;
-    worldNormal = normalize((vec4<f32>(_e83.normal.x, _e83.normal.y, _e83.normal.z, 1f) * viewMatrix).xyz);
-    viewNormal_1 = _e83.normal;
+    worldNormal = _e83.normal;
+    let _e85 = worldNormal;
+    let _e91 = cameraMatrixWorld;
+    let _e94 = worldNormal;
+    let _e100 = cameraMatrixWorld;
+    viewNormal_1 = normalize((vec4<f32>(_e94.x, _e94.y, _e94.z, 0f) * _e100).xyz);
     let _e105 = cameraMatrixWorld;
     let _e106 = viewPos_1;
     worldPos_3 = (_e105 * vec4<f32>(_e106.x, _e106.y, _e106.z, 1f)).xyz;
@@ -1340,6 +1344,7 @@ fn main_1() {
             let _e654 = gSpecular;
             let _e656 = mat;
             fragColor = ((_e653 + _e654) + vec4<f32>(_e656.emissive.x, _e656.emissive.y, _e656.emissive.z, 1f));
+            // fragColor = vec4<f32>(viewNormal_1.x, viewNormal_1.y, viewNormal_1.z, 1f);
             return;
         }
     } else {
@@ -2010,7 +2015,11 @@ fn main_1() {
     gl_Position = ((_e15 * _e16) * vec4<f32>(_e18.x, _e18.y, _e18.z, 1f));
     let _e25 = color_1;
     vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
-    vNormal = normal_1;
+    let _e31 = normal_1;
+    let _e37 = modelViewMatrix;
+    let _e40 = normal_1;
+    let _e46 = modelViewMatrix;
+    vNormal = normalize((vec4<f32>(_e40.x, _e40.y, _e40.z, 1f) * _e46 * projectionMatrix).xyz);
     let _e50 = roughness_1;
     vRoughness = _e50;
     let _e51 = metalness_1;
