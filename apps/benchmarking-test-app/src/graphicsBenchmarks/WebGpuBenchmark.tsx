@@ -4,13 +4,14 @@ import { CanvasContext } from "./types";
 
 export const WebGpuBenchmark: React.FC<{
   onComplete: (startTime: number) => void;
+  onError: (err: Error) => void;
   run: (
     context: CanvasContext,
     device: GPUDevice,
     canvas: HTMLCanvasElement,
     requestAnimationFrame: (callback: (time: number) => void) => number
   ) => Promise<void>;
-}> = ({ onComplete, run }) => {
+}> = ({ onComplete, run, onError }) => {
   const ref = useCanvasEffect(async () => {
     const startTime = Date.now();
     const adapter = await navigator.gpu.requestAdapter();
@@ -42,8 +43,12 @@ export const WebGpuBenchmark: React.FC<{
       alphaMode: "opaque",
     });
 
-    await run(context, device, canvas, requestAnimationFrame);
-    onComplete(startTime);
+    try {
+      await run(context, device, canvas, requestAnimationFrame);
+      onComplete(startTime);
+    } catch (err) {
+      onError(new Error(`Test failed with error: ${err}`));
+    }
   });
 
   return (

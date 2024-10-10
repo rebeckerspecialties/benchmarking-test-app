@@ -28,6 +28,20 @@ export const GraphicsBenchmark: React.FC<{
     setBenchmarkState(BenchmarkState.COMPLETE);
   }, []);
 
+  const [err, setError] = useState<Error>();
+
+  const onError = useCallback((err: Error) => {
+    setError(err);
+  }, []);
+
+  if (err) {
+    return (
+      <>
+        <Text>{err.message}</Text>
+      </>
+    );
+  }
+
   if (benchmarkState === BenchmarkState.COMPLETE && benchmarkRunTime) {
     const completedLabel = `${name}Completed`;
     return (
@@ -48,5 +62,7 @@ export const GraphicsBenchmark: React.FC<{
     );
   }
 
-  return <WebGpuBenchmark run={run} onComplete={onComplete} />;
+  return (
+    <WebGpuBenchmark run={run} onComplete={onComplete} onError={onError} />
+  );
 };
