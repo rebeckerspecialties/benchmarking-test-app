@@ -534,8 +534,8 @@ const runScreenSpaceShader = async (
   const uniformBindGroup2 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(2),
     entries: [
-      { binding: 0, resource: diffuseTexture.createView() },
-      { binding: 1, resource: normalTexture.createView() },
+      { binding: 0, resource: normalTexture.createView() },
+      { binding: 1, resource: diffuseTexture.createView() },
       { binding: 2, resource: materialTexture.createView() },
       { binding: 3, resource: materialSampler },
     ],
@@ -762,8 +762,8 @@ const runScreenSpaceShader = async (
   const denoiseBindGroup2 = device.createBindGroup({
     layout: denoisePipeline.getBindGroupLayout(2),
     entries: [
-      { binding: 0, resource: diffuseTexture.createView() },
-      { binding: 1, resource: normalTexture.createView() },
+      { binding: 0, resource: normalTexture.createView() },
+      { binding: 1, resource: diffuseTexture.createView() },
       { binding: 2, resource: materialTexture.createView() },
       { binding: 3, resource: materialSampler },
     ],
@@ -1177,7 +1177,6 @@ const runScreenSpaceShader = async (
       passEncoder.draw(screenVertexCount);
       passEncoder.end();
 
-      // TODO: poisson denoise pass
       commandEncoder.copyTextureToTexture(
         { texture: context.getCurrentTexture() },
         { texture: denoiseInputTexture },

@@ -131,7 +131,7 @@ fn rand(co: vec2<f32>) -> f32 {
     let _e39 = co_1;
     let _e51 = co_1;
     let _e60 = co_1;
-    return fract((sin(dot(_e60, vec2<f32>(12.9898f, 78.233f))) * 43758.547f));
+    return fract((sin(dot(_e60, vec2<f32>(12.9898f, 78.233f))) * 43758.547f)) * 0.1;
 }
 
 fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
@@ -1488,7 +1488,7 @@ fn rand(co: vec2<f32>) -> f32 {
     let _e28 = co_1;
     let _e40 = co_1;
     let _e49 = co_1;
-    return fract((sin(dot(_e49, vec2<f32>(12.9898f, 78.233f))) * 43758.547f));
+    return fract((sin(dot(_e49, vec2<f32>(12.9898f, 78.233f))) * 43758.547f) - 0.5f);
 }
 
 fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
