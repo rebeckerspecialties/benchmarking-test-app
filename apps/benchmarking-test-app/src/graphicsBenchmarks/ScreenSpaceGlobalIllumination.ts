@@ -186,7 +186,7 @@ const runScreenSpaceShader = async (
       module: device.createShaderModule({
         code: normalFragWGSL,
       }),
-      targets: [{ format: presentationFormat }],
+      targets: [{ format: "rgba16float" }],
     },
     primitive,
     depthStencil: {
@@ -509,12 +509,9 @@ const runScreenSpaceShader = async (
   });
 
   const normalTexture = device.createTexture({
-    size: [canvas.width, canvas.height, 1],
-    format: presentationFormat,
-    usage:
-      GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.COPY_DST |
-      GPUTextureUsage.RENDER_ATTACHMENT,
+    size: [canvas.width, canvas.height],
+    format: "rgba16float",
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
   });
 
   const materialTexture = device.createTexture({
@@ -881,8 +878,8 @@ const runScreenSpaceShader = async (
       const normalPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
           {
-            view: textureView,
-            clearValue: [0, 0, 0, 1],
+            view: normalTexture.createView(),
+            clearValue: [0, 0, 1.0, 1.0],
             loadOp: "clear",
             storeOp: "store",
           },
@@ -919,7 +916,7 @@ const runScreenSpaceShader = async (
       const zPostion = Math.sin(Math.PI * (frame / 250));
       frame++;
 
-      const cameraPos = vec3.fromValues(150 * xPosition, 100, 150 * zPostion);
+      const cameraPos = vec3.fromValues(100 * xPosition, 50, 100 * zPostion);
       const targetPos = vec3.fromValues(0, 25, 0);
       const axis = vec3.fromValues(0, 1, 0);
 
@@ -1146,12 +1143,6 @@ const runScreenSpaceShader = async (
       normalPass.drawIndexed(indexCount);
       normalPass.end();
 
-      commandEncoder.copyTextureToTexture(
-        { texture: context.getCurrentTexture() },
-        { texture: normalTexture },
-        [canvas.width, canvas.height]
-      );
-
       const materialPass = commandEncoder.beginRenderPass(
         materialPassDescriptor
       );
@@ -1212,7 +1203,7 @@ const runScreenSpaceShader = async (
       device.queue.submit([commandEncoder.finish()]);
       context.present();
 
-      if (frame >= 500) {
+      if (frame >= 100000) {
         resolve();
       } else {
         requestAnimationFrame(animate);
