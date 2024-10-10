@@ -15,7 +15,7 @@ const colors: [number, number, number][] = positions.map(() => [
   0.1 + Math.random() / 10,
   0.4 + Math.random() / 10,
 ]);
-const roughness: [number][] = positions.map(() => [0.8]);
+const roughness: [number][] = positions.map(() => [1]);
 const metalness: [number][] = positions.map(() => [0.1]);
 const emissives: [number, number, number][] = positions.map(() => [0, 0, 0]);
 
@@ -46,14 +46,9 @@ uvs.push(
   [1, 0]
 );
 colors.push([0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]);
-roughness.push([0], [0], [0], [0]);
+roughness.push([0.1], [0.1], [0.1], [0.1]);
 metalness.push([0.8], [0.8], [0.8], [0.8]);
-emissives.push(
-  [0.5, 0.5, 0.5],
-  [0.5, 0.5, 0.5],
-  [0.5, 0.5, 0.5],
-  [0.5, 0.5, 0.5]
-);
+emissives.push([0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]);
 
 export const mesh = {
   positions,

@@ -1321,7 +1321,7 @@ fn main_1() {
         {
             let _e647 = specularGI;
             let _e648 = rayLength;
-            gSpecular = vec4<f32>(_e647.x, _e647.y, _e647.z, _e648);
+            gSpecular = vec4<f32>(_e647.x, _e647.y, _e647.z, 1f);
             let _e653 = gDiffuse;
             let _e654 = gSpecular;
             let _e656 = mat;
@@ -1332,7 +1332,7 @@ fn main_1() {
         {
             let _e664 = specularGI;
             let _e665 = a_4;
-            gSpecular = vec4<f32>(_e664.x, _e664.y, _e664.z, _e665);
+            gSpecular = vec4<f32>(_e664.x, _e664.y, _e664.z, 1f);
             let _e670 = gSpecular;
             fragColor = _e670;
             return;
