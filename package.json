@@ -9,7 +9,7 @@
     "react": "18.2.0",
     "react-native": "^0.75.0",
     "react-native-permissions": "^3.10.1",
-    "react-native-wgpu": "^0.1.7",
+    "react-native-wgpu": "^0.1.8",
     "three": "^0.168.0"
   },
   "devDependencies": {

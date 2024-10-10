@@ -31,7 +31,7 @@
     "react-native-get-random-values": "^1.11.0",
     "react-native-permissions": "^3.10.1",
     "react-native-release-profiler": "^0.2.1",
-    "react-native-wgpu": "^0.1.7",
+    "react-native-wgpu": "^0.1.8",
     "three": "^0.168.0",
     "ts-matches": "^5.5.1",
     "wgpu-matrix": "^3.2.0"
