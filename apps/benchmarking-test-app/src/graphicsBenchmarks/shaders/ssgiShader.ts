@@ -4,27 +4,9 @@ struct VertexOutput {
     @builtin(position) gl_Position: vec4<f32>,
 }
 
-var<private> position_1: vec4<f32>;
-var<private> uv_1: vec2<f32>;
-var<private> vUv: vec2<f32>;
-var<private> gl_Position: vec4<f32>;
-
-fn main_1() {
-    let _e3 = uv_1;
-    vUv = _e3;
-    let _e5 = position_1;
-    gl_Position = _e5;
-    return;
-}
-
 @vertex
 fn main(@location(0) position: vec4<f32>, @location(1) uv: vec2<f32>) -> VertexOutput {
-    position_1 = position;
-    uv_1 = uv;
-    main_1();
-    let _e11 = vUv;
-    let _e13 = gl_Position;
-    return VertexOutput(_e11, _e13);
+    return VertexOutput(uv, position);
 }
 `;
 
@@ -1372,8 +1354,6 @@ struct FragmentOutput {
     @location(0) outputColor: vec4<f32>,
 }
 
-var<private> uv_1: vec2<f32>;
-var<private> outputColor: vec4<f32>;
 @group(0) @binding(0)
 var inputTexture: texture_2d<f32>;
 @group(0) @binding(1)
@@ -1383,38 +1363,18 @@ var depthTexture: texture_depth_2d;
 @group(0) @binding(3)
 var samp: sampler;
 
-fn main_1() {
-    var depth: f32;
-    var ssgiClr: vec3<f32>;
-
-    let _e8 = uv_1;
-    let _e10 = textureSample(depthTexture, samp, _e8);
-    depth = _e10;
-    let _e14 = depth;
-    if (_e14 == 1f) {
-        {
-            let _e19 = uv_1;
-            let _e21 = textureSampleLevel(sceneTexture, samp, _e19, 0f);
-            ssgiClr = _e21.xyz;
-        }
-    } else {
-        {
-            let _e25 = uv_1;
-            let _e27 = textureSampleLevel(inputTexture, samp, _e25, 0f);
-            ssgiClr = _e27.xyz;
-        }
-    }
-    let _e29 = ssgiClr;
-    outputColor = vec4<f32>(_e29.x, _e29.y, _e29.z, 1f);
-    return;
-}
-
 @fragment
 fn main(@location(0) uv: vec2<f32>) -> FragmentOutput {
-    uv_1 = uv;
-    main_1();
-    let _e15 = outputColor;
-    return FragmentOutput(_e15);
+    let depth = textureSample(depthTexture, samp, uv);
+    var ssgiClr: vec3<f32>;
+    if (depth == 1f) {
+        ssgiClr = textureSampleLevel(sceneTexture, samp, uv, 0f).xyz;
+    } else {
+        ssgiClr = textureSampleLevel(inputTexture, samp, uv, 0f).xyz;
+    }
+
+    let outputColor = vec4<f32>(ssgiClr.x, ssgiClr.y, ssgiClr.z, 1f);
+    return FragmentOutput(outputColor);
 }
 
 `;
