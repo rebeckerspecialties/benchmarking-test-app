@@ -1884,33 +1884,13 @@ struct FragmentOutput {
     @location(2) material: vec4<f32>,
 }
 
-var<private> vDiffuse_1: vec4<f32>;
-var<private> vNormal_1: vec3<f32>;
-var<private> vRoughness_1: f32;
-var<private> vMetalness_1: f32;
-var<private> vEmissive_1: vec3<f32>;
-var<private> outColor: vec4<f32>;
-
-fn main_1() {
-    let _e6 = vDiffuse_1;
-    let _e7 = vEmissive_1;
-    outColor = (_e6 + vec4<f32>(_e7.x, _e7.y, _e7.z, 1f));
-    return;
-}
-
 @fragment
 fn main(@location(0) vDiffuse: vec4<f32>, @location(1) vNormal: vec3<f32>, @location(2) vRoughness: f32, @location(3) vMetalness: f32, @location(4) vEmissive: vec3<f32>) -> FragmentOutput {
-    vDiffuse_1 = vDiffuse;
-    vNormal_1 = vNormal;
-    vRoughness_1 = vRoughness;
-    vMetalness_1 = vMetalness;
-    vEmissive_1 = vEmissive;
-    main_1();
-    let _e23 = outColor;
+    let outColor = vDiffuse + vec4<f32>(vEmissive.x, vEmissive.y, vEmissive.z, 1f);
     let normalOut = vec4f(vNormal.x, vNormal.y, vNormal.z, 0f);
     let emissivePower = vEmissive.x;
     let materialOut = vec4f(vRoughness, vMetalness, emissivePower, 0f);
-    return FragmentOutput(_e23, normalOut, materialOut);
+    return FragmentOutput(outColor, normalOut, materialOut);
 }
 `;
 
@@ -1924,57 +1904,17 @@ struct VertexOutput {
     @builtin(position) gl_Position: vec4<f32>,
 }
 
-var<private> position_1: vec3<f32>;
-var<private> normal_1: vec3<f32>;
-var<private> uv_1: vec2<f32>;
-var<private> color_1: vec3<f32>;
-var<private> roughness_1: f32;
-var<private> metalness_1: f32;
-var<private> emissive_1: vec3<f32>;
-var<private> vDiffuse: vec4<f32>;
-var<private> vNormal: vec3<f32>;
-var<private> vRoughness: f32;
-var<private> vMetalness: f32;
-var<private> vEmissive: vec3<f32>;
+
 @group(0) @binding(0)
 var<uniform> projectionMatrix: mat4x4<f32>;
 @group(0) @binding(1)
 var<uniform> modelViewMatrix: mat4x4<f32>;
 var<private> gl_Position: vec4<f32>;
 
-fn main_1() {
-    let _e15 = projectionMatrix;
-    let _e16 = modelViewMatrix;
-    let _e18 = position_1;
-    gl_Position = ((_e15 * _e16) * vec4<f32>(_e18.x, _e18.y, _e18.z, 1f));
-    let _e25 = color_1;
-    vDiffuse = vec4<f32>(_e25.x, _e25.y, _e25.z, 1f);
-    vNormal = normal_1;
-    let _e50 = roughness_1;
-    vRoughness = _e50;
-    let _e51 = metalness_1;
-    vMetalness = _e51;
-    let _e52 = vEmissive;
-    vEmissive = _e52;
-    return;
-}
-
 @vertex
 fn main(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>, @location(3) color: vec3<f32>, @location(4) roughness: f32, @location(5) metalness: f32, @location(6) emissive: vec3<f32>) -> VertexOutput {
-    position_1 = position;
-    normal_1 = normal;
-    uv_1 = uv;
-    color_1 = color;
-    roughness_1 = roughness;
-    metalness_1 = metalness;
-    emissive_1 = emissive;
-    main_1();
-    let _e43 = vDiffuse;
-    let _e45 = vNormal;
-    let _e47 = vRoughness;
-    let _e49 = vMetalness;
-    let _e51 = vEmissive;
-    let _e53 = gl_Position;
-    return VertexOutput(_e43, _e45, _e47, _e49, _e51, _e53);
+    let gl_Position = ((projectionMatrix * modelViewMatrix) * vec4<f32>(position.x, position.y, position.z, 1f));
+    let vDiffuse = vec4<f32>(color.x, color.y, color.z, 1f);
+    return VertexOutput(vDiffuse, normal, roughness, metalness, emissive, gl_Position);
 }
 `;
