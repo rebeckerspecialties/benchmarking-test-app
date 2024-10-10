@@ -686,10 +686,10 @@ const runScreenSpaceShader = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
-  const projectionMatrix = mat4.perspective(fov, aspect, 20.0, 2000.0);
+  const projectionMatrix = mat4.perspective(fov, aspect, 1.0, 2000.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
-  const cameraNear = 20.0;
+  const cameraNear = 1.0;
   const cameraFar = 2000.0;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
@@ -784,7 +784,7 @@ const runScreenSpaceShader = async (
       );
 
       const rayDistanceArray = new Float32Array(1);
-      rayDistanceArray.fill(150, 0);
+      rayDistanceArray.fill(20, 0);
       device.queue.writeBuffer(
         rayDistanceBuffer,
         0,
@@ -794,7 +794,7 @@ const runScreenSpaceShader = async (
       );
 
       const thicknessArray = new Float32Array(1);
-      thicknessArray.fill(25, 0);
+      thicknessArray.fill(1000, 0);
       device.queue.writeBuffer(
         thicknessBuffer,
         0,

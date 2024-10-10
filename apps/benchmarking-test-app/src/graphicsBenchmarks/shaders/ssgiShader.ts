@@ -105,7 +105,7 @@ var<private> worldNormal: vec3<f32>;
 var<private> worldPos_3: vec3<f32>;
 var<private> mat: Material;
 
-fn rand(co: vec2<f32>) -> f32 {
+fn rand(co: vec2<f32>, offset: f32) -> f32 {
     var co_1: vec2<f32>;
 
     co_1 = co;
@@ -113,7 +113,7 @@ fn rand(co: vec2<f32>) -> f32 {
     let _e39 = co_1;
     let _e51 = co_1;
     let _e60 = co_1;
-    return fract((sin(dot(_e60, vec2<f32>(12.9898f, 78.233f))) * 43758.547f)) * 0.1;
+    return fract((sin(dot(_e60, vec2<f32>(12.9898f, 78.233f))) * 43758.547f) - offset);
 }
 
 fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
@@ -121,13 +121,13 @@ fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
 
     co_3 = co_2;
     let _e27 = co_3;
-    let _e28 = rand(_e27);
+    let _e28 = rand(_e27, 0f);
     let _e30 = co_3;
-    let _e31 = rand(_e30);
+    let _e31 = rand(_e30, 0.25f);
     let _e33 = co_3;
-    let _e34 = rand(_e33);
+    let _e34 = rand(_e33, 0.5f);
     let _e36 = co_3;
-    let _e37 = rand(_e36);
+    let _e37 = rand(_e36, 0.75f);
     return vec4<f32>(_e28, _e31, _e34, _e37);
 }
 
@@ -628,7 +628,7 @@ fn BinarySearch(dir: ptr<function, vec3<f32>>, hitPos: ptr<function, vec3<f32>>)
     (*hitPos) = (_e38 - _e39);
     loop {
         let _e43 = i;
-        if !((_e43 < 5i)) {
+        if !((_e43 < 20i)) {
             break;
         }
         {
@@ -689,7 +689,7 @@ fn RayMarch(dir_1: ptr<function, vec3<f32>>, hitPos_1: ptr<function, vec3<f32>>,
     (*dir_1) = (_e36 * (_e37 / 20f));
     loop {
         let _e45 = i_1;
-        if !((_e45 < 20i)) {
+        if !((_e45 < 100i)) {
             break;
         }
         {
@@ -1440,30 +1440,30 @@ var<private> glossiness: f32;
 var<private> specularFactor: f32;
 var<private> POISSON: array<vec2<f32>, 8> = array<vec2<f32>, 8>(vec2<f32>(-1f, 0f), vec2<f32>(0f, -1f), vec2<f32>(1f, 0f), vec2<f32>(0f, 1f), vec2<f32>(-0.35355338f, -0.35355338f), vec2<f32>(0.35355338f, -0.35355338f), vec2<f32>(0.35355338f, 0.35355338f), vec2<f32>(-0.35355338f, 0.35355338f));
 
-fn rand(co: vec2<f32>) -> f32 {
+fn rand(co: vec2<f32>, offset: f32) -> f32 {
     var co_1: vec2<f32>;
 
     co_1 = co;
-    let _e19 = co_1;
-    let _e28 = co_1;
-    let _e40 = co_1;
-    let _e49 = co_1;
-    return fract((sin(dot(_e49, vec2<f32>(12.9898f, 78.233f))) * 43758.547f) - 0.5f);
+    let _e30 = co_1;
+    let _e39 = co_1;
+    let _e51 = co_1;
+    let _e60 = co_1;
+    return fract((sin(dot(_e60, vec2<f32>(12.9898f, 78.233f))) * 43758.547f) - offset);
 }
 
 fn blueNoise(co_2: vec2<f32>) -> vec4<f32> {
     var co_3: vec2<f32>;
 
     co_3 = co_2;
-    let _e16 = co_3;
-    let _e17 = rand(_e16);
-    let _e19 = co_3;
-    let _e20 = rand(_e19);
-    let _e22 = co_3;
-    let _e23 = rand(_e22);
-    let _e25 = co_3;
-    let _e26 = rand(_e25);
-    return vec4<f32>(_e17, _e20, _e23, _e26);
+    let _e27 = co_3;
+    let _e28 = rand(_e27, 0f);
+    let _e30 = co_3;
+    let _e31 = rand(_e30, 0.25f);
+    let _e33 = co_3;
+    let _e34 = rand(_e33, 0.5f);
+    let _e36 = co_3;
+    let _e37 = rand(_e36, 0.75f);
+    return vec4<f32>(_e28, _e31, _e34, _e37);
 }
 
 fn getMaterial(uv: vec2<f32>) -> Material {
