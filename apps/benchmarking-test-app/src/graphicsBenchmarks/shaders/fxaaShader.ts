@@ -874,7 +874,7 @@ var<uniform> modelViewProjection: mat4x4f;
 @vertex
 fn main(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>) -> VertexOutput {
   let outputColor = vec4f(normal, 1.0);
-  let outputPosition = modelViewProjection * vec4f(-position.x, position.y, position.z, 1.0);
+  let outputPosition = modelViewProjection * vec4f(position.x, position.y, position.z, 1.0);
 
   return VertexOutput(outputColor, outputPosition);
 }`;
