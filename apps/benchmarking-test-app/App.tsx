@@ -22,6 +22,10 @@ import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
 import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
 import { runRayTracer } from "./src/graphicsBenchmarks/RayTracer";
+import {
+  runScreenSpaceGlobalIllumination,
+  runScreenSpaceReflection,
+} from "./src/graphicsBenchmarks/ScreenSpaceGlobalIllumination";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -81,6 +85,11 @@ const App = () => {
           name="sdfWebGpuBenchmark"
         />
         <GraphicsBenchmark run={runDragonFxaa} name="dragonFxaaBenchmark" />
+        <GraphicsBenchmark
+          run={runScreenSpaceGlobalIllumination}
+          name="ssgiBenchmark"
+        />
+        <GraphicsBenchmark run={runScreenSpaceReflection} name="ssrBenchmark" />
         <GraphicsBenchmark run={runRayTracer} name="rayTracerBenchmark" />
       </SafeAreaView>
     </>
