@@ -85,7 +85,7 @@ export default class Common {
       100
     );
 
-    const viewRotation = params.rotateCamera ? this.frame / 1000 : 0;
+    const viewRotation = params.rotateCamera ? Math.PI * (this.frame / 250) : 0;
 
     const viewMatrix = mat4.lookAt(
       vec3.fromValues(
