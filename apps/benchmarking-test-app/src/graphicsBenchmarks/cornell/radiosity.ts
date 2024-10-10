@@ -1,5 +1,6 @@
+// source: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/radiosity.ts
 import Common from "./common";
-import { radiosityWGSL } from "./cornellShader";
+import { radiosityWGSL } from "../shaders/cornellShader";
 import Scene from "./scene";
 
 /**

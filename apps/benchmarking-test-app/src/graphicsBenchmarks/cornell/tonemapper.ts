@@ -1,5 +1,6 @@
+// source: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/tonemapper.ts
 import Common from "./common";
-import { tonemapperWGSL } from "./cornellShader";
+import { tonemapperWGSL } from "../shaders/cornellShader";
 
 /**
  * Tonemapper implements a tonemapper to convert a linear-light framebuffer to

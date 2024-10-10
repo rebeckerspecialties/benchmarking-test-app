@@ -6,7 +6,7 @@ import {
   screenVertexSize,
 } from "../meshes/screen";
 import { CanvasContext } from "../types";
-import { basicFragWGSL, basicVertWGSL } from "./cornellShader";
+import { basicFragWGSL, basicVertWGSL } from "../shaders/cornellShader";
 
 /**
  * Raytracer renders the scene using a software ray-tracing compute pipeline.

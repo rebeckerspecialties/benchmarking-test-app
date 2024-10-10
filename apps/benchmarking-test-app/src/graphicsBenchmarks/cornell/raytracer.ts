@@ -1,4 +1,5 @@
-import { raytracerWGSL } from "./cornellShader";
+// source: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/raytracer.ts
+import { raytracerWGSL } from "../shaders/cornellShader";
 
 import Common from "./common";
 import Radiosity from "./radiosity";

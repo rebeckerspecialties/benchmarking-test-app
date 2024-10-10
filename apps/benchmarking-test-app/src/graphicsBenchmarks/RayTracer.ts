@@ -1,3 +1,4 @@
+// Adapted from: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/main.ts
 import Scene from "./cornell/scene";
 import Common from "./cornell/common";
 import Radiosity from "./cornell/radiosity";

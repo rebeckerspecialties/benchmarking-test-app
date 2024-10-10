@@ -1,4 +1,5 @@
-import { vec3, Vec3 } from 'wgpu-matrix';
+// source: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/scene.ts
+import { vec3, Vec3 } from "wgpu-matrix";
 
 function reciprocal(v: Vec3) {
   const s = 1 / vec3.lenSq(v);
@@ -35,7 +36,7 @@ function box(params: {
   depth: number;
   rotation: number;
   color: Vec3 | Vec3[];
-  type: 'convex' | 'concave';
+  type: "convex" | "concave";
 }): Quad[] {
   //      ─────────┐
   //     ╱  +Y    ╱│
@@ -60,7 +61,7 @@ function box(params: {
       ? params.color
       : new Array(6).fill(params.color);
   const sign = (v: Vec3) => {
-    return params.type === 'concave' ? v : vec3.negate(v);
+    return params.type === "concave" ? v : vec3.negate(v);
   };
   return [
     {
@@ -141,7 +142,7 @@ export default class Scene {
         vec3.fromValues(0.5, 0.5, 0.5), // NegativeY
         vec3.fromValues(0.5, 0.5, 0.5), // NegativeZ
       ],
-      type: 'concave',
+      type: "concave",
     }),
     ...box({
       center: vec3.fromValues(1.5, 1.5, 1),
@@ -150,7 +151,7 @@ export default class Scene {
       depth: 3,
       rotation: 0.3,
       color: vec3.fromValues(0.8, 0.8, 0.8),
-      type: 'convex',
+      type: "convex",
     }),
     ...box({
       center: vec3.fromValues(-2, 3, -2),
@@ -159,7 +160,7 @@ export default class Scene {
       depth: 3,
       rotation: -0.4,
       color: vec3.fromValues(0.8, 0.8, 0.8),
-      type: 'convex',
+      type: "convex",
     }),
     light,
   ];
@@ -298,19 +299,19 @@ export default class Scene {
             // position
             shaderLocation: 0,
             offset: 0 * 4,
-            format: 'float32x4',
+            format: "float32x4",
           },
           {
             // uv
             shaderLocation: 1,
             offset: 4 * 4,
-            format: 'float32x3',
+            format: "float32x3",
           },
           {
             // color
             shaderLocation: 2,
             offset: 7 * 4,
-            format: 'float32x3',
+            format: "float32x3",
           },
         ],
       },

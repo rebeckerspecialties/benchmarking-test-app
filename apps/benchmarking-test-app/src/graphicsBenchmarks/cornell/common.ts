@@ -1,5 +1,6 @@
+// source: https://github.com/webgpu/webgpu-samples/blob/main/sample/cornell/common.ts
 import { mat4, vec3 } from "wgpu-matrix";
-import { commonWGSL } from "./cornellShader";
+import { commonWGSL } from "../shaders/cornellShader";
 
 /**
  * Common holds the shared WGSL between the shaders, including the common uniform buffer.
