@@ -1,3 +1,4 @@
+// source: https://github.com/0beqz/realism-effects/blob/main/src/denoise/shader/poisson_denoise.frag
 layout(location = 0) in vec2 vUv;
 layout(location = 0) out vec4 outputColor;
 
