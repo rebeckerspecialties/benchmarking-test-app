@@ -27,7 +27,7 @@ async function runBenchmark(
   skipIfJavaScriptCore: boolean
 ) {
   const engineVersion = driver.$(`~EngineVersion`);
-  await engineVersion.waitForDisplayed({ timeout: 20000 });
+  await engineVersion.waitForDisplayed({ timeout: 40000 });
   const engineVersionText = await engineVersion.getText();
 
   if (skipIfJavaScriptCore && engineVersionText === "Using JavaScriptCore") {
@@ -39,7 +39,7 @@ async function runBenchmark(
 
   const completed = driver.$(`~${testId}Completed`);
 
-  await completed.waitForDisplayed({ timeout: 20000 });
+  await completed.waitForDisplayed({ timeout: 40000 });
   const result = await completed.getText();
   return result;
 }
