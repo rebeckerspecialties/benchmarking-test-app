@@ -1,7 +1,7 @@
-import raytracerWGSL from './raytracer.wgsl';
+import { raytracerWGSL } from "./cornellShader";
 
-import Common from './common';
-import Radiosity from './radiosity';
+import Common from "./common";
+import Radiosity from "./radiosity";
 
 /**
  * Raytracer renders the scene using a software ray-tracing compute pipeline.
@@ -24,13 +24,13 @@ export default class Raytracer {
     this.common = common;
     this.framebuffer = framebuffer;
     const bindGroupLayout = device.createBindGroupLayout({
-      label: 'Raytracer.bindGroupLayout',
+      label: "Raytracer.bindGroupLayout",
       entries: [
         {
           // lightmap
           binding: 0,
           visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
-          texture: { viewDimension: '2d-array' },
+          texture: { viewDimension: "2d-array" },
         },
         {
           // sampler
@@ -43,16 +43,16 @@ export default class Raytracer {
           binding: 2,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: 'write-only',
+            access: "write-only",
             format: framebuffer.format,
-            viewDimension: '2d',
+            viewDimension: "2d",
           },
         },
       ],
     });
 
     this.bindGroup = device.createBindGroup({
-      label: 'rendererBindGroup',
+      label: "rendererBindGroup",
       layout: bindGroupLayout,
       entries: [
         {
@@ -62,11 +62,11 @@ export default class Raytracer {
         {
           binding: 1,
           resource: device.createSampler({
-            addressModeU: 'clamp-to-edge',
-            addressModeV: 'clamp-to-edge',
-            addressModeW: 'clamp-to-edge',
-            magFilter: 'linear',
-            minFilter: 'linear',
+            addressModeU: "clamp-to-edge",
+            addressModeV: "clamp-to-edge",
+            addressModeW: "clamp-to-edge",
+            magFilter: "linear",
+            minFilter: "linear",
           }),
         },
         {
@@ -77,7 +77,7 @@ export default class Raytracer {
     });
 
     this.pipeline = device.createComputePipeline({
-      label: 'raytracerPipeline',
+      label: "raytracerPipeline",
       layout: device.createPipelineLayout({
         bindGroupLayouts: [common.uniforms.bindGroupLayout, bindGroupLayout],
       }),

@@ -1,5 +1,5 @@
-import Common from './common';
-import tonemapperWGSL from './tonemapper.wgsl';
+import Common from "./common";
+import { tonemapperWGSL } from "./cornellShader";
 
 /**
  * Tonemapper implements a tonemapper to convert a linear-light framebuffer to
@@ -22,14 +22,14 @@ export default class Tonemapper {
     this.width = input.width;
     this.height = input.height;
     const bindGroupLayout = device.createBindGroupLayout({
-      label: 'Tonemapper.bindGroupLayout',
+      label: "Tonemapper.bindGroupLayout",
       entries: [
         {
           // input
           binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           texture: {
-            viewDimension: '2d',
+            viewDimension: "2d",
           },
         },
         {
@@ -37,15 +37,15 @@ export default class Tonemapper {
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: 'write-only',
+            access: "write-only",
             format: output.format,
-            viewDimension: '2d',
+            viewDimension: "2d",
           },
         },
       ],
     });
     this.bindGroup = device.createBindGroup({
-      label: 'Tonemapper.bindGroup',
+      label: "Tonemapper.bindGroup",
       layout: bindGroupLayout,
       entries: [
         {
@@ -63,15 +63,15 @@ export default class Tonemapper {
 
     const mod = device.createShaderModule({
       code:
-        tonemapperWGSL.replace('{OUTPUT_FORMAT}', output.format) + common.wgsl,
+        tonemapperWGSL.replace("{OUTPUT_FORMAT}", output.format) + common.wgsl,
     });
     const pipelineLayout = device.createPipelineLayout({
-      label: 'Tonemap.pipelineLayout',
+      label: "Tonemap.pipelineLayout",
       bindGroupLayouts: [bindGroupLayout],
     });
 
     this.pipeline = device.createComputePipeline({
-      label: 'Tonemap.pipeline',
+      label: "Tonemap.pipeline",
       layout: pipelineLayout,
       compute: {
         module: mod,

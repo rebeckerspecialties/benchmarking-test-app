@@ -1,5 +1,5 @@
-import { mat4, vec3 } from 'wgpu-matrix';
-import commonWGSL from './common.wgsl';
+import { mat4, vec3 } from "wgpu-matrix";
+import { commonWGSL } from "./cornellShader";
 
 /**
  * Common holds the shared WGSL between the shaders, including the common uniform buffer.
@@ -21,7 +21,7 @@ export default class Common {
   constructor(device: GPUDevice, quads: GPUBuffer) {
     this.device = device;
     this.uniformBuffer = device.createBuffer({
-      label: 'Common.uniformBuffer',
+      label: "Common.uniformBuffer",
       size:
         0 + //
         4 * 16 + // mvp
@@ -31,25 +31,25 @@ export default class Common {
     });
 
     const bindGroupLayout = device.createBindGroupLayout({
-      label: 'Common.bindGroupLayout',
+      label: "Common.bindGroupLayout",
       entries: [
         {
           // common_uniforms
           binding: 0,
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.COMPUTE,
-          buffer: { type: 'uniform' },
+          buffer: { type: "uniform" },
         },
         {
           // quads
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'read-only-storage' },
+          buffer: { type: "read-only-storage" },
         },
       ],
     });
 
     const bindGroup = device.createBindGroup({
-      label: 'Common.bindGroup',
+      label: "Common.bindGroup",
       layout: bindGroupLayout,
       entries: [
         {

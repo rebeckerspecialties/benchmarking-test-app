@@ -21,6 +21,7 @@ import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { GraphicsBenchmark } from "./src/graphicsBenchmarks/GraphicsBenchmark";
 import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
+import { runRayTracer } from "./src/graphicsBenchmarks/RayTracer";
 
 const App = () => {
   const [flamegraphEnabled, setFlamegraphEnabled] = useState(false);
@@ -80,6 +81,7 @@ const App = () => {
           name="sdfWebGpuBenchmark"
         />
         <GraphicsBenchmark run={runDragonFxaa} name="dragonFxaaBenchmark" />
+        <GraphicsBenchmark run={runRayTracer} name="rayTracerBenchmark" />
       </SafeAreaView>
     </>
   );

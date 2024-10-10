@@ -1,6 +1,6 @@
-import Common from './common';
-import radiosityWGSL from './radiosity.wgsl';
-import Scene from './scene';
+import Common from "./common";
+import { radiosityWGSL } from "./cornellShader";
+import Scene from "./scene";
 
 /**
  * Radiosity computes lightmaps, calculated by software raytracing of light in
@@ -8,7 +8,7 @@ import Scene from './scene';
  */
 export default class Radiosity {
   // The output lightmap format and dimensions
-  static readonly lightmapFormat = 'rgba16float';
+  static readonly lightmapFormat = "rgba16float";
   static readonly lightmapWidth = 256;
   static readonly lightmapHeight = 256;
 
@@ -52,7 +52,7 @@ export default class Radiosity {
     this.common = common;
     this.scene = scene;
     this.lightmap = device.createTexture({
-      label: 'Radiosity.lightmap',
+      label: "Radiosity.lightmap",
       size: {
         width: Radiosity.lightmapWidth,
         height: Radiosity.lightmapHeight,
@@ -62,7 +62,7 @@ export default class Radiosity {
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING,
     });
     this.accumulationBuffer = device.createBuffer({
-      label: 'Radiosity.accumulationBuffer',
+      label: "Radiosity.accumulationBuffer",
       size:
         Radiosity.lightmapWidth *
         Radiosity.lightmapHeight *
@@ -73,39 +73,39 @@ export default class Radiosity {
     this.kTotalLightmapTexels =
       Radiosity.lightmapWidth * Radiosity.lightmapHeight * scene.quads.length;
     this.uniformBuffer = device.createBuffer({
-      label: 'Radiosity.uniformBuffer',
+      label: "Radiosity.uniformBuffer",
       size: 8 * 4, // 8 x f32
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     const bindGroupLayout = device.createBindGroupLayout({
-      label: 'Radiosity.bindGroupLayout',
+      label: "Radiosity.bindGroupLayout",
       entries: [
         {
           // accumulation buffer
           binding: 0,
           visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'storage' },
+          buffer: { type: "storage" },
         },
         {
           // lightmap
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: 'write-only',
+            access: "write-only",
             format: Radiosity.lightmapFormat,
-            viewDimension: '2d-array',
+            viewDimension: "2d-array",
           },
         },
         {
           // radiosity_uniforms
           binding: 2,
           visibility: GPUShaderStage.COMPUTE,
-          buffer: { type: 'uniform' },
+          buffer: { type: "uniform" },
         },
       ],
     });
     this.bindGroup = device.createBindGroup({
-      label: 'Radiosity.bindGroup',
+      label: "Radiosity.bindGroup",
       layout: bindGroupLayout,
       entries: [
         {
@@ -136,16 +136,16 @@ export default class Radiosity {
       code: radiosityWGSL + common.wgsl,
     });
     const pipelineLayout = device.createPipelineLayout({
-      label: 'Radiosity.accumulatePipelineLayout',
+      label: "Radiosity.accumulatePipelineLayout",
       bindGroupLayouts: [common.uniforms.bindGroupLayout, bindGroupLayout],
     });
 
     this.radiosityPipeline = device.createComputePipeline({
-      label: 'Radiosity.radiosityPipeline',
+      label: "Radiosity.radiosityPipeline",
       layout: pipelineLayout,
       compute: {
         module: mod,
-        entryPoint: 'radiosity',
+        entryPoint: "radiosity",
         constants: {
           PhotonsPerWorkgroup: this.kPhotonsPerWorkgroup,
           PhotonEnergy: this.kPhotonEnergy,
@@ -154,11 +154,11 @@ export default class Radiosity {
     });
 
     this.accumulationToLightmapPipeline = device.createComputePipeline({
-      label: 'Radiosity.accumulationToLightmapPipeline',
+      label: "Radiosity.accumulationToLightmapPipeline",
       layout: pipelineLayout,
       compute: {
         module: mod,
-        entryPoint: 'accumulation_to_lightmap',
+        entryPoint: "accumulation_to_lightmap",
         constants: {
           AccumulationToLightmapWorkgroupSizeX:
             this.kAccumulationToLightmapWorkgroupSizeX,
