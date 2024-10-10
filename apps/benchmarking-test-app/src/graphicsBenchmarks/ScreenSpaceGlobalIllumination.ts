@@ -686,10 +686,10 @@ const runScreenSpaceShader = async (
   // Calculate constants
   const aspect = canvas.width / canvas.height;
   const fov = Math.PI / 2;
-  const projectionMatrix = mat4.perspective(fov, aspect, 0.01, 250.0);
+  const projectionMatrix = mat4.perspective(fov, aspect, 20, 250.0);
   const projectionMatrixInverse = mat4.inverse(projectionMatrix);
   const resolution = vec2.fromValues(canvas.width, canvas.height);
-  const cameraNear = 0.01;
+  const cameraNear = 20;
   const cameraFar = 250.0;
   const nearMulFar = cameraNear * cameraFar;
   const farMinusNear = cameraFar - cameraNear;
