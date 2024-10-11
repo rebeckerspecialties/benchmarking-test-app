@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1728666360651,
+  "lastUpdate": 1728675313779,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -2894,6 +2894,378 @@ window.BENCHMARK_DATA = {
           {
             "name": "Memory Usage",
             "value": 130938352,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Henry Allen",
+            "username": "hmallen99",
+            "email": "31718268+hmallen99@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "1138fa725a88357ecd05c77ed5f6a6bd43927ce7",
+          "message": "Enable Raytracing Benchmark (#62)\n\n* Build in debug mode\r\n\r\n* Add raytracer bench\r\n\r\n* Move benchmark slot",
+          "timestamp": "2024-10-11T16:24:01Z",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/1138fa725a88357ecd05c77ed5f6a6bd43927ce7"
+        },
+        "date": 1728675313525,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4308,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 6790,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 10283,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/rayTracerBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5764,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/ssgiBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/ssrBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 706,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8403,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 5608,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 9154,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/irEcsBenchmarkWallClock-ms.txt",
+            "value": 13596,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/rayTracerBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/simpleBenchmarkWallClock-ms.txt",
+            "value": 5795,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/ssgiBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/ssrBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/threeJsBenchmarkWallClock-ms.txt",
+            "value": 862,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 12/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8596,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 6207,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 8860,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/irEcsBenchmarkWallClock-ms.txt",
+            "value": 12804,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/rayTracerBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/simpleBenchmarkWallClock-ms.txt",
+            "value": 5761,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/ssgiBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/ssrBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/threeJsBenchmarkWallClock-ms.txt",
+            "value": 870,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPad (2022)/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8552,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4100,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": 8554,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 10215,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 9815,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/rayTracerBenchmarkWallClock-ms.txt",
+            "value": 8857,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": 9122,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5765,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/ssgiBenchmarkWallClock-ms.txt",
+            "value": 9257,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/ssrBenchmarkWallClock-ms.txt",
+            "value": 9275,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1166,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 15 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8436,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 6589,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": 8600,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 14098,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/irEcsBenchmarkWallClock-ms.txt",
+            "value": 11933,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/rayTracerBenchmarkWallClock-ms.txt",
+            "value": 9835,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": 9469,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/simpleBenchmarkWallClock-ms.txt",
+            "value": 5738,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/ssgiBenchmarkWallClock-ms.txt",
+            "value": 9502,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/ssrBenchmarkWallClock-ms.txt",
+            "value": 9480,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1507,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 12/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8613,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 6269,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": 8602,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 13766,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/irEcsBenchmarkWallClock-ms.txt",
+            "value": 12446,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/rayTracerBenchmarkWallClock-ms.txt",
+            "value": 18718,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": 19787,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/simpleBenchmarkWallClock-ms.txt",
+            "value": 5795,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/ssgiBenchmarkWallClock-ms.txt",
+            "value": 18285,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/ssrBenchmarkWallClock-ms.txt",
+            "value": 15091,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1457,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPad (2022)/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8547,
+            "unit": "ms"
+          },
+          {
+            "name": "Bundle Size",
+            "value": 2916,
+            "unit": "kiB"
+          },
+          {
+            "name": "Executable Size",
+            "value": 11356,
+            "unit": "kiB"
+          },
+          {
+            "name": "Memory Usage",
+            "value": 133308640,
+            "unit": "bytes"
+          },
+          {
+            "name": "Memory Usage",
+            "value": 116742256,
             "unit": "bytes"
           }
         ]
