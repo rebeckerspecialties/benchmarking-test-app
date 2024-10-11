@@ -79,7 +79,7 @@ jobs:
           xcodebuild -scheme "benchmarking-test-app" \
           -archivePath "BenchmarkingTestApp.xcarchive" \
           -workspace ios/benchmarking-test-app.xcworkspace \
-          -configuration Release \
+          -configuration Debug \
           -sdk iphoneos \
           -destination generic/platform=iOS \
           -allowProvisioningUpdates \
