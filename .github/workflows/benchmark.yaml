@@ -158,7 +158,7 @@ jobs:
               "appArn": "${{matrix.engine}}Benchmarking.ipa",
               "devicePoolArn": "SmallDevicePool",
               "executionConfiguration": {
-                "jobTimeoutMinutes": 20
+                "jobTimeoutMinutes": 40
               },
               "test": {
                 "type": "APPIUM_NODE",
