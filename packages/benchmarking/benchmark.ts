@@ -6,8 +6,6 @@ import {
 } from "./runTest";
 
 const runBenchmarkSuite = async () => {
-  await benchmarkWithWallClockTime("rayTracerBenchmark", true);
-
   console.log("Running benchmarks with wall clock time");
   await benchmarkWithWallClockTime("simpleBenchmark");
   await benchmarkWithWallClockTime("bitEcsBenchmark");
