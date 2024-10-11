@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1728360934912,
+  "lastUpdate": 1728606727790,
   "repoUrl": "https://github.com/rebeckerspecialties/benchmarking-test-app",
   "entries": {
     "React Native Benchmarks": [
@@ -2606,6 +2606,145 @@ window.BENCHMARK_DATA = {
           {
             "name": "Memory Usage",
             "value": 122351872,
+            "unit": "bytes"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "31718268+hmallen99@users.noreply.github.com",
+            "name": "Henry Allen",
+            "username": "hmallen99"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e92177741a47520e7cf6609740313f38eda7e266",
+          "message": "Increase test timeout (#61)\n\n* Increase job timeout\r\n\r\n* Increase test timeout\r\n\r\n* Run benchmarks before profiler runs\r\n\r\n* Conditionally set required features\r\n\r\n* Add error handling\r\n\r\n* Remove ray tracer benchmark",
+          "timestamp": "2024-10-10T20:11:45-04:00",
+          "tree_id": "ba4a6bdae56136541467c1034c0eca978cd39225",
+          "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/commit/e92177741a47520e7cf6609740313f38eda7e266"
+        },
+        "date": 1728606726896,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "jsc/Apple iPhone 14 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4684,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 6993,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 10515,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5766,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/ssgiBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/ssrBenchmarkWallClock-ms.txt",
+            "value": -1,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 724,
+            "unit": "ms"
+          },
+          {
+            "name": "jsc/Apple iPhone 14 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8491,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/bitEcsBenchmarkWallClock-ms.txt",
+            "value": 4808,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/dragonFxaaBenchmarkWallClock-ms.txt",
+            "value": 8524,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/hyperfluxBenchmarkWallClock-ms.txt",
+            "value": 11303,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/irEcsBenchmarkWallClock-ms.txt",
+            "value": 10787,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/sdfWebGpuBenchmarkWallClock-ms.txt",
+            "value": 9092,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/simpleBenchmarkWallClock-ms.txt",
+            "value": 5751,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/ssgiBenchmarkWallClock-ms.txt",
+            "value": 9308,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/ssrBenchmarkWallClock-ms.txt",
+            "value": 9309,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/threeJsBenchmarkWallClock-ms.txt",
+            "value": 1258,
+            "unit": "ms"
+          },
+          {
+            "name": "hermes/Apple iPhone 14 Pro/triangleWebGpuBenchmarkWallClock-ms.txt",
+            "value": 8490,
+            "unit": "ms"
+          },
+          {
+            "name": "Bundle Size",
+            "value": 2916,
+            "unit": "kiB"
+          },
+          {
+            "name": "Executable Size",
+            "value": 4164,
+            "unit": "kiB"
+          },
+          {
+            "name": "Memory Usage",
+            "value": 125042224,
             "unit": "bytes"
           }
         ]
