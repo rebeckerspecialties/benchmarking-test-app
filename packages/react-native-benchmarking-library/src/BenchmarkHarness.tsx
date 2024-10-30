@@ -10,7 +10,7 @@
 
 import { useCallback, useState } from "react";
 
-import { Button, SafeAreaView, StatusBar } from "react-native";
+import { Button, View } from "react-native";
 import { Benchmark } from "./Benchmark";
 import { JavaScriptEngineVersion } from "./JavaScriptEngineVersion";
 import { GraphicsBenchmark } from "./GraphicsBenchmark";
@@ -36,10 +36,9 @@ export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
 
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView
+      <View
         style={{ flex: 1, backgroundColor: "white" }}
-        accessibilityLabel="benchmarkSafeArea"
+        accessibilityLabel="benchmarkView"
       >
         <JavaScriptEngineVersion />
         <Button
@@ -62,7 +61,7 @@ export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
               );
           }
         })}
-      </SafeAreaView>
+      </View>
     </>
   );
 };

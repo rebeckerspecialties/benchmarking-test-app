@@ -9,5 +9,11 @@
   "create-react-native-library": {
     "type": "library",
     "version": "0.42.2"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-native": "^0.76.1",
+    "react-native-release-profiler": "^0.0.1",
+    "react-native-wgpu": "^0.1.18"
   }
 }
