@@ -1,24 +1,13 @@
 {
   "name": "react-native-benchmarking-library",
-  "version": "1.0.0",
-  "description": "Benchmarking utilities for React Native libraries and applications",
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rebeckerspecialties/benchmarking-test-app.git"
-  },
-  "keywords": [
-    "Benchmarking",
-    "React",
-    "Native"
-  ],
-  "author": "",
-  "bugs": {
-    "url": "https://github.com/rebeckerspecialties/benchmarking-test-app/issues"
-  },
-  "homepage": "https://github.com/rebeckerspecialties/benchmarking-test-app#readme"
+  "version": "0.0.0",
+  "description": "Utilities for benchmarking JavaScript libraries in React Native applications",
+  "main": "src/index",
+  "author": " <> ()",
+  "license": "UNLICENSED",
+  "homepage": "#readme",
+  "create-react-native-library": {
+    "type": "library",
+    "version": "0.42.2"
+  }
 }
