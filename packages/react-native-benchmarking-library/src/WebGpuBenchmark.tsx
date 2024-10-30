@@ -2,15 +2,17 @@ import { StyleSheet, View, PixelRatio } from "react-native";
 import { Canvas, useCanvasEffect } from "react-native-wgpu";
 import { CanvasContext } from "./types";
 
+export type graphicsBenchmarkFn = (
+  context: CanvasContext,
+  device: GPUDevice,
+  canvas: HTMLCanvasElement,
+  requestAnimationFrame: (callback: (time: number) => void) => number
+) => Promise<void>;
+
 export const WebGpuBenchmark: React.FC<{
   onComplete: (startTime: number) => void;
   onError: (err: Error) => void;
-  run: (
-    context: CanvasContext,
-    device: GPUDevice,
-    canvas: HTMLCanvasElement,
-    requestAnimationFrame: (callback: (time: number) => void) => number
-  ) => Promise<void>;
+  run: graphicsBenchmarkFn;
 }> = ({ onComplete, run, onError }) => {
   const ref = useCanvasEffect(async () => {
     const startTime = Date.now();

@@ -14,12 +14,19 @@ import { Button, View } from "react-native";
 import { Benchmark } from "./Benchmark";
 import { JavaScriptEngineVersion } from "./JavaScriptEngineVersion";
 import { GraphicsBenchmark } from "./GraphicsBenchmark";
+import { graphicsBenchmarkFn } from "./WebGpuBenchmark";
 
-interface BenchmarkDescriptor {
-  benchmarkType: "headless" | "graphics";
-  title: string;
-  benchmarkFn: () => Promise<void>;
-}
+export type BenchmarkDescriptor =
+  | {
+      benchmarkType: "headless";
+      title: string;
+      benchmarkFn: () => Promise<void>;
+    }
+  | {
+      benchmarkType: "graphics";
+      title: string;
+      benchmarkFn: graphicsBenchmarkFn;
+    };
 
 export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
   items,
@@ -49,7 +56,9 @@ export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
         {items.map(({ benchmarkType, title, benchmarkFn }) => {
           switch (benchmarkType) {
             case "graphics":
-              return <GraphicsBenchmark run={benchmarkFn} name={title} />;
+              return (
+                <GraphicsBenchmark run={benchmarkFn} name={title} key={title} />
+              );
             case "headless":
             default:
               return (
@@ -57,6 +66,7 @@ export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
                   flamegraphEnabled={flamegraphEnabled}
                   name={title}
                   run={benchmarkFn}
+                  key={title}
                 />
               );
           }
