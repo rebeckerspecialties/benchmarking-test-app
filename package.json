@@ -11,7 +11,7 @@
     "react-native-permissions": "^3.10.1",
     "react-native-wgpu": "^0.1.8",
     "three": "^0.168.0",
-    "react-native-benchmarking-library": "file:./packages/react-native-benchmarking-library"
+    "react-native-benchmarking-library": "1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
