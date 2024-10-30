@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { Button, Text } from "react-native";
-import { CanvasContext } from "./types";
-import { WebGpuBenchmark } from "./WebGpuBenchmark";
+import { graphicsBenchmarkFn, WebGpuBenchmark } from "./WebGpuBenchmark";
 
 enum BenchmarkState {
   NOT_STARTED,
@@ -11,12 +10,7 @@ enum BenchmarkState {
 
 export const GraphicsBenchmark: React.FC<{
   name: string;
-  run: (
-    context: CanvasContext,
-    device: GPUDevice,
-    canvas: HTMLCanvasElement,
-    requestAnimationFrame: (callback: (time: number) => void) => number
-  ) => Promise<void>;
+  run: graphicsBenchmarkFn;
 }> = ({ run, name }) => {
   const [benchmarkState, setBenchmarkState] = useState(
     BenchmarkState.NOT_STARTED
