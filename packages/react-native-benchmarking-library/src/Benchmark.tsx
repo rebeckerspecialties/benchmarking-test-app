@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Button, Text } from "react-native";
+import { Button, Text, View } from "react-native";
 import { startProfiling, stopProfiling } from "react-native-release-profiler";
 
 export interface BenchmarkProps {
@@ -43,16 +43,20 @@ export const Benchmark: React.FC<BenchmarkProps> = ({
   }
 
   if (running) {
-    return <Text>Running benchmark, please wait</Text>;
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <Text>Running benchmark, please wait</Text>
+      </View>
+    );
   }
 
   if (benchmarkRunTime) {
     const completedLabel = `${name}Completed`;
     return (
-      <>
-        <Text testID={completedLabel}>{benchmarkRunTime}</Text>
+      <View style={{justifyContent: 'center', alignItems: 'center'}}>
+        <Text style={{fontWeight: 'bold'}} testID={completedLabel} accessibilityValue={{text: `${benchmarkRunTime}`}}>Benchmark took: {benchmarkRunTime}ms</Text>
         <Text testID="profileLocation">{profileLocation}</Text>
-      </>
+      </View>
     );
   }
 

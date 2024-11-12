@@ -44,15 +44,17 @@ export const BenchmarkHarness: React.FC<{ items: BenchmarkDescriptor[] }> = ({
   return (
     <>
       <View
-        style={{ flex: 1, backgroundColor: "white" }}
+        style={{ flex: 1 }}
         accessibilityLabel="benchmarkView"
       >
         <JavaScriptEngineVersion />
-        <Button
-          testID="toggleFlamegraph"
-          title={toggleFlamegraphTitle}
-          onPress={toggleFlamegraph}
-        />
+        <View style={{marginBottom:20}}>
+          <Button
+            testID="toggleFlamegraph"
+            title={toggleFlamegraphTitle}
+            onPress={toggleFlamegraph}
+          />
+        </View>
         {items.map(({ benchmarkType, title, benchmarkFn }) => {
           switch (benchmarkType) {
             case "graphics":
