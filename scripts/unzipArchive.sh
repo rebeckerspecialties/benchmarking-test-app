@@ -27,5 +27,10 @@ do
     mv "$benchmarkFile" "$2/$deviceType"
   done
 
+  find "$2/$deviceType/output" -name '*.cpuprofile' | while read benchmarkFile; do
+    echo "$benchmarkFile"
+    mv "$benchmarkFile" "$2/$deviceType"
+  done
+
   rm -rf "$2/$deviceType/output"
 done;

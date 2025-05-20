@@ -159,7 +159,7 @@ export const runHelloTriangle = async (
 
 ## Customized Setup
 
-By default, the `BenchmarkHarness` will include a toggle for generating flamegraphs, and will log the JavaScript Engine being used (Hermes or JavaScriptCore). If these options are not needed, or more configuration options are desired, the `Benchmark`, `GraphicsBenchmark`, and `JavaScriptEngineVersion` components can be used independently.
+By default, the `BenchmarkHarness` will include a toggle for generating flamegraphs and will log the JavaScript engine in use (Hermes, JavaScriptCore, or V8). If these options are not needed, or more configuration options are desired, the `Benchmark`, `GraphicsBenchmark`, and `JavaScriptEngineVersion` components can be used independently.
 
 ```tsx
 const App = () => {

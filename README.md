@@ -30,6 +30,8 @@ We recommend installing node with Node Version Manager (nvm): https://github.com
 
 ```
 npm run install:hermes -w benchmarking-test-app
+# or to test with the V8 engine
+npm run install:v8 -w benchmarking-test-app
 ```
 
 ### iOS Development (Mac Required)
@@ -47,6 +49,8 @@ Xcode is required for building iOS apps from native code. Download Xcode and Xco
 ```
 cd apps/benchmarking-test-app
 npm run install:ios:hermes
+# or install pods for V8
+npm run install:ios:v8
 ```
 
 4. Connect an iOS device (or use an Xcode simulator)
@@ -231,14 +235,14 @@ Currently, the `Time Profiler` is being used to profile the app with Appium. Thi
 
 A custom template can be used when profiling locally. For instance, if you want to profile CPU cache misses, you could create a `CPU Counter` template in XCode instruments and specify L1 cache misses in Instruments -> File -> Recording Options. For more details, see: https://www.advancedswift.com/counters-in-instruments/.
 
-## Profiling with Hermes flame graphs
+## Profiling with Hermes or V8 flame graphs
 
-To profile JavaScript and Hermes code, we can generate flame graphs with `React Native Release Profiler`: https://github.com/margelo/react-native-release-profiler. These profiles can be loaded into any performance trace tool to view JavaScript bottlenecks in the hot paths.
+To profile JavaScript for Hermes or V8, we can generate flame graphs with `React Native Release Profiler`: https://github.com/margelo/react-native-release-profiler. These profiles can be loaded into any performance trace tool to view JavaScript bottlenecks in the hot paths.
 
 1. Launch the app.
 2. Click the "Enable Flamegraph" button in the app.
 3. Run the benchmark(s) of your choice.
-4. Pull the cpu profiles from the device by running `npm run download-profiles` from the benchmarking-test-app workspace.
+4. Pull the CPU profiles for the selected JavaScript engine from the device by running `npm run download-profiles` from the benchmarking-test-app workspace.
 5. Generate source maps by running `npm run build:android`. Source maps are written to `./dist/sourceMap.js`
 6. Convert the CPU profile to a trace by running the following command for each file:
 

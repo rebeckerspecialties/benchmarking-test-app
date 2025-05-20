@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        engine: [hermes, jsc]
+        engine: [hermes, jsc, v8]
     steps:
       - name: check Xcode version
         run: /usr/bin/xcodebuild -version
@@ -120,7 +120,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        engine: [hermes, jsc]
+        engine: [hermes, jsc, v8]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -207,10 +207,18 @@ jobs:
           path: "hermesOutput"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download V8 Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: "v8OutputFiles"
+          path: "v8Output"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract benchmark results from artifacts
         run: |
           ./scripts/unzipArchive.sh jscOutput benchmarks/jsc
           ./scripts/unzipArchive.sh hermesOutput benchmarks/hermes
+          ./scripts/unzipArchive.sh v8Output benchmarks/v8
 
       - name: Download javascript bundle
         uses: actions/download-artifact@v4
@@ -219,10 +227,36 @@ jobs:
           path: bundleDist
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download Hermes bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: hermesBundle
+          path: bundleDist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download V8 bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: v8Bundle
+          path: bundleDist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download executable artifact
         uses: actions/download-artifact@v4
         with:
           name: jscApp
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download hermes executable artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hermesApp
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download v8 executable artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: v8App
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Parse Benchmarks
