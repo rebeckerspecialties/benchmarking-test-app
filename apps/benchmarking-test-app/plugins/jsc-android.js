@@ -13,7 +13,7 @@ const MAIN_REACT_NATIVE_HOST_PATH = [
   "java",
   "com",
   "microsoft",
-  "reacttetapp",
+  "reacttestapp",
   "react",
   "MainReactNativeHost.kt",
 ];
