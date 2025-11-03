@@ -4,7 +4,6 @@
     "parse-benchmarks": "node packages/benchmark-parser/dist/src/index.js"
   },
   "dependencies": {
-    "@callstack/react-native-visionos": "^0.79.6",
     "bitecs": "^0.3.40",
     "react": "19.1.1",
     "react-native": "^0.82.1",
