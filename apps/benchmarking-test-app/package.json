@@ -32,7 +32,7 @@
     "react-native-benchmarking-library": "1.0.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-permissions": "^5.4.4",
-    "react-native-release-profiler": "^0.2.1",
+    "react-native-release-profiler": "^0.4.2",
     "react-native-wgpu": "^0.3.2",
     "three": "^0.181.0",
     "ts-matches": "^5.5.1",

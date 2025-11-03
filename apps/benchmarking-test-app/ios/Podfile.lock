@@ -1791,7 +1791,7 @@ PODS:
     - SocketRocket
   - react-native-get-random-values (1.11.0):
     - React-Core
-  - react-native-release-profiler (0.2.1):
+  - react-native-release-profiler (0.4.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2748,7 +2748,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 06d59c448da7e34eb05b3fb2189e12f6a30fec57
   React-microtasksnativemodule: d1ee999dc9052e23f6488b730fa2d383a4ea40e5
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
-  react-native-release-profiler: 46291f554fa046c456ec4a3e4186de2dbc251e6e
+  react-native-release-profiler: 4fb35f5d971aa1a5193ebca4a920473c27d43f3c
   react-native-wgpu: 15ebc049194b0d06082ab00fb2e5d21ec871c2f4
   React-NativeModulesApple: 46690a0fe94ec28fc6fc686ec797b911d251ded0
   React-oscompat: 95875e81f5d4b3c7b2c888d5bd2c9d83450d8bdb
