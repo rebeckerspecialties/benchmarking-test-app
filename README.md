@@ -24,13 +24,20 @@ In order to build and run the benchmarks on a local test device with Appium, the
 
 1. Install node and npm
 
-We recommend installing node with Node Version Manager (nvm): https://github.com/nvm-sh/nvm. This repository supports Node 20+
+We recommend installing node with Node Version Manager (nvm): https://github.com/nvm-sh/nvm. This repository supports Node 22+
 
 2. Install react native app dependencies
 
 ```
 npm run install:hermes -w benchmarking-test-app
 ```
+Run the companion script when benchmarking the JavaScriptCore runtime:
+
+```
+npm run install:jsc -w benchmarking-test-app
+```
+
+Both scripts update Android runtime flags automatically; you do not need to edit `android/gradle.properties` by hand.
 
 ### iOS Development (Mac Required)
 
@@ -42,11 +49,20 @@ CocoaPods is installed by default on all Macs, but it may be out of date. Follow
 
 Xcode is required for building iOS apps from native code. Download Xcode and Xcode command line tools from https://developer.apple.com/xcode/resources/
 
-3. Install React Native pods for Hermes
+3. Install React Native pods
+
+Hermes (default):
 
 ```
 cd apps/benchmarking-test-app
 npm run install:ios:hermes
+```
+
+JavaScriptCore (uses `@react-native-community/javascriptcore`):
+
+```
+cd apps/benchmarking-test-app
+npm run install:ios:jsc
 ```
 
 4. Connect an iOS device (or use an Xcode simulator)
