@@ -20,8 +20,6 @@
   },
   "dependencies": {
     "@callstack/react-native-visionos": "^0.79.6",
-    "@ir-engine/ecs": "^1.6.0",
-    "@ir-engine/hyperflux": "^1.6.0",
     "@react-native-community/javascriptcore": "^0.2.0",
     "bitecs": "^0.3.40",
     "events": "^3.3.0",
@@ -34,8 +32,7 @@
     "react-native-permissions": "^5.4.4",
     "react-native-release-profiler": "^0.4.2",
     "react-native-wgpu": "^0.3.2",
-    "three": "^0.181.0",
-    "ts-matches": "^5.5.1",
+    "three": "0.181.0",
     "wgpu-matrix": "^3.2.0"
   },
   "devDependencies": {
