@@ -2276,7 +2276,6 @@ PODS:
     - fast_float
     - fmt
     - glog
-    - hermes-engine
     - RCT-Folly
     - RCT-Folly/Fabric
     - React-debug
@@ -2757,7 +2756,7 @@ SPEC CHECKSUMS:
   React-performancetimeline: bfc96fcd2b79f7489dd54e3df4cba186dd8dd141
   React-RCTActionSheet: 2399bb6cc8adaef2e5850878102fea2ad1788a0e
   React-RCTAnimation: d1deb6946e83e22a795a7d0148b94faad8851644
-  React-RCTAppDelegate: 10b35d5cec3f8653f6de843ae800b3ba8050b801
+  React-RCTAppDelegate: 7a9b508247c815d62dd326d0ea32937247f29aa3
   React-RCTBlob: 85150378edc42862d7c13ff2502693f32b174f91
   React-RCTFabric: 736f9da3ad57e2cef5fa4c132999933a89bb8378
   React-RCTFBReactNativeSpec: 705ec584758966950a31fa235539b57523059837
@@ -2777,12 +2776,12 @@ SPEC CHECKSUMS:
   React-RuntimeHermes: 6ab3c2847516769fc860d711814f1735859cad74
   React-runtimescheduler: 824c83a5fd68b35396de6d4f2f9ae995daac861b
   React-timing: 1ebc7102dd52a3edcc63534686bb156e12648411
-  React-utils: abf37b162f560cd0e3e5d037af30bb796512246d
+  React-utils: 67bdf01f2673616786ccc0af5dc40c76bf834417
   React-webperformancenativemodule: 50a57c713a90d27ae3ab947a6c9c8859bcb49709
   ReactAppDependencyProvider: a45ef34bb22dc1c9b2ac1f74167d9a28af961176
   ReactCodegen: 65ae48ae967a383859da021028e6e8dd7b2d97d1
   ReactCommon: 804dc80944fa90b86800b43c871742ec005ca424
-  ReactNativeHost: 40e374201201cc54f9ef41458f2e412fbdde0d62
+  ReactNativeHost: 09838b6d12cd72ee4ab29babfa5bfdb16b663894
   ReactTestApp-DevSupport: 808c2f62cfc14b725dc0fddc45333006317296f8
   ReactTestApp-Resources: 1bd9ff10e4c24f2ad87101a32023721ae923bccf
   RNPermissions: 7108be11821a11d2456f3014c6d0309cf9a42ebb

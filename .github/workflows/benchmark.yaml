@@ -16,7 +16,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        engine: [hermes, jsc]
+        # TEMP: JSC removed until RN 0.82 regression is fixed
+        # See: https://github.com/facebook/react-native/commit/69826e1f11737e973149a4d90981ad57238e6ca1
+        engine: [hermes]  # jsc - blocked by regression
     steps:
       - name: check Xcode version
         run: /usr/bin/xcodebuild -version
@@ -120,7 +122,8 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        engine: [hermes, jsc]
+        # TEMP: JSC removed until RN 0.82 regression is fixed
+        engine: [hermes]  # jsc - blocked by regression
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
