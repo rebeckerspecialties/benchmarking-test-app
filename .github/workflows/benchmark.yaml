@@ -52,13 +52,22 @@ jobs:
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # import certificate to keychain
+          # import certificate to keychain with ACL for codesign
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # apply provisioning profile
+          # set the keychain as default and add to search list
+          security default-keychain -s $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH login.keychain
+
+          # apply provisioning profile with proper UUID naming
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(/usr/bin/security cms -D -i $PP_PATH))
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PP_UUID}.mobileprovision
+
+          # verify installation
+          echo "Provisioning profile UUID: $PP_UUID"
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
 
       - name: build javascript bundle
         run: |
@@ -85,6 +94,7 @@ jobs:
           -sdk iphoneos \
           -destination generic/platform=iOS \
           -allowProvisioningUpdates \
+          CODE_SIGN_STYLE=Automatic \
           DEVELOPMENT_TEAM=${{ secrets.DEVELOPMENT_TEAM_ID }} \
           clean archive
 
