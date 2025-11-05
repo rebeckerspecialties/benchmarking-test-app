@@ -12,8 +12,6 @@ import { SafeAreaView, StatusBar } from "react-native";
 import { simpleBenchmark } from "./src/benchmarks";
 import { bitEcsBenchmark } from "./src/benchmarks/bitEcsBenchmark";
 import { threeJsBenchmark } from "./src/benchmarks/threeJsBenchmark";
-import { hyperfluxBenchmark } from "./src/benchmarks/hyperfluxBenchmark";
-import { irEcsBenchmark } from "./src/benchmarks/irEcsBenchmark";
 import { runHelloTriangle } from "./src/graphicsBenchmarks/HelloTriangle";
 import { runSignedDistanceField } from "./src/graphicsBenchmarks/SignedDistanceField";
 import { runDragonFxaa } from "./src/graphicsBenchmarks/DragonFxaa";
@@ -42,16 +40,6 @@ const BENCHMARK_MATRIX: BenchmarkDescriptor[] = [
     title: "threeJsBenchmark",
     benchmarkType: "headless",
     benchmarkFn: threeJsBenchmark,
-  },
-  {
-    title: "hyperfluxBenchmark",
-    benchmarkType: "headless",
-    benchmarkFn: hyperfluxBenchmark,
-  },
-  {
-    title: "irEcsBenchmark",
-    benchmarkType: "headless",
-    benchmarkFn: irEcsBenchmark,
   },
   {
     title: "triangleWebGpuBenchmark",

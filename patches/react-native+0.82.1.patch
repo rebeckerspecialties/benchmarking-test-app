@@ -1,0 +1,96 @@
+diff --git a/node_modules/react-native/Libraries/AppDelegate/React-RCTAppDelegate.podspec b/node_modules/react-native/Libraries/AppDelegate/React-RCTAppDelegate.podspec
+index 437a80b..bfdab02 100644
+--- a/node_modules/react-native/Libraries/AppDelegate/React-RCTAppDelegate.podspec
++++ b/node_modules/react-native/Libraries/AppDelegate/React-RCTAppDelegate.podspec
+@@ -46,9 +46,27 @@ Pod::Spec.new do |s|
+ 
+   # This guard prevent to install the dependencies when we run `pod install` in the old architecture.
+   s.compiler_flags = other_cflags
++
++  # PATCH: Add GCC_PREPROCESSOR_DEFINITIONS for JSC support
++  # This ensures USE_HERMES and USE_THIRD_PARTY_JSC flags are available in header files
++  # Required for proper conditional compilation of Hermes vs JSC code paths
++  # See: https://github.com/facebook/react-native/commit/69826e1f11737e973149a4d90981ad57238e6ca1
++  preprocessor_defs = "$(inherited) COCOAPODS=1"
++  if ENV['RCT_NEW_ARCH_ENABLED'] != "0"
++    preprocessor_defs += " RCT_NEW_ARCH_ENABLED=1"
++  end
++  if use_hermes()
++    preprocessor_defs += " USE_HERMES=1"
++  elsif use_third_party_jsc()
++    preprocessor_defs += " USE_THIRD_PARTY_JSC=1 USE_HERMES=0"
++  else
++    preprocessor_defs += " USE_HERMES=0"
++  end
++
+   s.pod_target_xcconfig    = {
+     "HEADER_SEARCH_PATHS" => header_search_paths,
+     "OTHER_CPLUSPLUSFLAGS" => other_cflags,
++    "GCC_PREPROCESSOR_DEFINITIONS" => preprocessor_defs,
+     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
+     "DEFINES_MODULE" => "YES"
+   }
+diff --git a/node_modules/react-native/ReactCommon/react/utils/React-utils.podspec b/node_modules/react-native/ReactCommon/react/utils/React-utils.podspec
+index d3061f6..c135408 100644
+--- a/node_modules/react-native/ReactCommon/react/utils/React-utils.podspec
++++ b/node_modules/react-native/ReactCommon/react/utils/React-utils.podspec
+@@ -47,7 +47,7 @@ Pod::Spec.new do |s|
+ 
+   s.dependency "React-jsi", version
+ 
+-  depend_on_js_engine(s)
++  # depend_on_js_engine(s) - Removed to break circular dependency with React-jsc
+   add_rn_third_party_dependencies(s)
+   add_rncore_dependency(s)
+ 
+diff --git a/node_modules/react-native/scripts/cocoapods/jsengine.rb b/node_modules/react-native/scripts/cocoapods/jsengine.rb
+index a15c928..2606a72 100644
+--- a/node_modules/react-native/scripts/cocoapods/jsengine.rb
++++ b/node_modules/react-native/scripts/cocoapods/jsengine.rb
+@@ -31,11 +31,11 @@ def use_hermes
+ end
+ 
+ def use_hermes_flags
+-  return "-DUSE_HERMES=1"
++  return " -DUSE_HERMES=1"
+ end
+ 
+ def use_third_party_jsc_flags
+-  return "-DUSE_THIRD_PARTY_JSC=1"
++  return " -DUSE_THIRD_PARTY_JSC=1 -DUSE_HERMES=0"
+ end
+ 
+ def js_engine_flags()
+diff --git a/node_modules/react-native/scripts/cocoapods/utils.rb b/node_modules/react-native/scripts/cocoapods/utils.rb
+index 4d48727..987fe81 100644
+--- a/node_modules/react-native/scripts/cocoapods/utils.rb
++++ b/node_modules/react-native/scripts/cocoapods/utils.rb
+@@ -638,11 +638,12 @@ class ReactNativePodsUtils
+             "fast_float",
+             "fmt",
+             "glog",
+-            "hermes-engine",
+-            "React-hermes",
+         ]
+-        if ENV['USE_THIRD_PARTY_JSC'] != '1'
++        if ENV['USE_THIRD_PARTY_JSC'] == '1'
+             pods << "React-jsc"
++        else
++            pods << "hermes-engine"
++            pods << "React-hermes"
+         end
+ 
+         return pods
+diff --git a/node_modules/react-native/scripts/react_native_pods.rb b/node_modules/react-native/scripts/react_native_pods.rb
+index 9cc53d8..2d91954 100644
+--- a/node_modules/react-native/scripts/react_native_pods.rb
++++ b/node_modules/react-native/scripts/react_native_pods.rb
+@@ -74,7 +74,7 @@ def use_react_native! (
+   error_if_try_to_use_jsc_from_core()
+   warn_if_new_arch_disabled()
+ 
+-  hermes_enabled= true
++  hermes_enabled= use_hermes()
+   # Set the app_path as env variable so the podspecs can access it.
+   ENV['APP_PATH'] = app_path
+   ENV['REACT_NATIVE_PATH'] = path

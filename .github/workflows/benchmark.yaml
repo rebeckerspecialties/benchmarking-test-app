@@ -16,7 +16,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        engine: [hermes, jsc]
+        # TEMP: JSC removed until RN 0.82 regression is fixed
+        # See: https://github.com/facebook/react-native/commit/69826e1f11737e973149a4d90981ad57238e6ca1
+        engine: [hermes]  # jsc - blocked by regression
     steps:
       - name: check Xcode version
         run: /usr/bin/xcodebuild -version
@@ -36,27 +38,55 @@ jobs:
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
+          set -e  # Exit on any error
+
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # import certificate and provisioning profile from secrets
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo "=== Decoding certificate and provisioning profile ==="
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH || { echo "Failed to decode certificate"; exit 1; }
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH || { echo "Failed to decode provisioning profile"; exit 1; }
+          ls -lh $CERTIFICATE_PATH $PP_PATH
 
-          # create temporary keychain
+          echo "=== Creating temporary keychain ==="
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          echo "Keychain created and unlocked"
 
-          # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          echo "=== Downloading Apple WWDR Certificate ==="
+          curl -o $RUNNER_TEMP/AppleWWDRCA.cer https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+          curl -o $RUNNER_TEMP/AppleWWDRCAG2.cer https://www.apple.com/certificateauthority/AppleWWDRCAG2.cer
+          security import $RUNNER_TEMP/AppleWWDRCA.cer -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security import $RUNNER_TEMP/AppleWWDRCAG2.cer -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          echo "WWDR certificates imported"
 
-          # apply provisioning profile
+          echo "=== Importing certificate ==="
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          echo "Certificate imported"
+
+          echo "=== Setting keychain as default ==="
+          security default-keychain -s $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH login.keychain
+          security list-keychain -d user
+          echo "Default keychain set"
+
+          echo "=== Extracting provisioning profile UUID ==="
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          PP_UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(/usr/bin/security cms -D -i $PP_PATH)) || { echo "Failed to extract UUID"; exit 1; }
+          echo "Provisioning profile UUID: $PP_UUID"
+
+          echo "=== Installing provisioning profile ==="
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/${PP_UUID}.mobileprovision
+          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "Provisioning profile installed"
+
+          echo "=== Verifying signing identity ==="
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          echo "=== Setup complete ==="
 
       - name: build javascript bundle
         run: |
@@ -83,6 +113,7 @@ jobs:
           -sdk iphoneos \
           -destination generic/platform=iOS \
           -allowProvisioningUpdates \
+          CODE_SIGN_STYLE=Automatic \
           DEVELOPMENT_TEAM=${{ secrets.DEVELOPMENT_TEAM_ID }} \
           clean archive
 
@@ -120,7 +151,8 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        engine: [hermes, jsc]
+        # TEMP: JSC removed until RN 0.82 regression is fixed
+        engine: [hermes]  # jsc - blocked by regression
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

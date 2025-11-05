@@ -16,5 +16,6 @@
   },
   "ios": {
     "bundleIdentifier": "com.rbckr.TestApp"
-  }
+  },
+  "plugins": ["./plugins/jsc-android"]
 }
